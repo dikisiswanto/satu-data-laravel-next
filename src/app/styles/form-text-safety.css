@@ -28,6 +28,14 @@
       ):not([type="reset"]),
     select
   ),
+.portal-app form :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="hidden"]
+    ):not([type="range"]):not([type="color"]):not([type="submit"]):not(
+      [type="button"]
+    ):not([type="reset"]),
+  select
+),
 .portal-app
   .portal-main
   form

@@ -32,8 +32,8 @@ COPY php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY composer.json ./composer.json
 RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
 COPY . .
-RUN composer dump-autoload --no-dev --optimize \
-    && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs storage/app/private bootstrap/cache \
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs storage/app/private bootstrap/cache \
+    && composer dump-autoload --no-dev --optimize \
     && chown -R www-data:www-data storage bootstrap/cache
 
 ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr

@@ -340,7 +340,7 @@ class PortalAdminController extends Controller
     {
         $user = $request->user();
         $this->access->requireAnyRole($user, ['super_admin', 'data_admin', 'admin_opd', 'reviewer', 'auditor']);
-        $query = DB::table('audit_logs as a')->leftJoin('profiles as p', 'p.user_id', '=', 'a.actor_user_id')->leftJoin('organizations as o', 'o.id', '=', 'a.organization_id')->select('a.id', 'a.actor_user_id', 'p.display_name as actor_display_name', 'a.action', 'a.entity_type', 'a.entity_id', 'a.organization_id', 'o.name as organization_name', 'a.outcome', 'a.summary', 'a.created_at')->orderByDesc('a.created_at');
+        $query = DB::table('audit_logs as a')->leftJoin('profiles as p', 'p.user_id', '=', 'a.actor_user_id')->leftJoin('organizations as o', 'o.id', '=', 'a.organization_id')->select('a.id', 'a.actor_user_id', 'p.display_name as actor_display_name', 'a.action', 'a.entity_type', 'a.entity_id', 'a.organization_id', 'o.name as organization_name', 'a.outcome', 'a.summary', 'a.request_id', 'a.created_at')->orderByDesc('a.created_at');
         if (! $this->access->hasAnyRole($user, AccessService::GLOBAL_ROLES)) {
             $organizationIds = $this->access->accessibleOrganizationIds($user);
             if ($organizationIds === []) {

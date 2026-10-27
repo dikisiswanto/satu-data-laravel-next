@@ -46,8 +46,10 @@ describe("operator-focused dataset preparation", () => {
   });
 
   it("keeps advanced national metadata available but collapses it for a clean new draft", () => {
-    const fields = read("src/components/admin/sdi-metadata-fields.jsx");
-    expect(fields).toContain("<details open={hasSavedMetadata}");
+    const fields = read("src/components/admin/sdi-metadata-fields.jsx").replace(/\s+/g, " ");
+    expect(fields).toContain('<details className="group rounded-2xl');
+    expect(fields).not.toContain("<details open=");
+    expect(fields).toContain('hasSavedMetadata');
     expect(fields).toContain("Bisa dilengkapi setelah draf");
     expect(fields).toContain(
       "Kode SDS, ID DDP, dan kode referensi tidak boleh dibuat sendiri.",
@@ -75,8 +77,8 @@ describe("operator-focused dataset preparation", () => {
     expect(blueprints).toContain(
       "GeoJSON menggunakan koordinat longitude, latitude dalam WGS 84",
     );
-    expect(assistant).toContain(
-      "bukan penetapan Daftar Data atau Data Prioritas secara resmi",
+    expect(assistant.replace(/\s+/g, " ")).toContain(
+      "Daftar ini adalah saran, bukan Daftar Data atau Data Prioritas yang sudah ditetapkan.",
     );
     expect(dashboard).toContain("Langkah berikutnya");
     expect(dashboard).toContain("/portal/integrasi");

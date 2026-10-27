@@ -102,10 +102,12 @@ const toneClasses = {
 export function ConversionJobStatus({ datasetId, version, initialJob }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [now, setNow] = useState(() => Date.now());
-  // Timestamp awal dibuat sekali; Date.now() langsung di opsi query melanggar
-  // aturan purity React dan berubah setiap render.
-  const [initialDataUpdatedAt] = useState(() => Date.now());
+  // Nilai awal harus deterministik saat render dan hidrasi.
+  const [now, setNow] = useState(0);
+  // Gunakan timestamp pekerjaan dari server. Jika tak tersedia, 0 membuat
+  // data dianggap usang sehingga React Query segera memeriksa status terbaru.
+  const initialDataUpdatedAt =
+    parseDate(initialJob?.updated_at ?? initialJob?.created_at)?.getTime() ?? 0;
   const refreshStarted = useRef(false);
   const previousStatus = useRef(initialJob?.status || null);
 

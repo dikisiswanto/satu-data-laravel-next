@@ -90,6 +90,11 @@ jobs:
           php-version: "8.4"
           extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, mbstring, openssl, pdo_mysql, pdo_pgsql, pdo_sqlite, sqlite3, tokenizer, xml, zip
           coverage: none
+      - name: Siapkan direktori runtime Laravel
+        working-directory: backend
+        run: |
+          mkdir -p bootstrap/cache storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
+          chmod -R u+rwX,g+rwX bootstrap/cache storage
       - name: Pasang dependensi Laravel
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --no-progress

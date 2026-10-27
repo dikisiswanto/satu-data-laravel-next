@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
+const compact = (source) => source.replace(/\s+/g, " ").trim();
 
 describe("human-centered wording across public and admin UI", () => {
   it("explains common API errors and gives a safe next step", () => {
@@ -54,15 +55,15 @@ describe("human-centered wording across public and admin UI", () => {
   });
 
   it("uses the updated, human-facing wording for account access and changed data", () => {
-    const login = read("src/app/portal/login/page.jsx");
-    const users = read("src/app/portal/pengguna/page.jsx");
-    const membership = read("src/components/admin/membership-form.jsx");
-    const accountSettings = read("src/app/portal/pengaturan/page.jsx");
-    const editDataset = read("src/app/portal/dataset/[id]/edit/page.jsx");
-    const createDataset = read("src/app/portal/dataset/new/page.jsx");
-    const createForm = read("src/components/admin/dataset-create-form.jsx");
-    const preparationAssistant = read(
-      "src/components/admin/dataset-preparation-assistant.jsx",
+    const login = compact(read("src/app/portal/login/page.jsx"));
+    const users = compact(read("src/app/portal/pengguna/page.jsx"));
+    const membership = compact(read("src/components/admin/membership-form.jsx"));
+    const accountSettings = compact(read("src/app/portal/pengaturan/page.jsx"));
+    const editDataset = compact(read("src/app/portal/dataset/[id]/edit/page.jsx"));
+    const createDataset = compact(read("src/app/portal/dataset/new/page.jsx"));
+    const createForm = compact(read("src/components/admin/dataset-create-form.jsx"));
+    const preparationAssistant = compact(
+      read("src/components/admin/dataset-preparation-assistant.jsx"),
     );
 
     expect(login).toContain(

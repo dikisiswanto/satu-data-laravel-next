@@ -11,6 +11,6 @@
 @import "./styles/overrides.css";
 @import "./styles/quality-pass.css";
 @import "./styles/public-responsive.css";
-@import "./styles/form-text-safety.css";
 @import "./styles/admin-design-system.css";
+@import "./styles/form-text-safety.css";
 @plugin "@tailwindcss/forms";

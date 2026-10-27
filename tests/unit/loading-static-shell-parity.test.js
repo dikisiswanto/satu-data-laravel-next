@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const read = (path) =>
   readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+const compact = (source) => source.replace(/\s+/g, " ").trim();
 const routeLoaders = [
   "src/app/portal/loading.jsx",
   "src/app/portal/dataset/loading.jsx",
@@ -186,8 +187,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
       ],
     ];
     for (const [pagePath, loadingPath, copy] of pairs) {
-      const page = read(pagePath);
-      const loading = read(loadingPath);
+      const page = compact(read(pagePath));
+      const loading = compact(read(loadingPath));
       for (const phrase of copy) {
         expect(page, `${pagePath} missing fixed copy: ${phrase}`).toContain(
           phrase,
@@ -204,13 +205,16 @@ describe("loading shells preserve static UI copy and route structure", () => {
     const loading = read("src/app/portal/standar/loading.jsx");
     const _page = read("src/app/portal/standar/page.jsx");
     const manager = read("src/components/admin/sdi-registry-manager.jsx");
-    for (const gatedHeading of [
-      '<h2 className="font-semibold">Daftarkan standar</h2>',
-      '<h2 className="font-semibold">Daftarkan sistem kode referensi</h2>',
-      '<h2 className="font-semibold">Tambahkan entri kode</h2>',
-    ]) {
-      expect(manager).toContain(gatedHeading);
-      expect(loading).not.toContain(gatedHeading);
+    const gatedHeadings = [
+      "Daftarkan standar",
+      "Daftarkan sistem kode referensi",
+      "Tambahkan entri kode",
+    ];
+    for (const heading of gatedHeadings) {
+      expect(manager).toMatch(
+        new RegExp(`<h2 className="font-semibold">\\s*${heading}\\s*</h2>`),
+      );
+      expect(compact(loading)).not.toContain(`<h2 className="font-semibold"> ${heading} </h2>`);
     }
     expect(manager).toContain('label="Kode standar"');
     expect(loading).not.toContain('label="Kode standar"');
@@ -366,17 +370,17 @@ describe("loading shells preserve static UI copy and route structure", () => {
       ],
     ];
     for (const [path, phrases] of checks) {
-      const source = read(path);
+      const source = compact(read(path));
       for (const phrase of phrases)
         expect(source, `${path} missing static phrase: ${phrase}`).toContain(
-          phrase,
+          compact(phrase),
         );
     }
   });
 
   it("reserves dashboard identity space and keeps fixed actions visible during loading", () => {
-    const page = read("src/app/portal/page.jsx");
-    const loading = read("src/app/portal/loading.jsx");
+    const page = compact(read("src/app/portal/page.jsx"));
+    const loading = compact(read("src/app/portal/loading.jsx"));
     for (const source of [page, loading]) {
       expect(source).toContain("Selamat datang");
       expect(source).toContain("Akun:");
@@ -389,9 +393,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
     expect(loading).toContain(
       'className="inline-block h-4 w-40 max-w-full align-middle"',
     );
-    expect(page).not.toContain(
-      "Selamat datang\n          {profile?.display_name",
-    );
+    expect(page).not.toContain("Selamat datang {profile?.display_name");
   });
 
   it("uses local Suspense fallbacks on the public homepage instead of replacing its static copy", () => {
@@ -506,10 +508,10 @@ describe("loading shells preserve static UI copy and route structure", () => {
   });
 
   it("keeps SDI metadata detail collapsed consistently until the user chooses to open it", () => {
-    const page = read("src/app/portal/integrasi/[id]/page.jsx");
-    const fields = read("src/components/admin/sdi-metadata-fields.jsx");
-    const loading = read("src/app/portal/integrasi/[id]/loading.jsx");
-    const editor = read("src/components/admin/sdi-metadata-editor.jsx");
+    const page = compact(read("src/app/portal/integrasi/[id]/page.jsx"));
+    const fields = compact(read("src/components/admin/sdi-metadata-fields.jsx"));
+    const loading = compact(read("src/app/portal/integrasi/[id]/loading.jsx"));
+    const editor = compact(read("src/components/admin/sdi-metadata-editor.jsx"));
     const staticCopy = [
       "Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo.",
       "Metadata standar dan pertukaran SDI (lanjutan)",

@@ -30,6 +30,7 @@ for (const required of [
   "src/components/dataset-resource-preview.jsx",
   "src/lib/api/query-keys.js",
   "backend/artisan",
+  "backend/bootstrap/cache/.gitignore",
   "backend/routes/api.php",
   "backend/app/Jobs/ProcessDatasetConversion.php",
   "backend/app/Services/DatasetPreviewBudget.php",
@@ -69,7 +70,8 @@ for (const required of [
 
 const checks = [
   [".github/workflows/ci.yml", /node-version-file:\s*\.nvmrc[\s\S]*?npm ci/, "CI harus mengikuti versi Node.js proyek dan memasang dependensi dari lockfile"],
-  [".github/workflows/ci.yml", /backend-tests:[\s\S]*?php artisan migrate --force[\s\S]*?php artisan test/, "CI harus menguji migration dan fitur Laravel pada MariaDB"],
+  [".github/workflows/ci.yml", /backend-tests:[\s\S]*?mkdir -p bootstrap\/cache[\s\S]*?composer install[\s\S]*?php artisan migrate --force[\s\S]*?php artisan test/, "CI harus menyiapkan direktori runtime lalu menguji migration dan fitur Laravel pada MariaDB"],
+  ["backend/Dockerfile", /COPY \. \.[\s\S]*?RUN mkdir -p [^\n]*bootstrap\/cache[\s\S]*?composer dump-autoload/, "Image Laravel harus membuat direktori cache sebelum Composer menjalankan package discovery"],
   ["backend/bootstrap/app.php", /TrustConfiguredProxies::class/, "Bootstrap harus menghindari config() sebelum container Laravel siap"],
   ["backend/app/Http/Middleware/TrustConfiguredProxies.php", /config\('app\.trusted_proxies'\)/, "Proxy tepercaya harus dibaca setelah konfigurasi Laravel tersedia"],
   [".github/workflows/ci.yml", /docker-images:[\s\S]{0,160}?needs:\s*\[verify, backend-tests\]/, "Image produksi hanya boleh dibangun setelah verifikasi frontend dan backend lulus"],
@@ -119,6 +121,8 @@ const checks = [
   ["src/app/styles/admin-design-system.css", /portal-mobile-navigation-panel/, "Halaman admin harus memakai gaya navigasi responsif"],
   ["src/components/portal-navigation.jsx", /item\.roles\.some/, "Navigasi admin harus menyembunyikan menu di luar peran akun aktif"],
   ["src/components/portal-shell.jsx", /portal-topbar sticky top-0[\s\S]*lg:sticky lg:top-\[100px\]/, "Shell dan sidebar admin harus tetap persisten saat navigasi desktop"],
+  ["src/app/portal/login/page.jsx", /sessionCheckError[\s\S]*if \(user && !sessionCheckError && !authUnavailable\) redirect\("\/portal"\)/, "Login hanya boleh mengarahkan pengguna setelah pemeriksaan sesi berhasil"],
+  ["backend/app/Http/Controllers/Api/PortalAdminController.php", /auditLogs[\s\S]*'a\.request_id'/, "API riwayat audit harus mengirim ID permintaan yang tampil di tabel"],
   ["src/components/admin/dataset-create-form.jsx", /Judul dataset[\s\S]*required[\s\S]*organization_id[\s\S]*Lengkapi informasi data[\s\S]*opsional saat membuat draf/, "Form draf dataset harus ringkas dan dapat dilengkapi bertahap"],
   ["docker-compose.yml", /NEXT_PUBLIC_SITE_URL:[\s\S]*?NEXT_PUBLIC_GEOPORTAL_URL/, "Konfigurasi publik Next.js harus dikirim sebagai argumen build Docker"],
   ["Dockerfile", /ARG NEXT_PUBLIC_SITE_URL[\s\S]*ENV BACKEND_API_URL=\$\{BACKEND_API_URL\}[\s\S]*NEXT_PUBLIC_SITE_URL=\$\{NEXT_PUBLIC_SITE_URL\}/, "Konfigurasi NEXT_PUBLIC harus tersedia saat build Next.js"],
@@ -158,8 +162,11 @@ if (workflowNames.length !== 1 || workflowNames[0] !== "ci.yml") {
   errors.push("Semua pemeriksaan otomatis harus terpusat pada satu workflow .github/workflows/ci.yml");
 }
 const conversionStatusSource = await readFile(path.join(root, "src/components/admin/conversion-job-status.jsx"), "utf8");
-if (/initialDataUpdatedAt:\s*Date\.now\s*\(/.test(conversionStatusSource)) {
-  errors.push("initialDataUpdatedAt React Query harus memakai timestamp stabil, bukan Date.now() saat render");
+if (
+  /initialDataUpdatedAt:\s*Date\.now\s*\(/.test(conversionStatusSource) ||
+  /useState\(\s*\(\)\s*=>\s*Date\.now\s*\(\)\s*\)/.test(conversionStatusSource)
+) {
+  errors.push("Status konversi harus memakai timestamp deterministik, bukan Date.now() saat render");
 }
 
 const routesSource = await readFile(path.join(root, "backend/routes/api.php"), "utf8");

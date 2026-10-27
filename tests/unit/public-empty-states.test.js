@@ -52,8 +52,8 @@ describe("public empty states and consistent admin controls", () => {
     expect(statisticsPage).toContain(
       "Belum ada indikator statistik yang dipublikasikan",
     );
-    expect(datasetPage).toContain("Katalog dataset belum dapat dimuat");
-    expect(datasetPage).toContain("Belum ada dataset publik");
+    expect(datasetPage).toContain("Katalog dataset belum dapat ditampilkan");
+    expect(datasetPage).toContain("Belum ada dataset yang diterbitkan");
   });
 
   it("uses a custom calendar picker and shared accessible table for admin forms and lists", () => {

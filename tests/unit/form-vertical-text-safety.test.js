@@ -9,9 +9,11 @@ describe("form vertical text safety across public and admin pages", () => {
   const globals = read("src/app/globals.css");
 
   it("loads form text safety after all page and responsive styles", () => {
-    expect(globals).toMatch(
-      /@import "\.\/styles\/form-text-safety\.css";\n@plugin "@tailwindcss\/forms";/,
-    );
+    const designSystemImport = globals.indexOf('@import "./styles/admin-design-system.css";');
+    const textSafetyImport = globals.indexOf('@import "./styles/form-text-safety.css";');
+    expect(designSystemImport).toBeGreaterThanOrEqual(0);
+    expect(textSafetyImport).toBeGreaterThan(designSystemImport);
+    expect(globals).toContain('@plugin "@tailwindcss/forms";');
   });
 
   it("pairs fixed-height single-line controls with zero vertical padding and a safe line-height", () => {

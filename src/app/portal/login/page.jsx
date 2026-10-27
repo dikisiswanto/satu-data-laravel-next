@@ -16,17 +16,19 @@ export const metadata = {
 export default async function LoginPage({ searchParams }) {
   const params = await searchParams;
   let user = null;
+  let sessionCheckError = false;
   let authUnavailable = false;
   try {
     const backend = await createBackendServerClient();
     const result = await backend.auth.getUser();
     user = result?.data?.user || null;
+    sessionCheckError = Boolean(result?.error);
     if (result?.error && result.error.status !== 401) authUnavailable = true;
   } catch (error) {
     authUnavailable = true;
     console.error("portal_login_session_check_unavailable", { status: error?.status || null, code: error?.code || "unknown" });
   }
-  if (user) redirect("/portal");
+  if (user && !sessionCheckError && !authUnavailable) redirect("/portal");
   const error = authUnavailable ? "unavailable" : params?.error || undefined;
   return (
     <main className="login-page">

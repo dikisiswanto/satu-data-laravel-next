@@ -56,8 +56,10 @@ describe("administrative table exploration and audit accountability", () => {
 
   it("enforces audit role checks and organization scope in the Laravel API", () => {
     expect(auditController).toContain("requireAnyRole($user, ['super_admin', 'data_admin', 'admin_opd', 'reviewer', 'auditor'])");
-    expect(auditController).toContain("whereNull('a.organization_id')");
+    expect(auditController).toContain("whereIn('a.organization_id', $organizationIds)");
     expect(auditController).toContain("accessibleOrganizationIds($user)");
+    expect(auditController).toContain("'a.request_id'");
+    expect(auditController).toContain("Cache-Control' => 'private, no-store");
     expect(auditController).toContain("Cache-Control' => 'private, no-store");
     expect(auditSchema).toContain("Schema::create('audit_logs'");
     expect(auditSchema).toContain("foreignUuid('actor_user_id')->nullable()->constrained('users')->nullOnDelete()");
