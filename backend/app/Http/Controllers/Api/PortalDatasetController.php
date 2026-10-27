@@ -198,8 +198,8 @@ class PortalDatasetController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'min:5', 'max:180'],
-            // A traceable draft should be cheap to create. Publication-critical
-            // metadata is completed later and enforced at submit_for_review.
+            // Draf yang dapat ditelusuri harus mudah dibuat. Metadata penting untuk publikasi
+            // dilengkapi kemudian dan divalidasi saat submit_for_review.
             'description' => ['nullable', 'string', 'min:20', 'max:5000'],
             'organization_id' => ['required', 'uuid', 'exists:organizations,id'],
             'source_name' => ['nullable', 'string', 'min:2', 'max:240'],
