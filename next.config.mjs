@@ -3,6 +3,8 @@ const nextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  // Playwright uses 127.0.0.1 while the dev server may advertise localhost.
+  allowedDevOrigins: ["127.0.0.1"],
   compress: true,
   productionBrowserSourceMaps: false,
   serverExternalPackages: ["exceljs", "pdfkit"],

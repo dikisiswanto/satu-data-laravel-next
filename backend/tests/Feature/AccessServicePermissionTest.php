@@ -135,7 +135,7 @@ class AccessServicePermissionTest extends TestCase
         $this->assertFalse($access->hasPermission($user, 'datasets.write'));
         $this->assertFalse($access->hasPermissionInOrganization($user, $organization->id, 'datasets.write'));
         $this->assertNull($access->organizationIdsWithPermission($user, 'datasets.read'), 'Global read permission explicitly grants unrestricted read scope.');
-        $this->assertSame([$organization->id], $access->organizationIdsWithPermission($user, 'datasets.write'), 'A read-only global membership must not widen a separate local write scope.');
+        $this->assertSame([], $access->organizationIdsWithPermission($user, 'datasets.write'), 'Neither the global auditor role nor the local viewer role grants dataset write permission.');
     }
 
     public function test_duplicate_global_memberships_are_rejected_even_with_nullable_organization_id(): void

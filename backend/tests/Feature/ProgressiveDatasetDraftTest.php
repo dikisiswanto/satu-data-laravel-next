@@ -16,7 +16,7 @@ class ProgressiveDatasetDraftTest extends TestCase
     {
         [$user, $organization, $token] = $this->createScopedAdmin('draft.creator@example.gov.id');
 
-        $this->withHeaders([
+        $created = $this->withHeaders([
             'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
             'Accept' => 'application/json',
         ])->withToken($token)->postJson('/api/v1/portal/datasets', [
@@ -24,7 +24,14 @@ class ProgressiveDatasetDraftTest extends TestCase
             'organization_id' => $organization->id,
         ])->assertCreated()
             ->assertJsonPath('data.status', 'draft')
-            ->assertJsonPath('data.title', 'Data layanan dasar');
+            ->assertJsonPath('data.title', 'Data layanan dasar')
+            ->json('data');
+
+        $this->assertDatabaseHas('dataset_sdi_metadata', [
+            'dataset_id' => $created['id'],
+            'dataset_version' => 1,
+            'presentation_classification' => '[]',
+        ]);
 
         $this->assertDatabaseHas('datasets', [
             'title' => 'Data layanan dasar',

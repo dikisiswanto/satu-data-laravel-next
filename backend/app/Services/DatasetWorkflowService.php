@@ -317,14 +317,23 @@ class DatasetWorkflowService
         $fields = ['ddp_id', 'ddp_name', 'source_reference', 'available_year', 'sds_code', 'sds_type', 'sds_version', 'standard_concept', 'standard_definition', 'measurement', 'presentation_classification', 'reference_code', 'reference_code_version', 'method_description', 'sds_registry_id', 'reference_system_id'];
         $values = ['dataset_id' => $dataset->id, 'dataset_version' => $version, 'updated_at' => now(), 'created_at' => now()];
         foreach ($fields as $field) {
+            if ($field === 'presentation_classification') {
+                $classification = $metadata[$field] ?? [];
+                if (! is_array($classification)) {
+                    $classification = [];
+                }
+                // Query Builder does not apply Eloquent's JSON casts. Encode the
+                // JSON column explicitly and keep optional draft metadata non-null.
+                $values[$field] = json_encode(array_values($classification), JSON_THROW_ON_ERROR);
+
+                continue;
+            }
+
             $value = $metadata[$field] ?? null;
             if (is_string($value)) {
                 $value = trim($value) === '' ? null : trim($value);
             }
             $values[$field] = $value;
-        }
-        if (isset($values['presentation_classification']) && ! is_array($values['presentation_classification'])) {
-            $values['presentation_classification'] = [];
         }
         DB::table('dataset_sdi_metadata')->updateOrInsert(['dataset_id' => $dataset->id, 'dataset_version' => $version], $values);
     }

@@ -22,7 +22,7 @@ test("katalog dataset mempunyai pencarian yang berlabel", async ({ page }) => {
     page.getByRole("heading", { name: "Katalog dataset" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("searchbox", { name: "Kata kunci" }),
+    page.getByLabel("Kata kunci"),
   ).toBeVisible();
 });
 test("Portal Admin meminta pengguna masuk", async ({ page }) => {
@@ -35,7 +35,7 @@ test("katalog publik membuka popover filter dengan panel yang tidak terpotong di
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/dataset");
-  await page.getByRole("button", { name: "Buka filter katalog" }).click();
+  await page.locator('summary[aria-label="Buka filter katalog"]').click();
   const panel = page.locator(".catalog-filter-popover-panel");
   await expect(panel).toBeVisible();
   await expect(page.getByLabel("Topik")).toBeVisible();
@@ -59,7 +59,7 @@ test("popover filter katalog tetap berada di dalam viewport mobile", async ({
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/dataset");
-  await page.getByRole("button", { name: "Buka filter katalog" }).click();
+  await page.locator('summary[aria-label="Buka filter katalog"]').click();
   const panel = page.locator(".catalog-filter-popover-panel");
   await expect(panel).toBeVisible();
   const box = await panel.boundingBox();
@@ -91,7 +91,7 @@ test("menu seluler membuka navigasi yang dapat diakses dan Portal Admin menuju l
     page.getByRole("navigation", { name: "Navigasi seluler" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /Portal Admin/ }),
+    page.locator("#site-mobile-navigation").getByRole("link", { name: /Masuk Portal Admin/ }),
   ).toHaveAttribute("href", "/portal/login");
   await page.keyboard.press("Escape");
   await expect(
