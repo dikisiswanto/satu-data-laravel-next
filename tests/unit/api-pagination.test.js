@@ -26,7 +26,7 @@ describe("parseBoundedPositiveInteger", () => {
 });
 
 describe("normalizePublicSearch", () => {
-  it("preserves Indonesian letters while removing PostgREST filter syntax", () => {
+  it("mempertahankan huruf Indonesia dan membuang karakter pencarian yang tidak didukung", () => {
     expect(normalizePublicSearch("Data OPD, tahun (2025)%")).toBe(
       "Data OPD tahun 2025",
     );

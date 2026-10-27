@@ -32,6 +32,8 @@ for (const required of [
   "backend/artisan",
   "backend/routes/api.php",
   "backend/app/Jobs/ProcessDatasetConversion.php",
+  "backend/app/Services/DatasetPreviewBudget.php",
+  "backend/tests/Unit/DatasetPreviewBudgetTest.php",
   "backend/app/Console/Commands/ImportLegacySupabase.php",
   "backend/database/migrations/2026_10_01_000001_create_identity_and_organizations.php",
   "backend/database/migrations/2026_10_01_000002_create_dataset_workflow_tables.php",
@@ -53,9 +55,9 @@ for (const required of [
   "scripts/deploy-vps.sh",
   "backend/openapi/openapi.json",
   "backend/openapi/openapi.yaml",
-  "BACKEND-REWRITE-AUDIT.md",
-  "ARCHITECTURE.md",
-  "API-CONTRACTS.md",
+  "README.md",
+  "DOKUMENTASI.md",
+  "PENGUJIAN.md",
   "backend/app/Models/Role.php",
   "backend/app/Models/Permission.php",
   "backend/tests/Feature/AuthorizationCatalogTest.php",
@@ -65,73 +67,79 @@ for (const required of [
 }
 
 const checks = [
+  [".github/workflows/ci.yml", /npm install --global npm@10\.9\.2[\s\S]*?npm ci/, "CI harus memakai versi npm yang ditetapkan proyek sebelum instalasi bersih"],
+  [".github/workflows/ci.yml", /backend-tests:[\s\S]*?php artisan migrate --force[\s\S]*?php artisan test/, "CI harus menguji migration dan fitur Laravel pada MariaDB"],
+  [".github/workflows/ci.yml", /docker-images:\s*\n\s*needs:\s*\[verify, backend-tests\]/, "Image produksi hanya boleh dibangun setelah verifikasi frontend dan backend lulus"],
   ["next.config.mjs", /source:\s*"\/api\/:path\*"[\s\S]*destination:\s*`\$\{backend\}\/api\/:path\*`/, "Rute API Next.js harus diteruskan ke Laravel"],
   ["src/lib/backend/server.js", /wajo_portal_token/, "Permintaan server Next.js harus meneruskan cookie sesi Laravel"],
   ["src/lib/backend/server.js", /auth\s*=\s*true/, "Helper backend harus mendukung akses publik tanpa meneruskan token portal"],
   ["src/proxy.js", /wajo_portal_token/, "Penjaga rute portal harus memakai cookie token Laravel"],
   ["src/app/robots.js", /disallow:\s*\[[^\]]*\"\/portal\"[^\]]*\"\/portal\/\"/, "Kebijakan robots harus mengecualikan rute administrasi portal"],
   ["src/components/source-upload-form.jsx", /X-Upload-Token/, "Unggahan langsung harus memakai token kapabilitas Laravel berumur pendek"],
-  ["backend/app/Jobs/ProcessDatasetConversion.php", /assertJsonComplexityBounds|JSON_THROW_ON_ERROR/, "Conversion worker must reject malformed or overly complex JSON"],
-  ["backend/app/Jobs/ProcessDatasetConversion.php", /hash_file\('sha256'/, "Conversion worker must verify the source checksum"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /assertJsonComplexityBounds|JSON_THROW_ON_ERROR/, "Worker konversi harus menolak JSON rusak atau terlalu kompleks"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /hash_file\('sha256'/, "Worker konversi harus memverifikasi checksum berkas sumber"],
   ["backend/app/Services/DatasetWorkflowService.php", /processed_resource_required/, "Publikasi membutuhkan resource yang berhasil diproses"],
-  ["backend/app/Services/DatasetWorkflowService.php", /candidateMetadata[\s\S]*Lengkapi sebelum pemeriksaan/, "Review must validate publication-critical metadata against the exact candidate version snapshot"],
-  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /Draf yang dapat ditelusuri harus mudah dibuat[\s\S]*'organization_id' => \['required'/, "Pembuatan draf hanya mewajibkan judul dan organisasi pemilik"],
+  ["backend/app/Services/DatasetWorkflowService.php", /candidateMetadata[\s\S]*Lengkapi sebelum pemeriksaan/, "Pemeriksaan harus memvalidasi metadata penting pada snapshot versi yang diajukan"],
+  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /Draf yang dapat ditelusuri harus mudah dibuat[\s\S]*'organization_id' => \['required'/, "Pembuatan draf hanya mewajibkan judul dan organisasi pengampu"],
   ["backend/app/Http/Middleware/RequireSameOriginForMutations.php", /Origin|Referer/, "Permintaan API yang mengubah data harus memeriksa origin sumber"],
-  ["backend/app/Console/Commands/ImportLegacySupabase.php", /LEGACY_SUPABASE_DATABASE_URL/, "Legacy import must be an explicit operation against a separate source database"],
-  ["backend/app/Console/Commands/ImportLegacySupabase.php", /dry-run/, "Legacy import must support a dry run"],
-  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /hash_equals|token_hash/, "Binary upload must use an expiring, hashed capability token"],
+  ["backend/app/Console/Commands/ImportLegacySupabase.php", /LEGACY_SUPABASE_DATABASE_URL/, "Impor legacy harus dijalankan secara eksplisit dari basis data sumber terpisah"],
+  ["backend/app/Console/Commands/ImportLegacySupabase.php", /dry-run/, "Impor legacy harus menyediakan mode simulasi (dry-run)"],
+  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /hash_equals|token_hash/, "Unggahan biner harus memakai token kapabilitas yang di-hash dan kedaluwarsa"],
   ["backend/app/Http/Controllers/Api/PublicDataController.php", /is_public/, "API publik harus mengecualikan resource privat"],
   ["backend/app/Http/Controllers/Api/PublicDataController.php", /where\('dataset_resources\.is_source', false\)/, "API publik tidak boleh mengekspos berkas sumber unggahan"],
-  ["backend/app/Services/AccessService.php", /function organizationIdsWithPermission[\s\S]*hasPermission\(\$user, \$permissionCode\)/, "Authorization scope must distinguish global permission from no organization access"],
-  ["backend/database/migrations/2026_10_26_000004_enforce_membership_scope_uniqueness.php", /membership_user_scope_role_strict_unique/, "Global memberships must be unique despite nullable organization IDs"],
-  ["backend/app/Console/Commands/ImportLegacySupabase.php", /'dataset_versions'[\s\S]*'dataset_resources'[\s\S]*'sdi_standard_registry'[\s\S]*'reference_code_systems'[\s\S]*'dataset_sdi_metadata'/, "Legacy importer must load FK parents before dependent dataset and SDI rows"],
-  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /Indikator yang sedang ditinjau atau telah diarsipkan tidak dapat diedit langsung/, "Indicator edits must not mutate records in review or archived state"],
-  ["src/app/portal/login/actions.js", /payload\?\.data\?\.expires_at[\s\S]*Math\.floor\(\(tokenExpiresAt - Date\.now\(\)\) \/ 1000\)/, "Frontend auth cookie lifetime must follow the Laravel token expiry"],
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /whereNotNull\('category'\)->where\('category', '<>', ''\)/, "Category facets must exclude null and empty categories using a valid SQL predicate"],
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /whereColumn\('dataset_resources\.dataset_version', 'd\.current_version'\)/, "Public dataset responses must eager-load only current-version resources to avoid historical resource overfetch"],
-  ["backend/app/Http/Controllers/Api/PortalSdiController.php", /currentPublicResourcesFor[\s\S]*currentSdiMetadataFor/, "SDI exports must select only current-version resources and metadata in bounded queries"],
-  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /indicator\.observation_create[\s\S]*DB::transaction/, "Indicator observation creation and audit must be committed atomically"],
-  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /if \(\$action === 'publish' \|\| \(\$action === 'archive' && \$wasPublic\)\)\s*\{\s*\$this->catalogRevision->bump\(\);/, "Revisi katalog indikator hanya berubah ketika visibilitas publik berubah"],
-  ["backend/app/Jobs/ProcessDatasetConversion.php", /assertOutputSize\('csv'[\s\S]*assertOutputSize\('geojson'/, "Conversion must bound each output before building subsequent artifacts"],
-  ["backend/app/Jobs/ProcessDatasetConversion.php", /conversion_output_write_failed/, "Conversion must check object-storage writes rather than ignoring failures"],
-  ["backend/app/Rules/MaxPasswordBytes.php", /strlen\(\$value\) > \$this->maxBytes/, "Bcrypt passwords must be limited by bytes, not Unicode character count"],
-  ["backend/config/hashing.php", /'limit' => 72/, "Bcrypt byte limit must be explicit in application hashing config"],
-  ["backend/app/Providers/AppServiceProvider.php", /RateLimiter::for\('portal-user'[\s\S]*user:/, "Authenticated portal routes need per-user throttling in addition to IP throttling"],
-  ["deploy/edge-nginx.conf", /map \$http_cf_connecting_ip \$client_real_ip[\s\S]*limit_conn per_ip_conn 20/, "Proxy edge must key abuse limits by real visitor IP and cap concurrent connections"],
-  ["backend/.env.example", /PRIVATE_STORAGE_PATH/, "Uploaded source files must use private storage by default"],
-  ["backend/config/filesystems.php", /PRIVATE_STORAGE_PREFIX/, "S3 object storage must not inherit local filesystem paths as key prefixes"],
-  ["docker-compose.yml", /database-data:[\s\S]*app-storage:/, "The full production stack must persist MariaDB and file storage in named volumes"],
-  ["docker-compose.yml", /cloudflared:[\s\S]*profiles:\s*\[tunnel\]/, "Cloudflare Tunnel must remain an optional profile, not a requirement for standard deployments"],
-  ["deploy/edge-nginx.conf", /limit_req_zone[\s\S]*api_auth[\s\S]*limit_req_status 429/, "Edge proxy must enforce per-IP rate limits for API and authentication traffic"],
-  ["src/app/styles/admin-console.css", /prefers-reduced-motion/, "Admin console must respect reduced-motion accessibility preferences"],
-  ["src/app/styles/admin-design-system.css", /portal-page-heading/, "Admin pages must use the shared page-heading styles"],
-  ["src/app/styles/admin-design-system.css", /portal-mobile-navigation-panel/, "Admin pages must use the responsive navigation styles"],
-  ["src/components/portal-navigation.jsx", /item\.roles\.some/, "Admin navigation must hide menu items outside the active account roles"],
-  ["src/components/portal-shell.jsx", /portal-topbar sticky top-0[\s\S]*lg:sticky lg:top-\[100px\]/, "Admin shell and sidebar must remain persistent while navigating desktop pages"],
-  ["src/components/admin/dataset-create-form.jsx", /Judul dataset[\s\S]*required[\s\S]*organization_id[\s\S]*Lengkapi informasi data[\s\S]*opsional saat membuat draf/, "Dataset creation should keep the minimum draft form short and progressive"],
-  ["docker-compose.yml", /NEXT_PUBLIC_SITE_URL:[\s\S]*?NEXT_PUBLIC_GEOPORTAL_URL/, "Next.js public configuration must be passed as Docker build arguments"],
-  ["Dockerfile", /ARG NEXT_PUBLIC_SITE_URL[\s\S]*ENV BACKEND_API_URL=\$\{BACKEND_API_URL\}[\s\S]*NEXT_PUBLIC_SITE_URL=\$\{NEXT_PUBLIC_SITE_URL\}/, "NEXT_PUBLIC settings must be available when Next.js builds static/server bundles"],
-  ["backend/routes/api.php", /Route::get\('\/openapi\.yaml'/, "Laravel must serve OpenAPI YAML"],
-  ["src/components/dataset-resource-preview.jsx", /useQuery\(/, "Public paginated previews must use React Query cache and cancellation"],
-  ["src/components/dataset-resource-preview.jsx", /row\.row \?\? row\.values/, "Public preview tables must read the canonical Laravel row payload while tolerating the former shape"],
-  ["src/components/dataset-resource-preview.jsx", /typeof column === "string"/, "Public preview tables must normalize both string and object column schemas"],
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /where\('resource_id', \$resourceId\)->count\(\)/, "Public preview pagination must count stored preview rows instead of original rows"],  ["backend/app/Http/Controllers/Api/PublicDataController.php", /DB::table\('organizations'\)->where\('is_active', true\)->count\(\)/, "Homepage active-organization total must match the public organization directory"],
+  ["backend/app/Services/AccessService.php", /function organizationIdsWithPermission[\s\S]*hasPermission\(\$user, \$permissionCode\)/, "Cakupan izin harus membedakan izin global dari ketiadaan akses organisasi"],
+  ["backend/database/migrations/2026_10_26_000004_enforce_membership_scope_uniqueness.php", /membership_user_scope_role_strict_unique/, "Membership global harus unik meskipun organization_id bernilai NULL"],
+  ["backend/app/Console/Commands/ImportLegacySupabase.php", /'dataset_versions'[\s\S]*'dataset_resources'[\s\S]*'sdi_standard_registry'[\s\S]*'reference_code_systems'[\s\S]*'dataset_sdi_metadata'/, "Impor legacy harus memuat induk foreign key sebelum data yang bergantung padanya"],
+  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /Indikator yang sedang ditinjau atau telah diarsipkan tidak dapat diedit langsung/, "Indikator yang ditinjau atau diarsipkan tidak boleh diedit langsung"],
+  ["src/app/portal/login/actions.js", /payload\?\.data\?\.expires_at[\s\S]*Math\.floor\(\(tokenExpiresAt - Date\.now\(\)\) \/ 1000\)/, "Masa berlaku cookie frontend harus mengikuti kedaluwarsa token Laravel"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /whereNotNull\('category'\)->where\('category', '<>', ''\)/, "Filter kategori harus mengecualikan kategori kosong dengan kondisi SQL yang valid"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /whereColumn\('dataset_resources\.dataset_version', 'd\.current_version'\)/, "Respons publik hanya boleh memuat resource versi aktif"],
+  ["backend/app/Http/Controllers/Api/PortalSdiController.php", /currentPublicResourcesFor[\s\S]*currentSdiMetadataFor/, "Ekspor SDI hanya boleh mengambil resource dan metadata versi aktif dengan query terbatas"],
+  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /indicator\.observation_create[\s\S]*DB::transaction/, "Pembuatan observasi indikator dan audit harus tersimpan secara atomik"],
+  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /catalogRevision->bump\s*\(/, "Perubahan status indikator harus memperbarui revisi katalog melalui layanan khusus; kapan revisi berubah diuji oleh PHPUnit"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /use App\\Services\\DatasetPreviewBudget;/, "Worker konversi harus memakai pembatas ukuran pratinjau yang diuji langsung"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /shouldFlushBatch\(count\(\$batch\), \$batchBytes, \$estimatedBytes\)/, "Worker harus membatasi batch pratinjau berdasarkan jumlah baris dan ukuran byte"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /preview_enabled' => false/, "Jika proyeksi terlalu besar, pratinjau dimatikan tanpa menghapus berkas unduhan"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /assertOutputSize\('csv'[\s\S]*assertOutputSize\('geojson'/, "Konversi harus membatasi ukuran tiap keluaran sebelum membuat artefak berikutnya"],
+  ["backend/app/Jobs/ProcessDatasetConversion.php", /conversion_output_write_failed/, "Konversi harus memeriksa kegagalan penulisan penyimpanan objek"],
+  ["backend/app/Rules/MaxPasswordBytes.php", /strlen\(\$value\) > \$this->maxBytes/, "Kata sandi bcrypt harus dibatasi berdasarkan byte, bukan jumlah karakter Unicode"],
+  ["backend/config/hashing.php", /'limit' => 72/, "Batas byte bcrypt harus dinyatakan dalam konfigurasi hash aplikasi"],
+  ["backend/app/Providers/AppServiceProvider.php", /RateLimiter::for\('portal-user'[\s\S]*user:/, "Rute portal terautentikasi memerlukan pembatasan per pengguna selain per IP"],
+  ["deploy/edge-nginx.conf", /map \$http_cf_connecting_ip \$client_real_ip[\s\S]*limit_conn per_ip_conn 20/, "Edge proxy harus membatasi trafik berdasarkan IP pengunjung dan jumlah koneksi bersamaan"],
+  ["backend/.env.example", /PRIVATE_STORAGE_PATH/, "Berkas sumber yang diunggah harus disimpan secara privat"],
+  ["backend/config/filesystems.php", /PRIVATE_STORAGE_PREFIX/, "Object storage S3 tidak boleh memakai path filesystem lokal sebagai prefix objek"],
+  ["docker-compose.yml", /database-data:[\s\S]*app-storage:/, "Stack produksi harus menyimpan database dan berkas pada volume bernama"],
+  ["docker-compose.yml", /cloudflared:[\s\S]*profiles:\s*\[tunnel\]/, "Cloudflare Tunnel harus opsional, bukan syarat deployment standar"],
+  ["deploy/edge-nginx.conf", /limit_req_zone[\s\S]*api_auth[\s\S]*limit_req_status 429/, "Edge proxy harus membatasi trafik API dan autentikasi per IP"],
+  ["src/app/styles/admin-console.css", /prefers-reduced-motion/, "Konsol admin harus menghormati preferensi aksesibilitas reduced motion"],
+  ["src/app/styles/admin-design-system.css", /portal-page-heading/, "Halaman admin harus memakai gaya judul halaman bersama"],
+  ["src/app/styles/admin-design-system.css", /portal-mobile-navigation-panel/, "Halaman admin harus memakai gaya navigasi responsif"],
+  ["src/components/portal-navigation.jsx", /item\.roles\.some/, "Navigasi admin harus menyembunyikan menu di luar peran akun aktif"],
+  ["src/components/portal-shell.jsx", /portal-topbar sticky top-0[\s\S]*lg:sticky lg:top-\[100px\]/, "Shell dan sidebar admin harus tetap persisten saat navigasi desktop"],
+  ["src/components/admin/dataset-create-form.jsx", /Judul dataset[\s\S]*required[\s\S]*organization_id[\s\S]*Lengkapi informasi data[\s\S]*opsional saat membuat draf/, "Form draf dataset harus ringkas dan dapat dilengkapi bertahap"],
+  ["docker-compose.yml", /NEXT_PUBLIC_SITE_URL:[\s\S]*?NEXT_PUBLIC_GEOPORTAL_URL/, "Konfigurasi publik Next.js harus dikirim sebagai argumen build Docker"],
+  ["Dockerfile", /ARG NEXT_PUBLIC_SITE_URL[\s\S]*ENV BACKEND_API_URL=\$\{BACKEND_API_URL\}[\s\S]*NEXT_PUBLIC_SITE_URL=\$\{NEXT_PUBLIC_SITE_URL\}/, "Konfigurasi NEXT_PUBLIC harus tersedia saat build Next.js"],
+  ["backend/routes/api.php", /Route::get\('\/openapi\.yaml'/, "Laravel harus menyajikan OpenAPI YAML"],
+  ["src/components/dataset-resource-preview.jsx", /useQuery\(/, "Pratinjau publik berpaginasi harus memakai cache dan pembatalan React Query"],
+  ["src/components/dataset-resource-preview.jsx", /row\.row \?\? row\.values/, "Tabel pratinjau harus membaca payload baris Laravel dan tetap menerima bentuk lama"],
+  ["src/components/dataset-resource-preview.jsx", /typeof column === "string"/, "Tabel pratinjau harus menormalisasi kolom berbentuk string maupun objek"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /where\('resource_id', \$resourceId\)->count\(\)/, "Paginasi pratinjau harus menghitung baris yang benar-benar tersimpan"],  ["backend/app/Http/Controllers/Api/PublicDataController.php", /DB::table\('organizations'\)->where\('is_active', true\)->count\(\)/, "Jumlah organisasi aktif di beranda harus sama dengan direktori publik"],
 
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /page_out_of_range/, "Public preview API must reject page numbers outside its stored preview range"],
-  ["src/app/(public)/api-data/page.jsx", /organizations\/\{slug\}/, "Public API docs must include direct organization detail lookup"],
-  ["src/app/(public)/api-data/page.jsx", /api\/openapi\.yaml/, "Public API docs must describe JSON and YAML OpenAPI endpoints"],
-  ["src/lib/data/organizations.js", /rawLastPage[\s\S]*maxPages/, "Public organization directory must follow pagination instead of silently stopping at 100 entries"],
-  ["src/app/sitemap.js", /getSitemapIndicators[\s\S]*statistik\/\$\{item\.slug\}/, "Public indicator detail pages must be included in the sitemap"],
-  ["src/app/(public)/statistik/[slug]/page.jsx", /serializeJsonLd[\s\S]*GovernmentOrganization/, "Public indicator details must expose safe structured metadata"],
-  ["src/app/layout.jsx", /wajo-hero-panorama\.webp/, "Root metadata must configure a social preview image"],
-  ["src/components/portal-query-cache-guard.jsx", /removeQueries/, "Private query cache must be cleared on portal logout/navigation to login"],
-  ["src/lib/backend/compat-server.js", /requestedLimit > 500/, "Legacy server components must not silently truncate requests over the 500-row API page size"],
-  ["src/lib/backend/compat-server.js", /indicatorId \? `\/api\/v1\/portal\/indicators\/\$\{encodeURIComponent\(indicatorId\)\}`/, "Indicator ID lookups must use the dedicated detail endpoint"],
-  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /function show\(Request \$request, string \$id\)/, "Portal indicators must support an authorized detail endpoint"],
-  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /include_sdi_metadata[\s\S]*dataset_sdi_metadata/, "SDI readiness screen must receive metadata and referenced registries from the backend"],
-  ["backend/database/migrations/2026_10_01_000003_create_indicator_sdi_audit_tables.php", /Schema::create\('reference_code_entries'[\s\S]*boolean\('is_active'\)/, "Reference code entries must retain the legacy activation state"],
-  ["backend/database/migrations/2026_10_26_000001_add_legacy_compatibility_columns.php", /reviewed_at[\s\S]*is_active/, "Existing MariaDB installations must receive additive legacy compatibility columns"],
-  ["src/components/source-upload-form.jsx", /invalidateQueries\(\{ queryKey: portalQueryKeys\.datasets\(\) \}\)/, "Upload must invalidate cached dataset lists as well as detail"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /page_out_of_range/, "API pratinjau harus menolak nomor halaman di luar jangkauan"],
+  ["src/app/(public)/api-data/page.jsx", /organizations\/\{slug\}/, "Dokumentasi API publik harus mencantumkan endpoint detail organisasi"],
+  ["src/app/(public)/api-data/page.jsx", /api\/openapi\.yaml/, "Dokumentasi API publik harus menjelaskan endpoint OpenAPI JSON dan YAML"],
+  ["src/lib/data/organizations.js", /rawLastPage[\s\S]*maxPages/, "Direktori organisasi harus mengikuti paginasi tanpa berhenti diam-diam pada 100 data"],
+  ["src/app/sitemap.js", /getSitemapIndicators[\s\S]*statistik\/\$\{item\.slug\}/, "Halaman detail indikator publik harus masuk sitemap"],
+  ["src/app/(public)/statistik/[slug]/page.jsx", /serializeJsonLd[\s\S]*GovernmentOrganization/, "Detail indikator publik harus memuat metadata terstruktur yang aman"],
+  ["src/app/layout.jsx", /wajo-hero-panorama\.webp/, "Metadata root harus mengatur gambar pratinjau sosial"],
+  ["src/components/portal-query-cache-guard.jsx", /removeQueries/, "Cache query privat harus dibersihkan saat logout atau kembali ke login"],
+  ["src/lib/backend/compat-server.js", /requestedLimit > 500/, "Komponen server legacy tidak boleh diam-diam memotong permintaan di atas 500 baris"],
+  ["src/lib/backend/compat-server.js", /indicatorId \? `\/api\/v1\/portal\/indicators\/\$\{encodeURIComponent\(indicatorId\)\}`/, "Pencarian indikator berdasarkan ID harus memakai endpoint detail khusus"],
+  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /function show\(Request \$request, string \$id\)/, "Indikator portal harus memiliki endpoint detail yang terotorisasi"],
+  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /include_sdi_metadata[\s\S]*dataset_sdi_metadata/, "Halaman kesiapan SDI harus menerima metadata dan registri terkait dari backend"],
+  ["backend/database/migrations/2026_10_01_000003_create_indicator_sdi_audit_tables.php", /Schema::create\('reference_code_entries'[\s\S]*boolean\('is_active'\)/, "Entri kode referensi harus mempertahankan status aktif data legacy"],
+  ["backend/database/migrations/2026_10_26_000001_add_legacy_compatibility_columns.php", /reviewed_at[\s\S]*is_active/, "Instalasi MariaDB lama harus menerima kolom kompatibilitas tambahan"],
+  ["src/components/source-upload-form.jsx", /invalidateQueries\(\{ queryKey: portalQueryKeys\.datasets\(\) \}\)/, "Unggahan harus membatalkan cache daftar dataset dan detail"],
 ];
 for (const [file, pattern, message] of checks) {
   const text = await readFile(path.join(root, file), "utf8").catch(() => "");
@@ -141,35 +149,35 @@ for (const [file, pattern, message] of checks) {
 const routesSource = await readFile(path.join(root, "backend/routes/api.php"), "utf8");
 const canonicalRoutesSource = routesSource.split("// Canonical versioned API aliases.")[1] || "";
 if (!/Route::get\('\/indicators\/\{id\}', \[PortalIndicatorController::class, 'show'\]\)/.test(canonicalRoutesSource)) {
-  errors.push("The documented indicator detail endpoint must be registered in the canonical v1 route group");
+  errors.push("Endpoint detail indikator harus terdaftar pada grup rute kanonis v1");
 }
 if (!/Route::post\('\/indicators\/\{id\}\/workflow', \[PortalIndicatorController::class, 'action'\]\)/.test(canonicalRoutesSource)) {
-  errors.push("Indicator workflow actions must have a semantic canonical endpoint");
+  errors.push("Aksi alur indikator harus memakai endpoint kanonis yang jelas");
 }
 if (!/Route::patch\('\/indicators\/\{id\}\/observations\/\{observationId\}', \[PortalIndicatorController::class, 'publishObservation'\]\)/.test(canonicalRoutesSource)) {
-  errors.push("Observation publication must address the specific observation resource");
+  errors.push("Publikasi observasi harus menunjuk resource observasi tertentu");
 }
 
 const manifest = JSON.parse(await readFile(path.join(root, "backend/openapi/openapi.json"), "utf8"));
 if (manifest.openapi !== "3.1.0") errors.push("Manifest OpenAPI harus tetap menggunakan OpenAPI 3.1.0");
-if (manifest.paths["/api/v1/portal/datasets"]?.post?.requestBody?.content?.["application/json"]?.schema?.$ref !== "#/components/schemas/DatasetDraftCreateRequest") errors.push("Draft create endpoint must publish its lightweight request contract");
-if (JSON.stringify(manifest.components?.schemas?.DatasetDraftCreateRequest?.required || []) !== JSON.stringify(["title", "organization_id"])) errors.push("Draft create schema must require only title and organization");
-if (!manifest.paths["/api/v1/organizations/{slug}"]?.get) errors.push("OpenAPI contract is missing public organization detail");
+if (manifest.paths["/api/v1/portal/datasets"]?.post?.requestBody?.content?.["application/json"]?.schema?.$ref !== "#/components/schemas/DatasetDraftCreateRequest") errors.push("Endpoint pembuatan draf harus menerbitkan kontrak request yang ringkas");
+if (JSON.stringify(manifest.components?.schemas?.DatasetDraftCreateRequest?.required || []) !== JSON.stringify(["title", "organization_id"])) errors.push("Skema pembuatan draf hanya boleh mewajibkan judul dan organisasi");
+if (!manifest.paths["/api/v1/organizations/{slug}"]?.get) errors.push("Kontrak OpenAPI belum memuat detail organisasi publik");
 for (const path of ["/api/openapi", "/api/openapi.json", "/api/openapi.yaml"]) {
-  if (!manifest.paths[path]?.get) errors.push(`OpenAPI document endpoint is missing from specification: ${path}`);
+  if (!manifest.paths[path]?.get) errors.push(`Endpoint dokumen OpenAPI belum ada di spesifikasi: ${path}`);
 }
-if (!manifest.paths["/api/v1/datasets/{slug}/resources/{resourceId}/rows"]?.get?.responses?.["400"]) errors.push("OpenAPI preview endpoint must document out-of-range pages");
+if (!manifest.paths["/api/v1/datasets/{slug}/resources/{resourceId}/rows"]?.get?.responses?.["400"]) errors.push("Endpoint pratinjau OpenAPI harus mendokumentasikan halaman di luar jangkauan");
 
 for (const [route, expectedParams] of Object.entries({
   "/api/v1/portal/datasets": ["q", "statuses", "organization_ids", "created_from", "created_to", "include_sdi_metadata", "limit", "offset", "sort"],
   "/api/v1/portal/indicators": ["q", "statuses", "organization_ids", "limit", "offset", "sort"],
 })) {
   const queryParameters = new Set((manifest.paths[route]?.get?.parameters || []).map((parameter) => parameter.name));
-  for (const name of expectedParams) if (!queryParameters.has(name)) errors.push(`OpenAPI list contract is missing ${name}: ${route}`);
+  for (const name of expectedParams) if (!queryParameters.has(name)) errors.push(`Kontrak daftar OpenAPI belum memuat parameter ${name}: ${route}`);
 }
-if (!manifest.components?.schemas?.PaginatedListResponse?.properties?.meta?.properties?.total) errors.push("OpenAPI pagination contract must define meta.total");
-if (manifest.paths["/api/v1/portal/indicators/{id}"]?.post?.deprecated !== true) errors.push("Legacy indicator workflow alias must be deprecated in OpenAPI");
-if (manifest.paths["/api/v1/portal/indicators/{id}/observations"]?.patch?.deprecated !== true) errors.push("Legacy observation publication alias must be deprecated in OpenAPI");
+if (!manifest.components?.schemas?.PaginatedListResponse?.properties?.meta?.properties?.total) errors.push("Kontrak paginasi OpenAPI harus mendefinisikan meta.total");
+if (manifest.paths["/api/v1/portal/indicators/{id}"]?.post?.deprecated !== true) errors.push("Alias alur indikator lama harus ditandai deprecated di OpenAPI");
+if (manifest.paths["/api/v1/portal/indicators/{id}/observations"]?.patch?.deprecated !== true) errors.push("Alias publikasi observasi lama harus ditandai deprecated di OpenAPI");
 for (const endpoint of [
   "/api/v1/datasets",
   "/api/v1/portal/datasets/{id}/uploads",
@@ -181,7 +189,7 @@ for (const endpoint of [
   "/api/v1/portal/indicators/{id}/workflow",
   "/api/v1/portal/indicators/{id}/observations/{observationId}",
 ]) {
-  if (!manifest.paths[endpoint]) errors.push(`OpenAPI contract is missing canonical endpoint: ${endpoint}`);
+  if (!manifest.paths[endpoint]) errors.push(`Kontrak OpenAPI belum memuat endpoint kanonis: ${endpoint}`);
 }
 const operationIds = Object.entries(manifest.paths).flatMap(([route, methods]) => Object.entries(methods)
   .filter(([method]) => ["get", "post", "put", "patch", "delete"].includes(method))
@@ -230,4 +238,4 @@ if (errors.length) {
   console.error("Pemeriksaan proyek gagal:\n" + errors.join("\n"));
   process.exit(1);
 }
-console.log("Pemeriksaan proyek lulus: dokumentasi arsitektur, katalog akses, kontrak Next.js/Laravel, dan tidak ada impor SDK Supabase aktif.");
+console.log("Pemeriksaan proyek lulus: dokumentasi inti tersedia, katalog akses dan kontrak Next.js/Laravel konsisten, serta tidak ada impor SDK Supabase aktif.");

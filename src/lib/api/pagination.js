@@ -6,7 +6,7 @@ export function parseBoundedPositiveInteger(value, fallback, maximum) {
   return Math.min(parsed, maximum);
 }
 
-/** Restrict search text before composing PostgREST filter expressions. */
+/** Normalisasi teks pencarian publik sebelum dikirim ke API Laravel. */
 export function normalizePublicSearch(value, maximumLength = 120) {
   if (typeof value !== "string") return "";
   return value

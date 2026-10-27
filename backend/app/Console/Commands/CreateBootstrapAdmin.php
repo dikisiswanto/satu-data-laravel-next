@@ -11,40 +11,40 @@ use Illuminate\Support\Str;
 
 class CreateBootstrapAdmin extends Command
 {
-    protected $signature = 'app:create-admin {email : Email for the first administrator} {--name= : Display name}';
+    protected $signature = 'app:create-admin {email : Alamat email administrator pertama} {--name= : Nama tampilan}';
 
-    protected $description = 'Create the first global super administrator for a fresh installation';
+    protected $description = 'Membuat administrator super global pertama pada instalasi baru';
 
     public function handle(): int
     {
         if (OrganizationMembership::query()->whereNull('organization_id')->where('role', 'super_admin')->where('is_active', true)
             ->whereHas('user', fn ($query) => $query->where('is_active', true))->exists()) {
-            $this->components->error('A super administrator already exists. This bootstrap command is disabled after first setup.');
+            $this->components->error('Administrator super sudah tersedia. Perintah bootstrap dinonaktifkan setelah penyiapan pertama.');
 
             return self::FAILURE;
         }
 
         $email = mb_strtolower(trim((string) $this->argument('email')));
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->components->error('A valid email address is required.');
+            $this->components->error('Alamat email tidak valid.');
 
             return self::FAILURE;
         }
         if (User::query()->where('email', $email)->exists()) {
-            $this->components->error('That email already exists. Use the legacy data import or the portal invitation workflow.');
+            $this->components->error('Email tersebut sudah terdaftar. Gunakan impor data lama atau alur undangan portal.');
 
             return self::FAILURE;
         }
 
-        $name = trim((string) ($this->option('name') ?: $this->ask('Administrator display name', Str::before($email, '@'))));
-        $password = (string) $this->secret('Set a password (minimum 12 characters)');
-        $confirmation = (string) $this->secret('Confirm password');
+        $name = trim((string) ($this->option('name') ?: $this->ask('Nama tampilan administrator', Str::before($email, '@'))));
+        $password = (string) $this->secret('Buat kata sandi (minimal 12 karakter)');
+        $confirmation = (string) $this->secret('Konfirmasi kata sandi');
         if (mb_strlen($password) < 12 || strlen($password) > 72 || $password !== $confirmation || ! preg_match('/[a-z]/', $password) || ! preg_match('/[A-Z]/', $password) || ! preg_match('/[0-9]/', $password)) {
-            $this->components->error('Passwords must match, contain at least 12 characters (maximum 72 bytes with bcrypt), and include lowercase, uppercase, and a digit.');
+            $this->components->error('Kata sandi harus sama, minimal 12 karakter (maksimal 72 byte untuk bcrypt), serta memuat huruf kecil, huruf besar, dan angka.');
 
             return self::FAILURE;
         }
-        if (! $this->confirm('Create the first global super administrator?')) {
+        if (! $this->confirm('Buat administrator super global pertama?')) {
             return self::FAILURE;
         }
 
@@ -55,7 +55,7 @@ class CreateBootstrapAdmin extends Command
             DB::table('audit_logs')->insert(['actor_user_id' => $user->id, 'action' => 'account.bootstrap_admin_created', 'entity_type' => 'user', 'entity_id' => $user->id, 'organization_id' => null, 'outcome' => 'success', 'summary' => json_encode(['bootstrap' => true]), 'created_at' => now()]);
         });
 
-        $this->components->info('Administrator created. Store the credentials securely and remove any temporary deployment shell access.');
+        $this->components->info('Administrator berhasil dibuat. Simpan kredensial dengan aman dan cabut akses shell deployment sementara.');
 
         return self::SUCCESS;
     }

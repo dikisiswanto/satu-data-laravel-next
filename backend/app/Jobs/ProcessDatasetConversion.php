@@ -6,6 +6,7 @@ use App\Models\ConversionJob;
 use App\Models\Dataset;
 use App\Models\DatasetResource;
 use App\Services\AuditService;
+use App\Services\DatasetPreviewBudget;
 use Dompdf\Dompdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -649,20 +650,56 @@ class ProcessDatasetConversion implements ShouldQueue
 
     private function storePreviewRows(string $resourceId, array $rows, array $headers): void
     {
-        DB::table('dataset_resource_rows')->where('resource_id', $resourceId)->delete();
         $limit = min(count($rows), 100000);
-        for ($offset = 0; $offset < $limit; $offset += 500) {
-            $batch = [];
-            foreach (array_slice($rows, $offset, 500) as $index => $row) {
-                $data = [];
-                foreach ($headers as $header) {
-                    $data[$header] = $row[$header] ?? null;
-                }
-                $batch[] = ['resource_id' => $resourceId, 'row_number' => $offset + $index + 1, 'row_data' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_THROW_ON_ERROR)];
+        $budget = new DatasetPreviewBudget;
+        $projection = $budget->inspect($rows, $headers, $limit);
+
+        DB::table('dataset_resource_rows')->where('resource_id', $resourceId)->delete();
+        if (! $projection['available']) {
+            // Berkas CSV tetap dapat diunduh; hanya tabel pratinjau yang dimatikan.
+            DatasetResource::query()->whereKey($resourceId)->update(['preview_enabled' => false]);
+            Log::info('dataset_preview_disabled_by_size_budget', [
+                'resource_id' => $resourceId,
+                'reason' => $projection['reason'],
+                'estimated_bytes' => $projection['total_bytes'],
+            ]);
+
+            return;
+        }
+
+        DatasetResource::query()->whereKey($resourceId)->update(['preview_enabled' => true]);
+        $batch = [];
+        $batchBytes = 0;
+        $rowNumber = 0;
+        foreach ($rows as $row) {
+            if ($rowNumber >= $limit) {
+                break;
             }
-            if ($batch) {
+
+            $data = [];
+            foreach ($headers as $header) {
+                $data[$header] = $row[$header] ?? null;
+            }
+            $rowData = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_THROW_ON_ERROR);
+            $estimatedBytes = $projection['row_bytes'][$rowNumber];
+
+            if ($budget->shouldFlushBatch(count($batch), $batchBytes, $estimatedBytes)) {
                 DB::table('dataset_resource_rows')->insert($batch);
+                $batch = [];
+                $batchBytes = 0;
             }
+
+            $batch[] = [
+                'resource_id' => $resourceId,
+                'row_number' => $rowNumber + 1,
+                'row_data' => $rowData,
+            ];
+            $batchBytes += $estimatedBytes;
+            $rowNumber++;
+        }
+
+        if ($batch) {
+            DB::table('dataset_resource_rows')->insert($batch);
         }
     }
 }

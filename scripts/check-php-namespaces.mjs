@@ -18,6 +18,7 @@ function walk(dir) {
 walk(appRoot);
 walk(path.join(backend, "routes"));
 walk(path.join(backend, "tests"));
+walk(path.join(backend, "database"));
 
 const declarations = new Map();
 const contents = new Map();
@@ -39,7 +40,9 @@ for (const [file, source] of contents) {
   for (const match of (relative.startsWith(`backend${path.sep}routes${path.sep}`) ? source : "").matchAll(/\b([A-Za-z0-9_]+)::class\s*,\s*['"]([A-Za-z0-9_]+)['"]/g)) {
     const [className, method] = [match[1], match[2]];
     const declaration = [...declarations.entries()].find(([name]) => name.endsWith(`\\${className}`));
-    if (declaration && !new RegExp(`\\bfunction\\s+${method}\\s*\\(`).test(contents.get(declaration[1]))) {
+    if (!declaration) {
+      errors.push(`${relative}: controller pada rute tidak ditemukan: ${className}`);
+    } else if (!new RegExp(`\\bfunction\\s+${method}\\s*\\(`).test(contents.get(declaration[1]))) {
       errors.push(`${relative}: rute merujuk method yang tidak ditemukan: ${className}::${method}()`);
     }
   }
@@ -49,7 +52,7 @@ for (const [file, source] of contents) {
 for (const file of phpFiles.filter((candidate) => candidate.includes(`${path.sep}Http${path.sep}Controllers${path.sep}Api${path.sep}`))) {
   const source = contents.get(file);
   if (/\bextends\s+Controller\b/.test(source) && !declarations.has("App\\Http\\Controllers\\Controller")) {
-    errors.push(`${path.relative(root, file)}: App\\Http\\Controllers\\Controller is missing`);
+    errors.push(`${path.relative(root, file)}: kelas dasar App\\Http\\Controllers\\Controller tidak ditemukan`);
   }
 }
 
