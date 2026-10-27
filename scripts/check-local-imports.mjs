@@ -48,7 +48,7 @@ for (const file of files) {
     if (!specifier.startsWith(".") && !specifier.startsWith("@/")) continue;
     const target = await resolveLocalImport(file, specifier);
     if (!target) {
-      errors.push(`${path.relative(root, file)}: unresolved local import ${specifier}`);
+      errors.push(`${path.relative(root, file)}: import lokal tidak ditemukan: ${specifier}`);
       continue;
     }
     if (target.endsWith(".css") || target.endsWith(".scss")) continue;
@@ -59,7 +59,7 @@ for (const file of files) {
       .filter(Boolean);
     for (const name of names) {
       if (!hasNamedExport(targetSource, name)) {
-        errors.push(`${path.relative(root, file)}: named export ${name} not found in ${path.relative(root, target)}`);
+        errors.push(`${path.relative(root, file)}: ekspor bernama ${name} tidak ditemukan di ${path.relative(root, target)}`);
       }
     }
   }
@@ -69,4 +69,4 @@ if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);
 }
-console.log(`Local import checks passed (${files.length} JS/JSX modules).`);
+console.log(`Pemeriksaan import lokal lulus (${files.length} modul JS/JSX).`);

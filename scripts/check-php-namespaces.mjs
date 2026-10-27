@@ -34,13 +34,13 @@ const errors = [];
 for (const [file, source] of contents) {
   const relative = path.relative(root, file);
   for (const match of source.matchAll(/^\s*use\s+(App\\[A-Za-z0-9_\\]+)(?:\s+as\s+\w+)?\s*;/gm)) {
-    if (!declarations.has(match[1])) errors.push(`${relative}: unresolved App import ${match[1]}`);
+    if (!declarations.has(match[1])) errors.push(`${relative}: import App tidak ditemukan: ${match[1]}`);
   }
   for (const match of (relative.startsWith(`backend${path.sep}routes${path.sep}`) ? source : "").matchAll(/\b([A-Za-z0-9_]+)::class\s*,\s*['"]([A-Za-z0-9_]+)['"]/g)) {
     const [className, method] = [match[1], match[2]];
     const declaration = [...declarations.entries()].find(([name]) => name.endsWith(`\\${className}`));
     if (declaration && !new RegExp(`\\bfunction\\s+${method}\\s*\\(`).test(contents.get(declaration[1]))) {
-      errors.push(`${relative}: route references missing ${className}::${method}()`);
+      errors.push(`${relative}: rute merujuk method yang tidak ditemukan: ${className}::${method}()`);
     }
   }
 }
@@ -54,7 +54,7 @@ for (const file of phpFiles.filter((candidate) => candidate.includes(`${path.sep
 }
 
 if (errors.length) {
-  console.error(`PHP namespace checks failed (${errors.length}):\n- ${errors.join("\n- ")}`);
+  console.error(`Pemeriksaan namespace PHP gagal (${errors.length}):\n- ${errors.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`PHP namespace checks passed (${phpFiles.length} PHP files; App imports and route method references resolved).`);
+console.log(`Pemeriksaan namespace PHP lulus (${phpFiles.length} berkas PHP; import App dan referensi method rute terverifikasi).`);

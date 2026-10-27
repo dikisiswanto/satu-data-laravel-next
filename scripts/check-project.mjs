@@ -8,13 +8,13 @@ async function walk(dir) {
     if (["node_modules", ".next", ".git"].includes(entry.name)) continue;
     const file = path.join(dir, entry.name);
     if (entry.isDirectory()) await walk(file);
-    else if (/\.(ts|tsx)$/.test(entry.name)) errors.push(`TypeScript file is not allowed: ${path.relative(root, file)}`);
+    else if (/\.(ts|tsx)$/.test(entry.name)) errors.push(`Berkas TypeScript tidak digunakan dalam proyek ini: ${path.relative(root, file)}`);
   }
 }
 await walk(path.join(root, "src"));
 const pkg = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
-if (pkg.packageManager !== "npm@10.9.2") errors.push("packageManager must be npm@10.9.2");
-if (!pkg.engines.node.includes("22.16.0") || !pkg.engines.node.includes("<25")) errors.push("Node engine must support Node 22 and 24 only");
+if (pkg.packageManager !== "npm@10.9.2") errors.push("packageManager harus npm@10.9.2");
+if (!pkg.engines.node.includes("22.16.0") || !pkg.engines.node.includes("<25")) errors.push("Versi Node.js yang didukung adalah 22 dan 24");
 
 for (const required of [
   "src/app/(public)/dataset/[slug]/page.jsx",
@@ -61,27 +61,27 @@ for (const required of [
   "backend/tests/Feature/AuthorizationCatalogTest.php",
 ]) {
   try { await stat(path.join(root, required)); }
-  catch { errors.push(`Missing required project file: ${required}`); }
+  catch { errors.push(`Berkas proyek wajib tidak ditemukan: ${required}`); }
 }
 
 const checks = [
-  ["next.config.mjs", /source:\s*"\/api\/:path\*"[\s\S]*destination:\s*`\$\{backend\}\/api\/:path\*`/, "Next.js API routes must proxy to Laravel"],
-  ["src/lib/backend/server.js", /wajo_portal_token/, "Next.js server requests must forward the Laravel session cookie"],
-  ["src/lib/backend/server.js", /auth\s*=\s*true/, "Backend helper must support anonymous/public calls without forwarding portal tokens"],
-  ["src/proxy.js", /wajo_portal_token/, "Portal route guard must use the Laravel token cookie"],
-  ["src/app/robots.js", /disallow:\s*\[[^\]]*\"\/portal\"[^\]]*\"\/portal\/\"/, "Robots policy must disallow portal administration routes"],
-  ["src/components/source-upload-form.jsx", /X-Upload-Token/, "Direct uploads must use the short-lived Laravel upload capability"],
+  ["next.config.mjs", /source:\s*"\/api\/:path\*"[\s\S]*destination:\s*`\$\{backend\}\/api\/:path\*`/, "Rute API Next.js harus diteruskan ke Laravel"],
+  ["src/lib/backend/server.js", /wajo_portal_token/, "Permintaan server Next.js harus meneruskan cookie sesi Laravel"],
+  ["src/lib/backend/server.js", /auth\s*=\s*true/, "Helper backend harus mendukung akses publik tanpa meneruskan token portal"],
+  ["src/proxy.js", /wajo_portal_token/, "Penjaga rute portal harus memakai cookie token Laravel"],
+  ["src/app/robots.js", /disallow:\s*\[[^\]]*\"\/portal\"[^\]]*\"\/portal\/\"/, "Kebijakan robots harus mengecualikan rute administrasi portal"],
+  ["src/components/source-upload-form.jsx", /X-Upload-Token/, "Unggahan langsung harus memakai token kapabilitas Laravel berumur pendek"],
   ["backend/app/Jobs/ProcessDatasetConversion.php", /assertJsonComplexityBounds|JSON_THROW_ON_ERROR/, "Conversion worker must reject malformed or overly complex JSON"],
   ["backend/app/Jobs/ProcessDatasetConversion.php", /hash_file\('sha256'/, "Conversion worker must verify the source checksum"],
-  ["backend/app/Services/DatasetWorkflowService.php", /processed_resource_required/, "Publishing requires a successfully processed resource"],
+  ["backend/app/Services/DatasetWorkflowService.php", /processed_resource_required/, "Publikasi membutuhkan resource yang berhasil diproses"],
   ["backend/app/Services/DatasetWorkflowService.php", /candidateMetadata[\s\S]*Lengkapi sebelum pemeriksaan/, "Review must validate publication-critical metadata against the exact candidate version snapshot"],
-  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /traceable draft[\s\S]*'organization_id' => \['required'/, "Draft creation should require only a title and owning organization"],
-  ["backend/app/Http/Middleware/RequireSameOriginForMutations.php", /Origin|Referer/, "Mutating API requests must check the source origin"],
+  ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /Draf yang dapat ditelusuri harus mudah dibuat[\s\S]*'organization_id' => \['required'/, "Pembuatan draf hanya mewajibkan judul dan organisasi pemilik"],
+  ["backend/app/Http/Middleware/RequireSameOriginForMutations.php", /Origin|Referer/, "Permintaan API yang mengubah data harus memeriksa origin sumber"],
   ["backend/app/Console/Commands/ImportLegacySupabase.php", /LEGACY_SUPABASE_DATABASE_URL/, "Legacy import must be an explicit operation against a separate source database"],
   ["backend/app/Console/Commands/ImportLegacySupabase.php", /dry-run/, "Legacy import must support a dry run"],
   ["backend/app/Http/Controllers/Api/PortalDatasetController.php", /hash_equals|token_hash/, "Binary upload must use an expiring, hashed capability token"],
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /is_public/, "Public resource APIs must exclude private resources"],
-  ["backend/app/Http/Controllers/Api/PublicDataController.php", /where\('dataset_resources\.is_source', false\)/, "Public APIs must never expose source-upload artifacts"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /is_public/, "API publik harus mengecualikan resource privat"],
+  ["backend/app/Http/Controllers/Api/PublicDataController.php", /where\('dataset_resources\.is_source', false\)/, "API publik tidak boleh mengekspos berkas sumber unggahan"],
   ["backend/app/Services/AccessService.php", /function organizationIdsWithPermission[\s\S]*hasPermission\(\$user, \$permissionCode\)/, "Authorization scope must distinguish global permission from no organization access"],
   ["backend/database/migrations/2026_10_26_000004_enforce_membership_scope_uniqueness.php", /membership_user_scope_role_strict_unique/, "Global memberships must be unique despite nullable organization IDs"],
   ["backend/app/Console/Commands/ImportLegacySupabase.php", /'dataset_versions'[\s\S]*'dataset_resources'[\s\S]*'sdi_standard_registry'[\s\S]*'reference_code_systems'[\s\S]*'dataset_sdi_metadata'/, "Legacy importer must load FK parents before dependent dataset and SDI rows"],
@@ -91,7 +91,7 @@ const checks = [
   ["backend/app/Http/Controllers/Api/PublicDataController.php", /whereColumn\('dataset_resources\.dataset_version', 'd\.current_version'\)/, "Public dataset responses must eager-load only current-version resources to avoid historical resource overfetch"],
   ["backend/app/Http/Controllers/Api/PortalSdiController.php", /currentPublicResourcesFor[\s\S]*currentSdiMetadataFor/, "SDI exports must select only current-version resources and metadata in bounded queries"],
   ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /indicator\.observation_create[\s\S]*DB::transaction/, "Indicator observation creation and audit must be committed atomically"],
-  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /if \(\$action === 'publish' \|\| \(\$action === 'archive' && \$wasPublic\)\) \$this->catalogRevision->bump\(\)/, "Indicator catalog revision should change only when public visibility changes"],
+  ["backend/app/Http/Controllers/Api/PortalIndicatorController.php", /if \(\$action === 'publish' \|\| \(\$action === 'archive' && \$wasPublic\)\)\s*\{\s*\$this->catalogRevision->bump\(\);/, "Revisi katalog indikator hanya berubah ketika visibilitas publik berubah"],
   ["backend/app/Jobs/ProcessDatasetConversion.php", /assertOutputSize\('csv'[\s\S]*assertOutputSize\('geojson'/, "Conversion must bound each output before building subsequent artifacts"],
   ["backend/app/Jobs/ProcessDatasetConversion.php", /conversion_output_write_failed/, "Conversion must check object-storage writes rather than ignoring failures"],
   ["backend/app/Rules/MaxPasswordBytes.php", /strlen\(\$value\) > \$this->maxBytes/, "Bcrypt passwords must be limited by bytes, not Unicode character count"],
@@ -151,7 +151,7 @@ if (!/Route::patch\('\/indicators\/\{id\}\/observations\/\{observationId\}', \[P
 }
 
 const manifest = JSON.parse(await readFile(path.join(root, "backend/openapi/openapi.json"), "utf8"));
-if (manifest.openapi !== "3.1.0") errors.push("OpenAPI manifest must remain OpenAPI 3.1.0");
+if (manifest.openapi !== "3.1.0") errors.push("Manifest OpenAPI harus tetap menggunakan OpenAPI 3.1.0");
 if (manifest.paths["/api/v1/portal/datasets"]?.post?.requestBody?.content?.["application/json"]?.schema?.$ref !== "#/components/schemas/DatasetDraftCreateRequest") errors.push("Draft create endpoint must publish its lightweight request contract");
 if (JSON.stringify(manifest.components?.schemas?.DatasetDraftCreateRequest?.required || []) !== JSON.stringify(["title", "organization_id"])) errors.push("Draft create schema must require only title and organization");
 if (!manifest.paths["/api/v1/organizations/{slug}"]?.get) errors.push("OpenAPI contract is missing public organization detail");
@@ -188,8 +188,8 @@ const operationIds = Object.entries(manifest.paths).flatMap(([route, methods]) =
   .map(([method, operation]) => ({ route, method, id: operation.operationId })));
 const seenOperationIds = new Set();
 for (const op of operationIds) {
-  if (!op.id) errors.push(`OpenAPI operationId missing: ${op.method.toUpperCase()} ${op.route}`);
-  else if (seenOperationIds.has(op.id)) errors.push(`Duplicate OpenAPI operationId: ${op.id}`);
+  if (!op.id) errors.push(`operationId OpenAPI tidak ditemukan: ${op.method.toUpperCase()} ${op.route}`);
+  else if (seenOperationIds.has(op.id)) errors.push(`operationId OpenAPI duplikat: ${op.id}`);
   else seenOperationIds.add(op.id);
 }
 
@@ -204,8 +204,8 @@ async function walkSource(dir) {
 await walkSource(path.join(root, "src"));
 for (const file of activeSourceFiles) {
   const text = await readFile(file, "utf8");
-  if (/from\s+["']@supabase\//.test(text)) errors.push(`Supabase runtime SDK import remains in frontend: ${path.relative(root, file)}`);
-  if (/from\s+["']@\/lib\/supabase\//.test(text)) errors.push(`Legacy Supabase runtime import remains in frontend: ${path.relative(root, file)}`);
+  if (/from\s+["']@supabase\//.test(text)) errors.push(`Impor SDK runtime Supabase masih ditemukan di frontend: ${path.relative(root, file)}`);
+  if (/from\s+["']@\/lib\/supabase\//.test(text)) errors.push(`Impor runtime Supabase lama masih ditemukan di frontend: ${path.relative(root, file)}`);
 }
 
 const backendPhpFiles = [];
@@ -219,15 +219,15 @@ async function walkBackendApp(dir) {
 await walkBackendApp(path.join(root, "backend/app"));
 for (const file of backendPhpFiles) {
   const text = await readFile(file, "utf8");
-  if (/\benv\s*\(/.test(text)) errors.push(`Runtime env() call found outside config: ${path.relative(root, file)}`);
+  if (/\benv\s*\(/.test(text)) errors.push(`Pemanggilan env() di luar konfigurasi runtime ditemukan: ${path.relative(root, file)}`);
 }
 const portalAdminSource = await readFile(path.join(root, "backend/app/Http/Controllers/Api/PortalAdminController.php"), "utf8");
-if (/password'\s*=>\s*Str::random\(/.test(portalAdminSource) && !/'password'\s*=>\s*'hashed'/.test(await readFile(path.join(root, "backend/app/Models/User.php"), "utf8"))) errors.push("Temporary invitation passwords must be hashed by the User model cast");
+if (/password'\s*=>\s*Str::random\(/.test(portalAdminSource) && !/'password'\s*=>\s*'hashed'/.test(await readFile(path.join(root, "backend/app/Models/User.php"), "utf8"))) errors.push("Kata sandi undangan sementara harus di-hash melalui cast model User");
 const workflowService = await readFile(path.join(root, "backend/app/Services/DatasetWorkflowService.php"), "utf8");
-if (!/lockForUpdate\(\)/.test(workflowService) || !/permissionForAction/.test(workflowService) || !/requirePermissionInOrganization/.test(workflowService)) errors.push("Dataset workflows must re-check permission and status under row locks");
+if (!/lockForUpdate\(\)/.test(workflowService) || !/permissionForAction/.test(workflowService) || !/requirePermissionInOrganization/.test(workflowService)) errors.push("Workflow dataset harus memeriksa ulang izin dan status di dalam row lock");
 
 if (errors.length) {
-  console.error(errors.join("\n"));
+  console.error("Pemeriksaan proyek gagal:\n" + errors.join("\n"));
   process.exit(1);
 }
-console.log("Project checks passed: v6 architecture docs, normalized access catalog, Next.js/Laravel contract, and no active Supabase SDK imports.");
+console.log("Pemeriksaan proyek lulus: dokumentasi arsitektur, katalog akses, kontrak Next.js/Laravel, dan tidak ada impor SDK Supabase aktif.");

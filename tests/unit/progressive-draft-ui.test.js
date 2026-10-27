@@ -12,7 +12,7 @@ describe("progressive dataset draft UX contract", () => {
     expect(form).toContain('name="organization_id"');
     expect(form).toContain("opsional saat membuat draf");
     expect(form).not.toMatch(/name="source_name"[\s\S]{0,180}required/);
-    expect(api).toContain("A traceable draft should be cheap to create");
+    expect(api).toContain("Draf yang dapat ditelusuri harus mudah dibuat");
   });
 
   it("keeps SDI metadata advanced and validates publication-critical fields at review", () => {

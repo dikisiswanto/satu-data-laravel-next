@@ -1,75 +1,87 @@
 # Satu Data Wajo v6
 
-Satu Data Wajo is a data catalog and administration portal for Kabupaten Wajo. This release is a deliberate backend/domain redesign; the public Next.js UI and existing page routes are retained, while the Laravel API remains the single source of truth.
+Portal katalog data dan administrasi Satu Data Kabupaten Wajo. Rilis ini merancang ulang domain dan backend; halaman serta rute publik Next.js dipertahankan sebisa mungkin, sedangkan API Laravel menjadi satu-satunya sumber kebenaran.
 
-## Stack
+## Teknologi
 
-- Next.js standalone production frontend
-- Laravel API with Sanctum tokens
-- MariaDB as persistent relational database
-- Laravel queue worker for data conversion and long-running work
-- Private Laravel Storage abstraction (local volume or S3-compatible storage)
-- Docker Compose for isolated per-service deployment
-- OpenAPI 3.1 in `backend/openapi/openapi.json` and `.yaml`
+- Next.js dengan keluaran produksi standalone.
+- Laravel API dengan autentikasi token Sanctum.
+- MariaDB sebagai basis data relasional persisten.
+- Laravel queue worker untuk konversi data dan pekerjaan berdurasi panjang.
+- Abstraksi Laravel Storage privat (volume lokal atau penyimpanan kompatibel S3).
+- Docker Compose untuk deployment layanan terisolasi.
+- OpenAPI 3.1 di `backend/openapi/openapi.json` dan `backend/openapi/openapi.yaml`.
 
-## Fresh setup and domain deployment
+## Instalasi baru dan konfigurasi domain
 
-For a new deployment, generate non-repeating credentials and align the application origins with one public HTTPS domain:
+Untuk instalasi baru, buat kredensial unik dan samakan origin aplikasi dengan satu domain HTTPS publik:
 
 ```bash
 bash scripts/setup-env.sh https://data.domain-anda.go.id
 ```
 
-The setup script creates `.env` and `backend/.env` only when neither already exists, generates unique DB credentials and Laravel `APP_KEY`, locks file permissions, and prints the remaining deployment steps. It refuses to overwrite existing configuration. If you already have environment files, back them up and update values deliberately rather than rerunning the generator over them.
+Skrip membuat `.env` dan `backend/.env` hanya jika belum tersedia, membuat kredensial database dan `APP_KEY` Laravel, membatasi izin berkas, serta menampilkan langkah lanjutan. Skrip menolak menimpa konfigurasi yang sudah ada. Jika berkas environment telah tersedia, buat cadangan dan ubah nilainya dengan sengaja.
 
-1. Point the domain DNS to the VPS, or configure Cloudflare Tunnel and its public hostname.
-2. For host Nginx/Caddy, terminate HTTPS at the host reverse proxy and proxy to the edge bound to `127.0.0.1:8080`. Copy `deploy/vps-host-nginx.example.conf` to your host configuration, replace every example domain/certificate path, issue a valid certificate, then test and reload Nginx. Do not expose Laravel PHP-FPM or the internal API gateway directly to the Internet.
-3. Confirm `NEXT_PUBLIC_SITE_URL` in root `.env` exactly matches `FRONTEND_URL` in `backend/.env`; also keep `APP_URL` and `API_PUBLIC_URL` aligned with the canonical origin. Set SMTP settings in `backend/.env` before relying on password reset.
-4. For a Cloudflare Tunnel deployment, add your actual tunnel token to root `.env`, create the corresponding hostname-to-`http://edge:80` route in Cloudflare, then start it with `docker compose --profile tunnel up -d cloudflared`. Do not commit the token.
-5. For a fresh v6 installation, use an empty database volume. This version intentionally changes the initial schema; it is not an in-place upgrade of the v5 migration history. Back up and rehearse any legacy import against a staging copy first.
-6. Deploy through the release script, which validates configuration, builds both images, and waits for both the Laravel health endpoint and the frontend to respond:
+1. Arahkan DNS domain ke VPS atau siapkan hostname publik Cloudflare Tunnel.
+2. Untuk Nginx/Caddy di host, akhiri TLS di reverse proxy host dan teruskan trafik ke edge yang terikat pada `127.0.0.1:8080`. Gunakan `deploy/vps-host-nginx.example.conf` sebagai contoh, ganti domain dan jalur sertifikat, lalu uji konfigurasi sebelum reload. Jangan membuka PHP-FPM atau gateway API internal langsung ke Internet.
+3. Pastikan `NEXT_PUBLIC_SITE_URL` pada `.env` root sama persis dengan `FRONTEND_URL` pada `backend/.env`. Samakan juga `APP_URL` dan `API_PUBLIC_URL` dengan origin kanonis. Atur SMTP sebelum mengandalkan fitur reset kata sandi.
+4. Untuk Cloudflare Tunnel, masukkan token tunnel yang sebenarnya ke `.env`, buat rute hostname menuju `http://edge:80` di Cloudflare, lalu jalankan `docker compose --profile tunnel up -d cloudflared`. Jangan pernah commit token.
+5. Instalasi v6 baru harus memakai volume database kosong. Skema awal versi ini bukan upgrade langsung dari riwayat migrasi v5. Uji impor legacy pada salinan staging sebelum memindahkan data.
+6. Deploy melalui skrip rilis yang memvalidasi konfigurasi, membangun kedua image, dan menunggu endpoint health Laravel serta frontend merespons:
 
 ```bash
 bash scripts/deploy-vps.sh
 ```
 
-The frontend embeds `NEXT_PUBLIC_SITE_URL` at build time. If the canonical domain changes, update both environment files and rerun the deploy script so the frontend image is rebuilt. The deploy script verifies service readiness locally via the edge; after DNS/TLS setup, still verify the external HTTPS hostname and sign-in flow.
+Frontend menyematkan `NEXT_PUBLIC_SITE_URL` saat proses build. Jika domain kanonis berubah, ubah kedua berkas environment dan jalankan ulang skrip deploy agar image frontend dibangun kembali. Skrip memeriksa kesiapan layanan melalui edge secara lokal; setelah DNS/TLS siap, uji hostname HTTPS eksternal dan alur login.
 
-If the project is disposable and you explicitly intend to discard the existing local database and uploads, stop the stack and remove volumes before starting v6:
+Jika lingkungan memang boleh dihapus dan Anda sengaja ingin membuang database lokal beserta unggahan, hentikan stack lalu hapus volume:
 
 ```bash
 docker compose down -v
 ```
 
-**Warning:** `down -v` permanently deletes named volumes used by this Compose project. Never run it against production or any environment whose data must be retained.
+**Peringatan:** `down -v` menghapus permanen volume bernama yang digunakan proyek ini. Jangan jalankan pada produksi atau lingkungan yang datanya harus dipertahankan.
 
-## First administrator
+## Membuat administrator pertama
 
-Create the first administrator in the fresh environment with `docker compose exec api php artisan app:create-admin admin@example.go.id --name="Administrator Satu Data"`. Use the intended administrator email and restrict shell access during bootstrap. Do not commit a production password, access token, or secret into the repository; follow the command prompts and rotate credentials after first login.
-
-## Architecture
-
-Read `ARCHITECTURE.md` for bounded contexts, database invariants, authorization model, API compatibility, cache rules, and migration policy. Read `BACKEND-REWRITE-AUDIT.md` for changes and remaining release gates. `API-CONTRACTS.md` summarizes the canonical API and frontend integration invariants. `SDI-COMPLIANCE-MATRIX.md` maps software capabilities to the four SDI principles and separates technical readiness from official institutional validation.
-
-## Public frontend compatibility
-
-Public page layout and routes are intentionally preserved. Existing `/api/v1/*` public endpoints and legacy aliases remain during transition. UI components should call the existing frontend data adapter; do not embed SQL/table assumptions into React components. When an API response shape changes, update both OpenAPI documents and add a contract test before changing the frontend adapter.
-
-## Testing
+Buat administrator pertama di lingkungan baru:
 
 ```bash
-cd backend
-composer install
-php artisan test
+docker compose exec api php artisan app:create-admin admin@example.go.id --name="Administrator Satu Data"
 ```
 
-Run the suite against MariaDB in CI/staging as well as SQLite where supported. Composite foreign keys, collation, JSON behavior, and query plans must be tested against the same MariaDB major version used by Docker. Frontend checks:
+Gunakan alamat email administrator yang benar dan batasi akses shell selama proses bootstrap. Jangan menyimpan kata sandi produksi, token akses, atau secret ke repositori. Rotasi kredensial setelah login pertama.
+
+## Dokumentasi proyek
+
+- `ARCHITECTURE.md`: batas domain, invariant database, otorisasi, cache, dan kebijakan migrasi.
+- `API-CONTRACTS.md`: endpoint kanonis, paginasi, dan aturan perubahan kontrak API.
+- `BACKEND-REWRITE-AUDIT.md`: area risiko dan gerbang rilis.
+- `SDI-COMPLIANCE-MATRIX.md`: pemetaan dukungan teknis ke prinsip Satu Data Indonesia; bukan pengganti pengesahan kelembagaan.
+- `TEST-AUDIT.md`: inventaris pengujian, perbaikan checker, dan batas verifikasi rilis.
+
+## Menjalankan pengujian
+
+Frontend, dari direktori root:
 
 ```bash
 npm ci
+npm run check
 npm run lint
 npm run test
 npm run build
+npm run test:e2e
 ```
 
-Runtime/build tests were not executed in the authoring environment; do not treat syntax checks as proof of production readiness.
+Backend:
+
+```bash
+cd backend
+composer install --no-interaction --prefer-dist
+php artisan test
+```
+
+Jalankan tes migrasi dan workflow pada MariaDB dengan versi yang sama seperti Docker Compose. SQLite dapat membantu tes unit, tetapi tidak menggantikan pemeriksaan foreign key komposit, collation, perilaku JSON, dan rencana query pada MariaDB.
+
+Lulus pemeriksaan sintaks tidak sama dengan lulus tes runtime atau bukti siap produksi. Semua perintah tes dan build harus dijalankan pada CI/staging dengan dependensi lengkap sebelum rilis.
