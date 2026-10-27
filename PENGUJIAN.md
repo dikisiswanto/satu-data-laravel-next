@@ -25,7 +25,7 @@ CI backend memakai MariaDB. Pertahankan engine yang sama untuk pengujian migrati
 
 - **Vitest:** 24 berkas / 132 kasus terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, dan UI publik.
 - **Playwright:** 1 berkas / 9 skenario navigasi, pencarian, login portal, filter, statistik, pratinjau, dan viewport mobile.
-- **PHPUnit:** 7 berkas suite / 29 kasus untuk izin, katalog role, workflow indikator, draf progresif, API publik, batas kata sandi, dan anggaran pratinjau konversi (di luar kelas dasar `TestCase`).
+- **PHPUnit:** 8 berkas suite / 30 kasus untuk izin, katalog role, workflow indikator, draf progresif, API publik, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya (di luar kelas dasar `TestCase`).
 - **Pemeriksaan statis:** kontrak Next.js/Laravel dan OpenAPI, import relatif/alias, namespace serta method rute PHP.
 
 Sebagian test frontend memeriksa struktur source untuk mencegah regresi tampilan. Test seperti ini berguna untuk aturan UI yang eksplisit, tetapi tidak membuktikan perilaku runtime. Aturan bisnis kritis harus diuji pada service/API atau melalui test integrasi; jangan hanya mengandalkan pola teks di source.
@@ -61,3 +61,10 @@ Build backend membutuhkan paket sistem `libxml2-dev` untuk menyediakan `libxml-2
 ## Status audit terakhir
 
 Di lingkungan audit, `npm run check`, `node --check` untuk skrip/test JS, `php -l` untuk seluruh file PHP, smoke test langsung service anggaran pratinjau, sinkronisasi `package.json`/lockfile, kesetaraan OpenAPI JSON/YAML, dan parsing YAML CI/Compose lulus. **Vitest, ESLint, dan build Next.js belum berjalan** karena executable `vitest`/`eslint`/`next` tidak tersedia; pemasangan dependensi `npm ci` mengalami timeout. Composer/vendor tidak tersedia, sehingga PHPUnit dan migration MariaDB belum dijalankan lokal; job `backend-tests` sekarang menjalankannya di CI dengan MariaDB 11.4. Perintah Playwright lokal memanggil CLI global yang tidak memiliki perintah `test`, sehingga tidak ada skenario E2E yang berjalan. Playwright lokal juga belum tersedia dari instalasi proyek; jalankan kembali setelah `npm ci` bersih atau melalui CI. Jangan menyebut rilis bebas bug sampai semua langkah tersebut lulus.
+
+
+## CI GitHub Actions
+
+Seluruh pemeriksaan berjalan pada satu workflow, `.github/workflows/ci.yml`, dengan tiga job: frontend, backend Laravel + MariaDB, dan build image Docker. Job image hanya berjalan setelah frontend dan backend lulus. Workflow backend terpisah dihapus agar migration dan PHPUnit tidak dijalankan dua kali pada commit yang sama.
+
+Pemeriksaan inti: `npm run check`, `npm run lint`, `npm run test`, `npm run test:e2e`, `npm run build`, `php artisan migrate --force`, `php artisan test`, serta build kedua image produksi. Versi Node.js berasal dari `.nvmrc` (22.16.0) dan npm harus 10.9.2.

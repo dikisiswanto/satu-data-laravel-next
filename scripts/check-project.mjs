@@ -34,6 +34,7 @@ for (const required of [
   "backend/app/Jobs/ProcessDatasetConversion.php",
   "backend/app/Services/DatasetPreviewBudget.php",
   "backend/tests/Unit/DatasetPreviewBudgetTest.php",
+  "backend/tests/Unit/TrustConfiguredProxiesTest.php",
   "backend/app/Console/Commands/ImportLegacySupabase.php",
   "backend/database/migrations/2026_10_01_000001_create_identity_and_organizations.php",
   "backend/database/migrations/2026_10_01_000002_create_dataset_workflow_tables.php",
@@ -67,9 +68,11 @@ for (const required of [
 }
 
 const checks = [
-  [".github/workflows/ci.yml", /npm install --global npm@10\.9\.2[\s\S]*?npm ci/, "CI harus memakai versi npm yang ditetapkan proyek sebelum instalasi bersih"],
+  [".github/workflows/ci.yml", /node-version-file:\s*\.nvmrc[\s\S]*?npm ci/, "CI harus mengikuti versi Node.js proyek dan memasang dependensi dari lockfile"],
   [".github/workflows/ci.yml", /backend-tests:[\s\S]*?php artisan migrate --force[\s\S]*?php artisan test/, "CI harus menguji migration dan fitur Laravel pada MariaDB"],
-  [".github/workflows/ci.yml", /docker-images:\s*\n\s*needs:\s*\[verify, backend-tests\]/, "Image produksi hanya boleh dibangun setelah verifikasi frontend dan backend lulus"],
+  ["backend/bootstrap/app.php", /TrustConfiguredProxies::class/, "Bootstrap harus menghindari config() sebelum container Laravel siap"],
+  ["backend/app/Http/Middleware/TrustConfiguredProxies.php", /config\('app\.trusted_proxies'\)/, "Proxy tepercaya harus dibaca setelah konfigurasi Laravel tersedia"],
+  [".github/workflows/ci.yml", /docker-images:[\s\S]{0,160}?needs:\s*\[verify, backend-tests\]/, "Image produksi hanya boleh dibangun setelah verifikasi frontend dan backend lulus"],
   ["next.config.mjs", /source:\s*"\/api\/:path\*"[\s\S]*destination:\s*`\$\{backend\}\/api\/:path\*`/, "Rute API Next.js harus diteruskan ke Laravel"],
   ["src/lib/backend/server.js", /wajo_portal_token/, "Permintaan server Next.js harus meneruskan cookie sesi Laravel"],
   ["src/lib/backend/server.js", /auth\s*=\s*true/, "Helper backend harus mendukung akses publik tanpa meneruskan token portal"],
@@ -144,6 +147,19 @@ const checks = [
 for (const [file, pattern, message] of checks) {
   const text = await readFile(path.join(root, file), "utf8").catch(() => "");
   if (!pattern.test(text)) errors.push(message);
+}
+
+const bootstrapSource = await readFile(path.join(root, "backend/bootstrap/app.php"), "utf8");
+if (/\bconfig\s*\(/.test(bootstrapSource)) {
+  errors.push("bootstrap/app.php tidak boleh memanggil config() saat callback middleware dibangun");
+}
+const workflowNames = (await readdir(path.join(root, ".github/workflows"))).filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"));
+if (workflowNames.length !== 1 || workflowNames[0] !== "ci.yml") {
+  errors.push("Semua pemeriksaan otomatis harus terpusat pada satu workflow .github/workflows/ci.yml");
+}
+const conversionStatusSource = await readFile(path.join(root, "src/components/admin/conversion-job-status.jsx"), "utf8");
+if (/initialDataUpdatedAt:\s*Date\.now\s*\(/.test(conversionStatusSource)) {
+  errors.push("initialDataUpdatedAt React Query harus memakai timestamp stabil, bukan Date.now() saat render");
 }
 
 const routesSource = await readFile(path.join(root, "backend/routes/api.php"), "utf8");

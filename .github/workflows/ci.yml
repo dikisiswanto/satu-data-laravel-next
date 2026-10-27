@@ -1,35 +1,51 @@
 name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [22, 24]
+    name: Frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version-file: .nvmrc
           cache: npm
-      - name: Gunakan versi npm yang dipatok proyek
+      - name: Periksa versi Node.js dan npm
         run: |
-          npm install --global npm@10.9.2
+          node --version
           test "$(npm --version)" = "10.9.2"
-      - run: npm ci
-      - run: npm run check
-      - run: npm run lint
-      - run: npm run test
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
-      - run: npm run build
+      - name: Pasang dependensi terkunci
+        run: npm ci
+      - name: Periksa struktur, integrasi, dan namespace
+        run: npm run check
+      - name: Periksa kualitas kode
+        run: npm run lint
+      - name: Jalankan test unit
+        run: npm run test
+      - name: Pasang browser untuk test E2E
+        run: npx playwright install --with-deps chromium
+      - name: Jalankan test E2E
+        run: npm run test:e2e
+      - name: Build frontend produksi
+        run: npm run build
 
   backend-tests:
+    name: Backend Laravel dan MariaDB
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -47,6 +63,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+          --health-start-period=20s
     env:
       APP_ENV: testing
       APP_DEBUG: "true"
@@ -70,12 +87,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, mbstring, pdo_mysql, xml, zip
+          php-version: "8.4"
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, mbstring, openssl, pdo_mysql, pdo_pgsql, pdo_sqlite, sqlite3, tokenizer, xml, zip
           coverage: none
       - name: Pasang dependensi Laravel
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Periksa sintaks PHP
+        working-directory: backend
+        run: find app bootstrap config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Uji migration pada MariaDB kosong
         working-directory: backend
         run: php artisan migrate --force
@@ -84,19 +104,20 @@ jobs:
         run: php artisan test
 
   docker-images:
+    name: Build image produksi
     needs: [verify, backend-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
-      - name: Validate full-stack Compose configuration
+      - name: Validasi konfigurasi Docker Compose
         run: |
           cp .env.example .env
           cp backend/.env.example backend/.env
           docker compose config --quiet
-      - name: Build Laravel production image
+      - name: Build image Laravel
         run: docker build --pull --tag satu-data-wajo-api:ci ./backend
-      - name: Build Next.js standalone production image
+      - name: Build image Next.js
         run: >-
           docker build --pull
           --build-arg BACKEND_API_URL=http://api-http:8080

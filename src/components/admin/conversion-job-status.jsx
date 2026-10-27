@@ -103,6 +103,9 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [now, setNow] = useState(() => Date.now());
+  // Timestamp awal dibuat sekali; Date.now() langsung di opsi query melanggar
+  // aturan purity React dan berubah setiap render.
+  const [initialDataUpdatedAt] = useState(() => Date.now());
   const refreshStarted = useRef(false);
   const previousStatus = useRef(initialJob?.status || null);
 
@@ -133,7 +136,7 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
       return payload.job;
     },
     initialData: initialJob ?? undefined,
-    initialDataUpdatedAt: Date.now(),
+    initialDataUpdatedAt,
     staleTime: 5_000,
     refetchInterval: (query) =>
       query.state.data && TERMINAL_STATUSES.has(query.state.data.status)

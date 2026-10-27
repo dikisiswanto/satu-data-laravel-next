@@ -336,7 +336,6 @@ class Query {
     const payload = Array.isArray(this.payload) ? this.payload[0] : this.payload;
     let path = null; let method = "POST"; let body = payload || {};
     const id = this.filters.find((f) => f.column === "id" && f.op === "eq")?.value;
-    const datasetId = this.filters.find((f) => f.column === "dataset_id" && f.op === "eq")?.value;
     if (this.table === "organizations") { path = id ? `/api/v1/portal/organizations/${id}` : "/api/v1/portal/organizations"; method = id ? "PATCH" : "POST"; }
     else if (this.table === "organization_memberships") { path = id ? `/api/v1/portal/memberships/${id}` : "/api/v1/portal/memberships"; method = id ? "PATCH" : "POST"; }
     else if (this.table === "profiles") { path = "/api/v1/portal/profile"; method = "PATCH"; }

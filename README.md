@@ -1,4 +1,4 @@
-# Satu Data Wajo v6
+# Satu Data Wajo v2
 
 Portal data Kabupaten Wajo. **Laravel** menjadi sumber kebenaran untuk data, autentikasi, izin, dan alur publikasi; **Next.js** menangani UI admin dan portal publik. MariaDB menyimpan data, antrean Laravel memproses konversi, dan Docker Compose menjalankan layanan.
 
