@@ -1,0 +1,76 @@
+/* Search, filter and accountability controls shared by administrative tables. */
+@layer components {
+  .portal-table-explorer {
+    @apply min-w-0;
+  }
+
+  .portal-table-explorer-toolbar {
+    @apply border-b border-[#e4eaf0] bg-[#fafcfd];
+  }
+
+  .portal-table-filter {
+    @apply min-w-0;
+  }
+
+  .portal-table-filter select {
+    @apply w-full min-w-0;
+  }
+
+  .portal-table-clear-filters {
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 self-end rounded-lg border border-[#d5e0e7] bg-white px-3 py-2 text-xs font-semibold text-[#3f596b] hover:bg-[#f0f6fa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7]/25;
+  }
+
+  .portal-table-explorer-summary {
+    @apply flex flex-wrap items-center justify-between gap-2 border-b border-[#e8eef2] px-4 py-2.5 text-xs text-[#657887];
+  }
+
+  .portal-table-explorer-summary > span:first-child {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .portal-table-cap-note {
+    @apply text-[#7b6946];
+  }
+
+  .portal-table-filter-empty {
+    @apply flex flex-col items-center gap-2 px-5 py-10 text-center;
+  }
+
+  .portal-table-filter-empty .portal-empty-icon {
+    @apply flex h-10 w-10 items-center justify-center rounded-xl border border-[#d9e5ec] bg-[#f3f8fb] text-[#3d7190];
+  }
+
+  .portal-table-filter-empty h3 {
+    @apply text-sm font-semibold text-[#243f52];
+  }
+
+  .portal-table-filter-empty p {
+    @apply max-w-lg text-sm leading-6 text-[#667b8b];
+  }
+
+  .portal-audit-insight-grid {
+    @apply grid grid-cols-2 gap-3 border-b border-[#e4eaf0] bg-[#f8fafc] p-4 sm:grid-cols-4;
+  }
+
+  .portal-audit-insight-grid > div {
+    @apply flex min-w-0 flex-col gap-1 rounded-lg border border-[#e0e8ee] bg-white px-3 py-3;
+  }
+
+  .portal-audit-insight-grid span {
+    @apply text-xs font-medium text-[#617687];
+  }
+
+  .portal-audit-insight-grid strong {
+    @apply text-xl font-semibold tabular-nums text-[#183f59];
+  }
+
+  @media (max-width: 639px) {
+    .portal-table-explorer-toolbar {
+      @apply gap-3;
+    }
+
+    .portal-table-explorer-summary {
+      @apply items-start px-3;
+    }
+  }
+}

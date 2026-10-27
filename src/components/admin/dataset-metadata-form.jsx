@@ -1,0 +1,579 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Save } from "lucide-react";
+import { DatePicker } from "@/components/admin/date-picker";
+import { PendingActionButton } from "@/components/ui/pending-action-button";
+import { useSubmissionLock } from "@/hooks/use-submission-lock";
+import {
+  apiErrorMessage,
+  apiTransportFailureMessage,
+} from "@/lib/api/error-message";
+import { readApiMutationResponse } from "@/lib/api/client-response";
+import { cn } from "@/lib/utils";
+import {
+  FieldGuidance,
+  getFieldGuidance,
+  getFieldValidationMessage,
+} from "@/components/admin/form-field-guidance";
+import { UPDATE_FREQUENCY_OPTIONS } from "@/lib/dataset-options";
+import { SdiMetadataFields } from "@/components/admin/sdi-metadata-fields";
+import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
+
+const FIELDS = {
+  title: "Isi judul dengan 5–180 karakter.",
+  description: "Deskripsi wajib diisi dengan 20–5.000 karakter.",
+  category: "Nama kategori terlalu panjang. Gunakan nama yang lebih ringkas.",
+  keywords:
+    "Gunakan maksimal 30 kata kunci; pisahkan dengan koma dan batasi tiap kata kunci hingga 80 karakter.",
+  source_name: "Nama sumber data wajib diisi (2–240 karakter).",
+  source_url:
+    "Gunakan URL sumber lengkap dengan protokol https:// atau http://, atau kosongkan bila tidak tersedia.",
+  geographic_scope: "Isi cakupan wilayah, misalnya Kabupaten Wajo.",
+  license_text: "Isi lisensi atau ketentuan penggunaan data.",
+  update_frequency: "Pilih frekuensi pembaruan data.",
+  reference_period_start: "Pilih tanggal mulai periode yang benar.",
+  reference_period_end:
+    "Tanggal akhir harus valid dan tidak boleh lebih awal dari tanggal mulai.",
+  methodology:
+    "Penjelasan metodologi terlalu panjang. Ringkas cara pengumpulan dan pengolahan data.",
+  unit: "Satuan terlalu panjang. Gunakan nama satuan yang ringkas.",
+};
+
+const API_ERRORS = {
+  forbidden:
+    "Akun Anda belum memiliki akses untuk mengubah dataset ini. Jika Anda seharusnya dapat mengubahnya, hubungi administrator portal.",
+  unauthorized:
+    "Sesi Anda sudah berakhir. Masuk kembali sebelum menyimpan perubahan.",
+  account_inactive:
+    "Akun ini sedang dinonaktifkan. Hubungi administrator portal jika Anda membutuhkan akses.",
+  authentication_unavailable:
+    "Layanan masuk sedang mengalami kendala. Perubahan belum terkonfirmasi; periksa detail dataset sebelum mencoba lagi.",
+  authorization_unavailable:
+    "Kami belum dapat memeriksa akses akun Anda. Muat ulang halaman sebelum melanjutkan.",
+  not_found:
+    "Dataset tidak ditemukan atau akses akun Anda sudah berubah. Muat ulang daftar untuk melihat informasi terbaru.",
+  conflict:
+    "Dataset telah berubah sejak halaman ini dibuka. Muat ulang data terbaru sebelum menyimpan perubahan.",
+  service_unavailable:
+    "Layanan sedang mengalami kendala dan belum mengonfirmasi perubahan. Periksa detail dataset sebelum mencoba lagi.",
+};
+
+function messageFor(code, status) {
+  return (
+    API_ERRORS[code] ||
+    apiErrorMessage(
+      code,
+      status,
+      "Perubahan metadata belum tersimpan. Periksa kolom yang ditandai, lalu coba lagi.",
+    )
+  );
+}
+
+function firstInvalidField(errors) {
+  const order = Object.keys(FIELDS);
+  return order.find((name) => errors[name]);
+}
+
+export function DatasetMetadataForm({
+  id,
+  initial,
+  standards = [],
+  referenceSystems = [],
+  initialError = "",
+  initialStatusUnknown = false,
+}) {
+  const router = useRouter();
+  const { pending: busy, begin, finish, markUncertain } = useSubmissionLock();
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [error, setError] = useState(initialError);
+  const [statusUnknown, setStatusUnknown] = useState(initialStatusUnknown);
+
+  function clearFieldError(name) {
+    setFieldErrors((previous) => {
+      if (!previous[name]) return previous;
+      const next = { ...previous };
+      delete next[name];
+      return next;
+    });
+    if (!statusUnknown) setError("");
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (statusUnknown || !begin()) return;
+    const form = event.currentTarget;
+    const raw = Object.fromEntries(new FormData(form).entries());
+    const nextErrors = {};
+    if (
+      raw.reference_period_start &&
+      raw.reference_period_end &&
+      raw.reference_period_end < raw.reference_period_start
+    ) {
+      nextErrors.reference_period_end = FIELDS.reference_period_end;
+    }
+    const keywords = raw.keywords
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (keywords.length > 30 || keywords.some((value) => value.length > 80))
+      nextErrors.keywords = FIELDS.keywords;
+    setFieldErrors(nextErrors);
+    setError("");
+    if (Object.keys(nextErrors).length) {
+      finish();
+      const target = firstInvalidField(nextErrors);
+      if (target) document.getElementById(target)?.focus();
+      return;
+    }
+
+    const payload = {
+      title: raw.title,
+      description: raw.description,
+      category: raw.category || "",
+      keywords,
+      source_name: raw.source_name,
+      source_url: raw.source_url || "",
+      geographic_scope: raw.geographic_scope,
+      license_text: raw.license_text,
+      update_frequency: raw.update_frequency,
+      reference_period_start: raw.reference_period_start || null,
+      reference_period_end: raw.reference_period_end || null,
+      methodology: raw.methodology || "",
+      unit: raw.unit || "",
+      sdi_metadata: readSdiMetadataFormFields(raw),
+    };
+
+    try {
+      const response = await fetch(
+        `/api/v1/portal/datasets/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const result = await readApiMutationResponse(response);
+      if (!response.ok) {
+        if (
+          result.error === "validation_failed" &&
+          Array.isArray(result.issues)
+        ) {
+          const mapped = {};
+          for (const issue of result.issues) {
+            const field = Array.isArray(issue.path) ? issue.path[0] : null;
+            if (typeof field === "string" && FIELDS[field])
+              mapped[field] = FIELDS[field];
+          }
+          setFieldErrors(mapped);
+          setError(
+            Object.keys(mapped).length
+              ? "Beberapa kolom perlu diperbaiki. Isian lainnya tetap tersedia pada formulir."
+              : "Ada informasi yang perlu diperbaiki. Ikuti pesan di dekat kolom yang ditandai, lalu simpan kembali.",
+          );
+          const target = firstInvalidField(mapped);
+          if (target)
+            window.requestAnimationFrame(() => {
+              const control = document.getElementById(target);
+              control?.focus();
+              control?.scrollIntoView({ block: "center", behavior: "smooth" });
+            });
+        } else {
+          setError(messageFor(result.error, response.status));
+          const isUnknown =
+            [
+              "service_unavailable",
+              "authentication_unavailable",
+              "authorization_unavailable",
+            ].includes(result.error) || response.status >= 500;
+          setStatusUnknown(isUnknown);
+          if (isUnknown) markUncertain();
+        }
+        return;
+      }
+      router.push(`/portal/dataset/${id}?action_success=updated`);
+    } catch (requestError) {
+      setError(
+        apiTransportFailureMessage(
+          requestError,
+          "Koneksi terputus sebelum perubahan terkonfirmasi. Periksa detail dataset sebelum mencoba lagi agar tidak menimpa perubahan terbaru.",
+        ),
+      );
+      setStatusUnknown(true);
+      markUncertain();
+    } finally {
+      finish();
+    }
+  }
+
+  function fieldProps(name) {
+    return {
+      "aria-invalid": fieldErrors[name] ? "true" : undefined,
+      "aria-describedby": [
+        `${name}-help`,
+        fieldErrors[name] ? `${name}-error` : null,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    };
+  }
+
+  function fieldClass(name) {
+    return cn(
+      "field",
+      fieldErrors[name] && "border-red-600 focus-visible:ring-red-600",
+    );
+  }
+
+  return (
+    <form
+      onSubmit={submit}
+      aria-busy={busy}
+      className="w-full max-w-none space-y-5 portal-form-card p-5 sm:p-8"
+    >
+      {error ? (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-900"
+        >
+          <p className="font-semibold">Metadata belum tersimpan</p>
+          <p className="mt-1">{error}</p>
+          {statusUnknown ? (
+            <p className="mt-1">
+              Jangan simpan ulang sebelum memeriksa keadaan dataset terbaru.
+            </p>
+          ) : null}
+          {statusUnknown ? (
+            <a
+              href={`/portal/dataset/${id}`}
+              className="mt-2 inline-flex font-semibold underline underline-offset-4"
+            >
+              Periksa detail dataset
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+      <div>
+        <label htmlFor="title" className="mb-2 block text-sm font-medium">
+          Judul <span aria-hidden="true">*</span>
+        </label>
+        <input
+          className={fieldClass("title")}
+          id="title"
+          name="title"
+          required
+          minLength={5}
+          maxLength={180}
+          defaultValue={initial.title}
+          {...fieldProps("title")}
+          onChange={() => clearFieldError("title")}
+        />
+        <FieldGuidance name="title" id="title-help" />
+        {fieldErrors.title ? (
+          <FieldError id="title-error">{fieldErrors.title}</FieldError>
+        ) : null}
+      </div>
+      <div>
+        <label htmlFor="description" className="mb-2 block text-sm font-medium">
+          Deskripsi <span aria-hidden="true">*</span>
+        </label>
+        <textarea
+          className={cn(
+            "field min-h-32",
+            fieldErrors.description &&
+              "border-red-600 focus-visible:ring-red-600",
+          )}
+          id="description"
+          name="description"
+          required
+          minLength={20}
+          maxLength={5000}
+          defaultValue={initial.description}
+          {...fieldProps("description")}
+          onInvalid={(event) =>
+            event.currentTarget.setCustomValidity(
+              fieldErrors.description ||
+                getFieldValidationMessage("description"),
+            )
+          }
+          onChange={(event) => {
+            event.currentTarget.setCustomValidity("");
+            clearFieldError("description");
+          }}
+        />
+        <FieldGuidance name="description" id="description-help" />
+        {fieldErrors.description ? (
+          <FieldError id="description-error">
+            {fieldErrors.description}
+          </FieldError>
+        ) : null}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Kategori"
+          name="category"
+          value={initial.category || ""}
+          maxLength={120}
+          error={fieldErrors.category}
+          onChange={() => clearFieldError("category")}
+        />
+        <Field
+          label="Kata kunci (pisahkan dengan koma)"
+          name="keywords"
+          value={(initial.keywords || []).join(", ")}
+          maxLength={2500}
+          error={fieldErrors.keywords}
+          onChange={() => clearFieldError("keywords")}
+        />
+        <Field
+          label="Sumber data *"
+          name="source_name"
+          value={initial.source_name || ""}
+          required
+          maxLength={240}
+          error={fieldErrors.source_name}
+          onChange={() => clearFieldError("source_name")}
+        />
+        <Field
+          label="URL sumber"
+          name="source_url"
+          value={initial.source_url || ""}
+          maxLength={2048}
+          error={fieldErrors.source_url}
+          onChange={() => clearFieldError("source_url")}
+        />
+        <Field
+          label="Cakupan wilayah *"
+          name="geographic_scope"
+          value={initial.geographic_scope || ""}
+          required
+          maxLength={240}
+          error={fieldErrors.geographic_scope}
+          onChange={() => clearFieldError("geographic_scope")}
+        />
+        <Field
+          label="Lisensi *"
+          name="license_text"
+          value={initial.license_text || ""}
+          required
+          maxLength={240}
+          error={fieldErrors.license_text}
+          onChange={() => clearFieldError("license_text")}
+        />
+        <Field
+          label="Satuan"
+          name="unit"
+          value={initial.unit || ""}
+          maxLength={100}
+          error={fieldErrors.unit}
+          onChange={() => clearFieldError("unit")}
+        />
+        <div>
+          <label
+            htmlFor="update_frequency"
+            className="mb-2 block text-sm font-medium"
+          >
+            Frekuensi pembaruan <span aria-hidden="true">*</span>
+          </label>
+          <select
+            className={fieldClass("update_frequency")}
+            id="update_frequency"
+            name="update_frequency"
+            defaultValue={initial.update_frequency}
+            required
+            {...fieldProps("update_frequency")}
+            onInvalid={(event) =>
+              event.currentTarget.setCustomValidity(
+                fieldErrors.update_frequency ||
+                  getFieldValidationMessage("update_frequency"),
+              )
+            }
+            onChange={(event) => {
+              event.currentTarget.setCustomValidity("");
+              clearFieldError("update_frequency");
+            }}
+          >
+            {UPDATE_FREQUENCY_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <FieldGuidance name="update_frequency" id="update_frequency-help" />
+          {fieldErrors.update_frequency ? (
+            <FieldError id="update_frequency-error">
+              {fieldErrors.update_frequency}
+            </FieldError>
+          ) : null}
+        </div>
+        <DateField
+          label="Awal periode"
+          name="reference_period_start"
+          value={initial.reference_period_start || ""}
+          error={fieldErrors.reference_period_start}
+          clearError={() => {
+            clearFieldError("reference_period_start");
+            clearFieldError("reference_period_end");
+          }}
+        />
+        <DateField
+          label="Akhir periode"
+          name="reference_period_end"
+          value={initial.reference_period_end || ""}
+          error={fieldErrors.reference_period_end}
+          clearError={() => {
+            clearFieldError("reference_period_start");
+            clearFieldError("reference_period_end");
+          }}
+        />
+      </div>
+      <div>
+        <label htmlFor="methodology" className="mb-2 block text-sm font-medium">
+          Metodologi
+        </label>
+        <textarea
+          className={cn(
+            "field min-h-24",
+            fieldErrors.methodology &&
+              "border-red-600 focus-visible:ring-red-600",
+          )}
+          id="methodology"
+          name="methodology"
+          maxLength={10000}
+          defaultValue={initial.methodology || ""}
+          {...fieldProps("methodology")}
+          onChange={() => clearFieldError("methodology")}
+        />
+        <FieldGuidance name="methodology" id="methodology-help" />
+        {fieldErrors.methodology ? (
+          <FieldError id="methodology-error">
+            {fieldErrors.methodology}
+          </FieldError>
+        ) : null}
+      </div>
+      <SdiMetadataFields
+        initial={initial.sdi_metadata || {}}
+        standards={standards}
+        referenceSystems={referenceSystems}
+      />
+      <div className="flex flex-wrap items-center gap-3 border-t pt-5">
+        <PendingActionButton
+          type="submit"
+          pending={busy}
+          pendingText="Menyimpan metadata…"
+          disabled={statusUnknown}
+          className="rounded-control bg-primary px-5 py-3 text-sm font-semibold text-white"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Save size={16} aria-hidden="true" />
+            Simpan metadata
+          </span>
+        </PendingActionButton>
+        <p className="text-xs leading-5 text-muted">
+          Perubahan hanya dapat disimpan selama dataset masih berstatus draf.
+        </p>
+      </div>
+    </form>
+  );
+}
+
+function Field({
+  label,
+  name,
+  value,
+  error,
+  onChange,
+  type = "text",
+  ...props
+}) {
+  const errorId = `${name}-error`;
+  const helpId = `${name}-help`;
+  const help = getFieldGuidance(name, label);
+  const describedBy =
+    [help ? helpId : null, error ? errorId : null].filter(Boolean).join(" ") ||
+    undefined;
+  function handleInvalid(event) {
+    event.currentTarget.setCustomValidity(
+      error || getFieldValidationMessage(name, label),
+    );
+  }
+  function handleChange(event) {
+    if (event?.currentTarget?.setCustomValidity)
+      event.currentTarget.setCustomValidity("");
+    onChange?.(event);
+  }
+  return (
+    <div>
+      <label htmlFor={name} className="mb-2 block text-sm font-medium">
+        {label}
+      </label>
+      {type === "date" ? (
+        <DatePicker
+          id={name}
+          name={name}
+          defaultValue={props.defaultValue || value || ""}
+          disabled={Boolean(props.disabled)}
+          invalid={Boolean(error)}
+          describedBy={describedBy}
+          onChangeValue={onChange}
+        />
+      ) : (
+        <input
+          id={name}
+          name={name}
+          type={type}
+          defaultValue={value}
+          className={cn(
+            "field",
+            error && "border-red-600 focus-visible:ring-red-600",
+          )}
+          {...props}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={describedBy}
+          onInvalid={handleInvalid}
+          onChange={handleChange}
+        />
+      )}
+      {help ? <FieldGuidance id={helpId} name={name} text={help} /> : null}
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+    </div>
+  );
+}
+
+function DateField({ label, name, value, error, clearError }) {
+  const errorId = `${name}-error`;
+  const helpId = `${name}-help`;
+  const help = getFieldGuidance(name, label);
+  const describedBy =
+    [help ? helpId : null, error ? errorId : null].filter(Boolean).join(" ") ||
+    undefined;
+  return (
+    <div>
+      <label htmlFor={name} className="mb-2 block text-sm font-medium">
+        {label}
+      </label>
+      <DatePicker
+        id={name}
+        name={name}
+        defaultValue={value}
+        invalid={Boolean(error)}
+        describedBy={describedBy}
+        onChangeValue={clearError}
+      />
+      {help ? <FieldGuidance id={helpId} name={name} text={help} /> : null}
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+    </div>
+  );
+}
+
+function FieldError({ id, children }) {
+  return (
+    <p id={id} className="mt-1.5 text-xs leading-5 text-red-700">
+      {children}
+    </p>
+  );
+}

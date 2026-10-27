@@ -1,0 +1,479 @@
+.portal-dashboard-kpis > :nth-child(1) {
+  @apply border-t-4 border-t-[#1d5fa7] bg-[#f3f7fd];
+}
+
+.portal-dashboard-kpis > :nth-child(2) {
+  @apply border-t-4 border-t-[#1d5fa7] bg-[#f3f7fd];
+}
+
+.portal-dashboard-kpis > :nth-child(3) {
+  @apply border-t-4 border-t-[#1d5fa7] bg-[#f3f7fd];
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton {
+    animation: none !important;
+    background-position: 50% !important;
+  }
+}
+
+/* The catalog popover is the only state-dependent part of this filter control. */
+
+.catalog-filter-popover > summary::-webkit-details-marker {
+  display: none;
+}
+
+.catalog-filter-popover[open] > summary {
+  @apply border-primary bg-[#f0f7ff] text-primary;
+}
+
+@layer base {
+  a[href],
+  summary,
+  select,
+  button:not(:disabled),
+  input[type="checkbox"],
+  input[type="radio"],
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* Shared visual rhythm for every public interior route. The home page and
+   catalog keep their purpose-built hero/filter treatments; content pages share
+   the same width, heading hierarchy, vertical rhythm, and responsive surfaces. */
+
+.public-interior-page {
+  @apply relative isolate;
+  background: linear-gradient(180deg, #f4f8fa 0%, #ffffff 19rem, #ffffff 100%);
+}
+
+.public-interior-page > .public-page-heading,
+.public-interior-page .public-page-heading {
+  @apply relative border-b border-[#dce6e9] pb-6;
+}
+
+.public-page-heading .eyebrow {
+  @apply mb-1;
+}
+
+.public-page-heading h1 {
+  @apply max-w-4xl text-[2rem] font-semibold leading-[1.12] tracking-[-0.035em] text-ink sm:text-[2.65rem] sm:leading-[1.08];
+}
+
+.public-page-heading p:not(.eyebrow) {
+  @apply max-w-2xl text-[.98rem] leading-7 text-muted;
+}
+
+.public-interior-page .public-empty-panel {
+  @apply w-full max-w-none rounded-xl border border-[#d8e4e8] bg-white shadow-[0_8px_30px_rgb(24_58_68_/_4%)];
+}
+
+.public-interior-page .surface-panel {
+  @apply rounded-xl border-[#d8e4e8] bg-white shadow-[0_4px_20px_rgb(24_58_68_/_4%)];
+}
+
+.organization-detail-page.public-interior-page {
+  background: #fff;
+}
+
+.organization-detail-page .organization-detail-band {
+  background: linear-gradient(135deg, #eef5f7 0%, #f8fbfc 68%, #eaf3f1 100%);
+}
+
+.dataset-detail-page > .public-page-heading {
+  @apply border-0 pb-0;
+}
+
+@media (max-width: 639px) {
+  .public-interior-page.section-space {
+    @apply py-8;
+  }
+
+  .public-interior-page > .public-page-heading,
+  .public-interior-page .public-page-heading {
+    @apply mb-6 pb-5;
+  }
+}
+
+/* Final consistency pass: high-contrast controls and robust empty states. */
+.public-app-shell .field {
+  @apply min-h-11 border border-[#cbd7e1] bg-white text-[#1d3445] shadow-sm;
+}
+
+.public-app-shell .field::placeholder {
+  @apply text-[#667887] opacity-100;
+}
+
+.public-app-shell .field:focus-visible {
+  @apply border-[#1d5fa7] ring-2 ring-[#1d5fa7]/25;
+}
+
+.portal-app .portal-form-card {
+  @apply w-full max-w-none;
+}
+
+.portal-app .portal-form-card .field {
+  @apply min-h-11 border border-[#cbd7e1] bg-white;
+}
+
+.portal-app .date-picker-trigger {
+  @apply border border-[#cbd7e1] bg-white;
+}
+
+.portal-app .portal-table-wrap {
+  @apply rounded-b-xl;
+}
+
+.portal-app .portal-data-table th {
+  @apply sticky top-0 z-[1] bg-[#f3f7fa] text-[#43596a];
+}
+
+/* Public navigation: one visual treatment for both the active pill and its indicator. */
+.site-header-at-top {
+  @apply border-transparent bg-white/90;
+  backdrop-filter: blur(14px);
+}
+
+.site-header-scrolled {
+  @apply border-[#dbe5ed] bg-white shadow-[0_8px_26px_rgb(15_35_50_/_9%)];
+  backdrop-filter: blur(16px);
+}
+
+.site-header .public-link-active {
+  @apply bg-[#eaf2ff] text-[#174f8b];
+  box-shadow: inset 0 -3px 0 #1d5fa7;
+}
+
+.site-header .public-link-active::after {
+  content: none;
+}
+
+/* Keep the catalog filter panel above the result list when it is open. */
+.catalog-intro {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.catalog-intro:has(.catalog-filter-popover[open]) {
+  z-index: 40;
+}
+
+.catalog-filter-popover[open] {
+  z-index: 41;
+}
+
+.catalog-filter-popover-panel {
+  box-sizing: border-box;
+}
+
+/* Keep the catalog search, submit action and filter control on one baseline. */
+.catalog-intro form[role="search"] > div {
+  @apply items-end;
+}
+
+.catalog-intro form[role="search"] > div > div:first-child {
+  @apply self-end;
+}
+
+.catalog-filter-popover > summary {
+  @apply min-h-12;
+}
+
+/* The catalog filter icon inherits the control's stable state color. */
+.catalog-filter-popover > summary > svg {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+/* Date picker trigger is a real form control, not a borderless decorative button. */
+.portal-app .date-picker-control {
+  @apply relative w-full;
+}
+
+.portal-app .date-picker-trigger {
+  @apply flex min-h-11 w-full items-center gap-2 rounded-lg border border-[#cbd7e1] bg-white px-3 text-sm text-[#263f52] shadow-sm transition-colors hover:border-[#8ba4b8] focus-visible:border-[#1d5fa7] focus-visible:ring-2 focus-visible:ring-[#1d5fa7]/20;
+}
+
+.portal-app .date-picker-placeholder {
+  @apply text-[#718395];
+}
+
+.portal-app .date-picker-popover {
+  @apply z-50;
+}
+
+/* A calm, full-width empty state that still gives visitors a useful next step. */
+.home-empty-datasets {
+  @apply flex w-full flex-col items-start gap-5 rounded-2xl bg-gradient-to-br from-[#f1f7ff] via-white to-[#f1faf7] p-6 sm:flex-row sm:items-center sm:p-8;
+  border: 1px solid #e1eaf1;
+}
+
+.home-empty-datasets-icon {
+  @apply grid size-14 shrink-0 place-items-center rounded-2xl bg-[#e8f1ff] text-[#1d5fa7];
+}
+
+.home-empty-datasets h3 {
+  @apply mt-1 text-lg font-bold tracking-tight text-[#17364f] sm:text-xl;
+}
+
+.home-empty-datasets p:not(.eyebrow) {
+  @apply mt-2 max-w-2xl text-sm leading-6 text-[#526777];
+}
+
+@media (max-width: 639px) {
+  .site-header .public-link-active {
+    box-shadow: inset 3px 0 0 #1d5fa7;
+  }
+}
+
+/* Homepage hero artwork and transparent-at-top navigation. */
+body:has(.public-home) .site-header-at-top {
+  @apply border-transparent bg-transparent shadow-none;
+  backdrop-filter: none;
+}
+
+body:has(.public-home)
+  .site-header-at-top
+  .page-container
+  > nav
+  .public-link:not(.public-link-active) {
+  @apply text-white hover:bg-white/15 hover:text-white;
+}
+
+body:has(.public-home)
+  .site-header-at-top
+  .page-container
+  > nav
+  .public-link-active {
+  @apply bg-white/15 text-white;
+  box-shadow: inset 0 -3px 0 #ffffff;
+}
+
+body:has(.public-home) .home-hero {
+  margin-top: -76px;
+  padding-top: 76px;
+  border: 0;
+  background-color: #153b5c;
+  background-image:
+    linear-gradient(
+      90deg,
+      rgb(8 31 55 / 83%) 0%,
+      rgb(11 42 67 / 62%) 43%,
+      rgb(15 45 65 / 20%) 100%
+    ),
+    url("/wajo-hero-panorama.webp");
+  background-position:
+    center,
+    center 48%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+body:has(.public-home) .home-hero::before {
+  content: none;
+}
+
+body:has(.public-home) .home-hero-kicker,
+body:has(.public-home) .home-hero h1,
+body:has(.public-home) .home-hero-description,
+body:has(.public-home) .home-search-suggestions {
+  color: #fff;
+}
+
+body:has(.public-home) .home-hero h1 span {
+  color: #e5f0ff;
+}
+
+body:has(.public-home) .home-hero-kicker > span {
+  @apply bg-[#7ce1bd] ring-[#7ce1bd]/20;
+}
+
+body:has(.public-home) .home-visual-caption,
+body:has(.public-home) .home-visual-chip {
+  @apply border border-white/25 bg-[#0d2b45]/75 text-white shadow-[0_12px_36px_rgb(0_0_0_/_18%)];
+  backdrop-filter: blur(10px);
+}
+
+body:has(.public-home) .home-search-suggestions a {
+  @apply border border-white/35 bg-white/10 text-white hover:bg-white/20;
+}
+
+@media (max-width: 1279px) {
+  body:has(.public-home) .home-hero {
+    margin-top: -68px;
+    padding-top: 68px;
+  }
+}
+
+@media (max-width: 639px) {
+  body:has(.public-home) .home-hero {
+    margin-top: -64px;
+    padding-top: 64px;
+    background-position:
+      center,
+      56% center;
+  }
+}
+
+.portal-app .portal-form-section,
+.portal-app .portal-main > form,
+.portal-app .portal-main .portal-form-card {
+  @apply w-full max-w-none;
+}
+
+.portal-app .portal-form-section .field,
+.portal-app .portal-form-card .field,
+.portal-app .portal-main form .date-picker-trigger {
+  @apply min-h-11 w-full border border-[#cbd7e1] bg-white text-[#263f52] shadow-sm;
+}
+
+.portal-app .portal-form-section .field:focus-visible,
+.portal-app .portal-form-card .field:focus-visible {
+  @apply border-[#1d5fa7] ring-2 ring-[#1d5fa7]/20;
+}
+
+body:has(.public-home) .site-header-at-top .site-brand-copy,
+body:has(.public-home) .site-header-at-top .site-brand-copy > span {
+  @apply text-white;
+}
+
+body:has(.public-home) .site-header-at-top .site-brand-copy > span:first-child {
+  @apply text-white/80;
+}
+
+/* Catalog filter selects have a fixed 44px height; remove the shared .field
+   vertical padding so the inherited line-height cannot clip option text. */
+.catalog-filter-popover select.field {
+  padding-block: 0;
+  line-height: 1.5;
+}
+
+/* Administrative form consistency: keep one-line controls aligned across pages. */
+.portal-app
+  .portal-main
+  form
+  .field:not(textarea):not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):not([type="hidden"]):not([type="range"]),
+.portal-app .portal-main form .date-picker-trigger,
+.portal-app
+  .portal-main
+  .portal-filter-form
+  .field:not(textarea):not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):not([type="hidden"]):not([type="range"]),
+.portal-app .portal-main .portal-filter-form .date-picker-trigger,
+.portal-app .portal-main .portal-table-filter input,
+.portal-app .portal-main .portal-table-filter select {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-width: 1px;
+  box-shadow: none;
+}
+
+.portal-app .portal-main form textarea.field {
+  box-sizing: border-box;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.portal-app .portal-main form label[for]:not(.portal-table-search),
+.portal-app
+  .portal-main
+  .portal-filter-form
+  label[for]:not(.portal-table-search) {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: #344e5f;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* The search icon sits inside a single bordered control. Focus belongs to its
+   wrapper; the nested input must never draw a second border or focus ring. */
+.portal-app .portal-table-search {
+  box-sizing: border-box;
+  min-height: 44px;
+  border-width: 1px;
+  box-shadow: none;
+}
+
+.portal-app .portal-table-search input,
+.portal-app .portal-table-search input:focus,
+.portal-app .portal-table-search input:focus-visible {
+  min-height: 0;
+  height: 40px;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+}
+
+.portal-app .portal-table-search:focus-within {
+  border-color: #1d5fa7;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(29 95 167 / 15%);
+}
+
+/* Search-with-icon in the dataset filter uses the input as the only control
+   border, so the icon wrapper remains purely positional. */
+.portal-app .portal-filter-search > .relative {
+  border: 0;
+  box-shadow: none;
+}
+
+.portal-app .portal-filter-search > .relative > .field {
+  padding-left: 2.25rem;
+}
+
+/* Server-filtered dataset lists and client-filtered admin tables share the
+   same single-border search control and label/field spacing. */
+.portal-app .portal-filter-form .portal-filter-search > .relative > .field {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  border-width: 1px;
+  padding-left: 2.25rem;
+}
+
+.portal-app .portal-main form .field:focus-visible,
+.portal-app .portal-main form .date-picker-trigger:focus-visible,
+.portal-app .portal-main .portal-filter-form .field:focus-visible,
+.portal-app .portal-main .portal-filter-form .date-picker-trigger:focus-visible,
+.portal-app .portal-main .portal-table-filter :is(input, select):focus-visible {
+  outline: none;
+  border-color: #1d5fa7;
+  box-shadow: 0 0 0 3px rgb(29 95 167 / 18%);
+}
+
+.portal-app .portal-main form .field[aria-invalid="true"]:focus-visible {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgb(185 28 28 / 16%);
+}
+
+.portal-app
+  .portal-main
+  form
+  .date-picker-trigger.border-red-600:focus-visible {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgb(185 28 28 / 16%);
+}
+
+.portal-app .portal-filter-actions button {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+}

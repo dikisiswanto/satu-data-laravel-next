@@ -1,0 +1,45 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: "standalone",
+  poweredByHeader: false,
+  reactStrictMode: true,
+  compress: true,
+  productionBrowserSourceMaps: false,
+  serverExternalPackages: ["exceljs", "pdfkit"],
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
+  async rewrites() {
+    const backend = (process.env.BACKEND_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+    return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
+  },
+  async redirects() {
+    return [
+      { source: "/tentang", destination: "/", permanent: true },
+      { source: "/tentang/api", destination: "/api-data", permanent: true },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+          { key: "X-DNS-Prefetch-Control", value: "off" },
+          { key: "Origin-Agent-Cluster", value: "?1" },
+          { key: "X-XSS-Protection", value: "0" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          ...(process.env.NODE_ENV === "production"
+            ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }]
+            : []),
+        ],
+      },
+    ];
+  },
+};
+export default nextConfig;

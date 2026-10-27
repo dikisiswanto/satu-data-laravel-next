@@ -1,0 +1,71 @@
+import Link from "next/link";
+import {
+  AdminPageLoading,
+  LoadingField,
+} from "@/components/admin/admin-page-loading";
+
+export default function EditDatasetLoading() {
+  return (
+    <AdminPageLoading
+      label="Memuat formulir ubah dataset"
+      eyebrow="Informasi dataset"
+      title="Ubah informasi dataset"
+      description="Di halaman ini, Anda dapat mengubah dataset yang masih berstatus Draf. Jika dataset sudah diajukan, buka halaman detail untuk melihat status pemeriksaan dan langkah selanjutnya."
+      contextGuide
+    >
+      <Link
+        href="/portal/dataset"
+        className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+      >
+        ← Kembali ke dataset
+      </Link>
+      <section
+        className="portal-form-card space-y-6 p-5 sm:p-8"
+        aria-busy="true"
+      >
+        <LoadingField label="Judul" name="title" required />
+        <LoadingField
+          label="Deskripsi"
+          name="description"
+          height="h-32"
+          required
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <LoadingField label="Kategori" name="category" />
+          <LoadingField
+            label="Kata kunci (pisahkan dengan koma)"
+            name="keywords"
+          />
+          <LoadingField label="Sumber data *" name="source_name" />
+          <LoadingField label="URL sumber" name="source_url" />
+          <LoadingField label="Cakupan wilayah *" name="geographic_scope" />
+          <LoadingField label="Lisensi *" name="license_text" />
+          <LoadingField label="Satuan" name="unit" />
+          <LoadingField label="Frekuensi pembaruan" name="update_frequency" />
+          <LoadingField label="Awal periode" name="reference_period_start" />
+          <LoadingField label="Akhir periode" name="reference_period_end" />
+        </div>
+        <LoadingField label="Metodologi" name="methodology" height="h-24" />
+        <div
+          className="rounded-2xl border border-[#cddde8] bg-[#f6f9fc] p-4 sm:p-5"
+          aria-hidden="true"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 text-base font-semibold text-[#193d59]">
+            <span>Metadata standar dan pertukaran SDI (lanjutan)</span>
+            <span className="rounded-full border border-[#d5e3ec] bg-white px-2.5 py-1 text-xs font-medium text-[#42677f]">
+              Bisa dilengkapi setelah draf
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 border-t pt-5">
+          <div className="h-11 w-40 rounded-control bg-primary px-5 py-3 text-sm font-semibold text-white">
+            Simpan metadata
+          </div>
+          <p className="text-xs leading-5 text-muted">
+            Perubahan hanya dapat disimpan selama dataset masih berstatus draf.
+          </p>
+        </div>
+      </section>
+    </AdminPageLoading>
+  );
+}

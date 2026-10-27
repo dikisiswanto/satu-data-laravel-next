@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run build
+
+  docker-images:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate full-stack Compose configuration
+        run: |
+          cp .env.example .env
+          cp backend/.env.example backend/.env
+          docker compose config --quiet
+      - name: Build Laravel production image
+        run: docker build --pull --tag satu-data-wajo-api:ci ./backend
+      - name: Build Next.js standalone production image
+        run: >-
+          docker build --pull
+          --build-arg BACKEND_API_URL=http://api-http:8080
+          --build-arg NEXT_PUBLIC_SITE_URL=https://example.test
+          --build-arg NEXT_PUBLIC_GEOPORTAL_URL=https://geoportal-wajo.vercel.app
+          --tag satu-data-wajo-web:ci .

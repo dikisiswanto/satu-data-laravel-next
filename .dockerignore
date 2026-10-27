@@ -1,0 +1,17 @@
+.git
+.next
+node_modules
+coverage
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+npm-debug.log*
+.DS_Store
+backend/.env
+backend/.env.*
+backend/vendor
+backend/storage
+legacy-storage-export
+backups

@@ -1,0 +1,256 @@
+/*
+ * Form text safety audit.
+ *
+ * Keep control line boxes smaller than their border boxes and never combine a
+ * fixed one-line height with inherited body line-height and vertical padding.
+ * This file is imported last so it consistently overrides page-level utility
+ * combinations that could otherwise clip glyphs in inputs and selects.
+ */
+
+/* One-line controls share a predictable 44px hit area and a safe line box. */
+.public-app-shell
+  form
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ):not([type="range"]):not([type="color"]):not([type="submit"]):not(
+        [type="button"]
+      ):not([type="reset"]),
+    select
+  ),
+.page-container
+  form
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ):not([type="range"]):not([type="color"]):not([type="submit"]):not(
+        [type="button"]
+      ):not([type="reset"]),
+    select
+  ),
+.portal-app
+  .portal-main
+  form
+  .field:not(textarea):not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):not([type="hidden"]):not([type="range"]):not([type="color"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="reset"]),
+.portal-app .portal-main form select,
+.portal-app
+  .portal-main
+  .portal-filter-form
+  .field:not(textarea):not([type="checkbox"]):not([type="radio"]):not(
+    [type="file"]
+  ):not([type="hidden"]):not([type="range"]):not([type="color"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="reset"]),
+.portal-app .portal-main .portal-filter-form select,
+.portal-app
+  .portal-main
+  .portal-table-filter
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ),
+    select
+  ),
+.portal-app
+  .portal-table-explorer-toolbar
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ),
+    select
+  ),
+.catalog-filter-popover-panel
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ),
+    select
+  ),
+.login-form
+  .field:not(textarea):not([type="checkbox"]):not([type="radio"]):not(
+    [type="hidden"]
+  ),
+.portal-app .portal-table-search input {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* The table-search field sits inside its own outlined wrapper and is slightly
+   shorter than the wrapper; only its own vertical text box is normalized. */
+.portal-app .portal-table-search input {
+  height: 40px;
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.4;
+}
+
+/* Input-based submit controls need the same generous text box as buttons. */
+.public-app-shell
+  form
+  :is(input[type="submit"], input[type="button"], input[type="reset"]),
+.page-container
+  form
+  :is(input[type="submit"], input[type="button"], input[type="reset"]),
+.portal-app
+  form
+  :is(input[type="submit"], input[type="button"], input[type="reset"]),
+.login-form
+  :is(input[type="submit"], input[type="button"], input[type="reset"]) {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 44px;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* File inputs use a natural height so the browser's native upload button is
+   never compressed by a fixed border box. */
+.public-app-shell form input[type="file"],
+.page-container form input[type="file"],
+.portal-app form input[type="file"] {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 44px;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  line-height: 1.4;
+  overflow: visible;
+}
+
+/* Textareas grow to their content baseline instead of squeezing several lines
+   into a fixed height or inheriting the large body line-height unexpectedly. */
+.public-app-shell form textarea,
+.page-container form textarea,
+.portal-app .portal-main form textarea.field,
+.portal-app form textarea,
+.login-form textarea {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 6rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  line-height: 1.5;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+
+/* Buttons inside forms can have short Tailwind h-* classes paired with py-*.
+   Natural height plus a minimum touch target prevents their text line from
+   being squeezed while still allowing longer labels to wrap. */
+.public-app-shell form button,
+.page-container form button,
+.portal-app form button,
+.portal-app .portal-main form button,
+.portal-app .portal-filter-form button,
+.portal-app .portal-table-filter button,
+.portal-app .portal-table-explorer-toolbar button,
+.login-form button {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 44px;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Keep label, helper, validation and server-response text at a readable line
+   height. Screen-reader-only labels deliberately retain their clipping rules. */
+.public-app-shell form label:not(.sr-only),
+.page-container form label:not(.sr-only),
+.portal-app .portal-main form label:not(.sr-only),
+.portal-app .portal-filter-form label:not(.sr-only),
+.login-form label:not(.sr-only) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.public-app-shell
+  form
+  :is(
+    p,
+    small,
+    [role="alert"],
+    [role="status"],
+    [aria-live],
+    [id$="-help"],
+    [id$="-error"]
+  ),
+.page-container
+  form
+  :is(
+    p,
+    small,
+    [role="alert"],
+    [role="status"],
+    [aria-live],
+    [id$="-help"],
+    [id$="-error"]
+  ),
+.portal-app
+  .portal-main
+  form
+  :is(
+    p,
+    small,
+    [role="alert"],
+    [role="status"],
+    [aria-live],
+    [id$="-help"],
+    [id$="-error"]
+  ),
+.login-form
+  :is(
+    p,
+    small,
+    [role="alert"],
+    [role="status"],
+    [aria-live],
+    [id$="-help"],
+    [id$="-error"]
+  ) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Clipping wrappers are acceptable for icons/decoration, never for the text
+   node of an editable control or its validation copy. */
+.public-app-shell
+  form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.page-container
+  form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.portal-app
+  .portal-main
+  form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.login-form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  text-indent: 0;
+}

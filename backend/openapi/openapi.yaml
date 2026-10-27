@@ -1,0 +1,3266 @@
+openapi: 3.1.0
+info:
+  title: Satu Data Kabupaten Wajo API
+  version: 1.2.0
+  description: REST API untuk katalog data publik, indikator, interoperabilitas Satu
+    Data Indonesia, autentikasi, dan ruang pengelola. Gunakan endpoint /api/v1 sebagai
+    kontrak kanonis. Endpoint lama yang belum diberi versi tetap tersedia untuk kompatibilitas
+    UI selama masa migrasi.
+  contact:
+    name: Pengelola Portal Satu Data Kabupaten Wajo
+servers:
+- url: http://localhost:8000
+  description: Development; sesuaikan API_PUBLIC_URL saat deployment.
+tags:
+- name: Operations
+  description: Readiness and service diagnostics.
+- name: Catalog
+  description: Public datasets, indicators, organizations, and downloads.
+- name: SDI
+  description: Interoperability and SDI metadata feeds.
+- name: Authentication
+  description: Portal authentication and account recovery.
+- name: Portal
+  description: User dashboard and profile management.
+- name: Datasets
+  description: Versioned dataset and source-upload workflows.
+- name: Organizations
+  description: Organization and membership administration.
+- name: Indicators
+  description: Indicator and observation management.
+paths:
+  /api/health:
+    get:
+      summary: Readiness API, database, and private storage.
+      tags:
+      - Operations
+      operationId: get_api_health
+      responses:
+        '200':
+          description: Liveness/readiness status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/datasets:
+    get:
+      summary: List and search published datasets.
+      tags:
+      - Catalog
+      operationId: get_api_v1_datasets
+      responses:
+        '200':
+          description: Paginated public dataset collection.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Search title, code, slug, and description.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: limit
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: organization
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+  /api/v1/datasets/{slug}:
+    get:
+      summary: Read a published dataset and its public resources.
+      tags:
+      - Catalog
+      operationId: get_api_v1_datasets_slug
+      responses:
+        '200':
+          description: Dataset detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Dataset slug.
+        schema:
+          type: string
+  /api/v1/datasets/{slug}/resources/{resourceId}/rows:
+    get:
+      summary: Read rows from a published tabular resource.
+      tags:
+      - Catalog
+      operationId: get_api_v1_datasets_slug_resources_resourceId_rows
+      responses:
+        '200':
+          description: Resource rows and pagination metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Dataset or public resource not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '400':
+          description: Requested page is beyond the stored preview rows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Dataset slug.
+        schema:
+          type: string
+      - name: resourceId
+        in: path
+        required: true
+        description: Resource UUID.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: 1-based page number.
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        required: false
+        description: Rows to return, maximum 100.
+        schema:
+          type: integer
+          minimum: 1
+          default: 25
+          maximum: 100
+      - name: offset
+        in: query
+        required: false
+        description: Optional zero-based row offset; overrides page when supplied.
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+          default: 0
+      description: Returns a bounded preview page for a public, successfully converted
+        CSV resource. Preview pagination reflects stored preview rows (capped at 100,000
+        rows per resource), not necessarily the full source row count. `page` and
+        `limit` are canonical; `offset` is also accepted for compatibility.
+  /api/v1/datasets/{slug}/resources/{resourceId}/download:
+    get:
+      summary: Download a resource that belongs to the published dataset version.
+      tags:
+      - Catalog
+      operationId: get_api_v1_datasets_slug_resources_resourceId_download
+      responses:
+        '200':
+          description: Binary resource download.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Dataset slug.
+        schema:
+          type: string
+      - name: resourceId
+        in: path
+        required: true
+        description: Resource UUID.
+        schema:
+          type: string
+  /api/v1/indicators:
+    get:
+      summary: List published statistics indicators.
+      tags:
+      - Catalog
+      operationId: get_api_v1_indicators
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        description: Maximum indicators per page; `per_page` is a compatibility alias.
+        schema:
+          type: integer
+          minimum: 1
+          default: 50
+          maximum: 100
+      - name: q
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  /api/v1/indicators/{slug}:
+    get:
+      summary: Read a published indicator.
+      tags:
+      - Catalog
+      operationId: get_api_v1_indicators_slug
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Indicator not found or not publicly available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Indicator slug.
+        schema:
+          type: string
+  /api/v1/indicators/{slug}/observations:
+    get:
+      summary: List current published observations for a public indicator.
+      tags:
+      - Catalog
+      operationId: get_api_v1_indicators_slug_observations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Indicator not found or not publicly available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Indicator slug.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: 1-based page number.
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        required: false
+        description: Maximum observations per page; capped at 500.
+        schema:
+          type: integer
+          minimum: 1
+          default: 50
+          maximum: 500
+      description: Returns only current, published observations for an active published
+        indicator. Responses are bounded and paginated to protect the service.
+  /api/v1/indicators/by-id/{id}/observations:
+    get:
+      summary: List published observations by indicator UUID.
+      tags:
+      - Catalog
+      operationId: get_api_v1_indicators_by_id_id_observations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 100
+  /api/v1/organizations:
+    get:
+      summary: List active organizations with counts of published datasets.
+      tags:
+      - Catalog
+      operationId: get_api_v1_organizations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Resource not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: 1-based page number.
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: limit
+        in: query
+        required: false
+        description: Maximum number of organizations to return.
+        schema:
+          type: integer
+          minimum: 1
+          default: 50
+          maximum: 100
+      - name: per_page
+        in: query
+        required: false
+        description: Deprecated compatibility alias for limit.
+        schema:
+          type: integer
+          minimum: 1
+          default: 50
+          maximum: 100
+      description: Returns an ordered, paginated collection. `limit` is canonical;
+        `per_page` remains supported for compatibility.
+  /api/v1/public/facets:
+    get:
+      summary: Read category and organization facets for the catalog.
+      tags:
+      - Catalog
+      operationId: get_api_v1_public_facets
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/public/revision:
+    get:
+      summary: Read public catalog revision for cache invalidation.
+      tags:
+      - Catalog
+      operationId: get_api_v1_public_revision
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/public/stats:
+    get:
+      summary: Read public portal summary statistics.
+      tags:
+      - Catalog
+      operationId: get_api_v1_public_stats
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/public/organizations:
+    get:
+      summary: List public organizations.
+      tags:
+      - Catalog
+      operationId: get_api_v1_public_organizations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/catalog:
+    get:
+      summary: Read the DCAT/JSON-LD interoperable catalog.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_catalog
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/data.json:
+    get:
+      summary: Read the flattened SDI dataset feed.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_data_json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/geoportal-manifest:
+    get:
+      summary: Read the GeoPortal resource manifest.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_geoportal_manifest
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/profile:
+    get:
+      summary: Read the interoperability profile.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_profile
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/reference-codes:
+    get:
+      summary: List verified reference code systems and entries.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_reference_codes
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/sdi/standards:
+    get:
+      summary: List verified SDI standards.
+      tags:
+      - SDI
+      operationId: get_api_v1_sdi_standards
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/auth/login:
+    post:
+      summary: Authenticate a portal user and issue a short-lived bearer token.
+      tags:
+      - Authentication
+      operationId: post_api_v1_auth_login
+      responses:
+        '200':
+          description: Authenticated user and bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+  /api/v1/auth/forgot-password:
+    post:
+      summary: Request a password reset without disclosing account existence.
+      tags:
+      - Authentication
+      operationId: post_api_v1_auth_forgot_password
+      responses:
+        '202':
+          description: Reset request accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+  /api/v1/auth/reset-password:
+    post:
+      summary: Reset a password with a valid reset token.
+      tags:
+      - Authentication
+      operationId: post_api_v1_auth_reset_password
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+  /api/v1/auth/me:
+    get:
+      summary: Read the authenticated portal user and role memberships.
+      tags:
+      - Authentication
+      operationId: get_api_v1_auth_me
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/auth/logout:
+    post:
+      summary: Revoke the current portal token.
+      tags:
+      - Authentication
+      operationId: post_api_v1_auth_logout
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/dashboard:
+    get:
+      summary: Read portal dashboard summary.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_dashboard
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/shell:
+    get:
+      summary: Read portal navigation and current membership context.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_shell
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/profile:
+    get:
+      summary: Read the current user profile.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_profile
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+    patch:
+      summary: Update the current user profile.
+      tags:
+      - Portal
+      operationId: patch_api_v1_portal_profile
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/profile/password:
+    patch:
+      summary: Change the current user password.
+      tags:
+      - Portal
+      operationId: patch_api_v1_portal_profile_password
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/onboarding:
+    post:
+      summary: Mark the current user onboarding as completed.
+      tags:
+      - Portal
+      operationId: post_api_v1_portal_onboarding
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/riwayat:
+    get:
+      summary: List permitted audit log entries.
+      tags:
+      - Portal
+      operationId: legacy_get_api_v1_portal_riwayat
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      deprecated: true
+  /api/v1/portal/profiles:
+    get:
+      summary: Read user profiles for portal administration.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_profiles
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: user_ids
+        in: query
+        required: false
+        description: Comma-separated list of user UUIDs.
+        schema:
+          type: string
+  /api/v1/portal/sdi/runs:
+    get:
+      summary: List SDI preflight and harvest runs.
+      tags:
+      - Portal
+      operationId: legacy_get_api_v1_portal_sdi_runs
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      deprecated: true
+  /api/v1/portal/sdi-registry/catalog:
+    get:
+      summary: Read the SDI standards and reference-code registry.
+      tags:
+      - Portal
+      operationId: legacy_get_api_v1_portal_sdi_registry_catalog
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      deprecated: true
+  /api/v1/portal/datasets:
+    get:
+      summary: List datasets visible to the current user.
+      tags:
+      - Datasets
+      operationId: get_api_v1_portal_datasets
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Pencarian pada judul, deskripsi, nama sumber, kode, dan slug
+          (maksimum 100 karakter).
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        description: Filter satu status dataset.
+        schema:
+          type: string
+          enum:
+          - draft
+          - review
+          - published
+          - archived
+      - name: statuses
+        in: query
+        required: false
+        description: Daftar status dipisahkan koma; digunakan sebagai pengganti status.
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        description: Filter satu organisasi.
+        schema:
+          type: string
+          format: uuid
+      - name: organization_ids
+        in: query
+        required: false
+        description: Daftar UUID organisasi dipisahkan koma (maksimum 500 nilai).
+        schema:
+          type: string
+      - name: created_from
+        in: query
+        required: false
+        description: Tanggal pembuatan awal, inklusif.
+        schema:
+          type: string
+          format: date
+      - name: created_to
+        in: query
+        required: false
+        description: Tanggal pembuatan akhir, inklusif.
+        schema:
+          type: string
+          format: date
+      - name: organization_active
+        in: query
+        required: false
+        description: Jika true, hanya dataset dari organisasi aktif.
+        schema:
+          type: boolean
+      - name: published_at_not_null
+        in: query
+        required: false
+        description: Jika true, hanya dataset dengan waktu publikasi.
+        schema:
+          type: boolean
+      - name: published_before
+        in: query
+        required: false
+        description: Waktu publikasi paling lambat, inklusif.
+        schema:
+          type: string
+          format: date-time
+      - name: include_sdi_metadata
+        in: query
+        required: false
+        description: Jika true, sertakan metadata SDI dan relasi registrinya.
+        schema:
+          type: boolean
+      - name: limit
+        in: query
+        required: false
+        description: Jumlah maksimum data per halaman.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 100
+      - name: offset
+        in: query
+        required: false
+        description: Jumlah data yang dilewati.
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100000
+          default: 0
+      - name: sort
+        in: query
+        required: false
+        description: Urutan hasil.
+        schema:
+          type: string
+          enum:
+          - updated_desc
+          - updated_asc
+          - title_asc
+          - title_desc
+          - created_asc
+          - created_desc
+          default: updated_desc
+      description: Mengembalikan dataset dalam ruang akses pengguna dengan filter
+        dan paginasi server-side. Respons berisi data serta meta.total, meta.limit,
+        dan meta.offset.
+    post:
+      summary: Create a draft dataset.
+      tags:
+      - Datasets
+      operationId: post_api_v1_portal_datasets
+      responses:
+        '201':
+          description: Draft created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetDraftCreateRequest'
+  /api/v1/portal/datasets/{id}:
+    get:
+      summary: Read a dataset including versions, resources, jobs, and SDI metadata.
+      tags:
+      - Datasets
+      operationId: get_api_v1_portal_datasets_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+    patch:
+      summary: Update draft dataset metadata.
+      tags:
+      - Datasets
+      operationId: patch_api_v1_portal_datasets_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetWriteRequest'
+  /api/v1/portal/datasets/{id}/workflow:
+    post:
+      summary: Execute a dataset workflow transition.
+      tags:
+      - Datasets
+      operationId: post_api_v1_portal_datasets_id_workflow
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetWorkflowRequest'
+  /api/v1/portal/datasets/{id}/sdi-metadata:
+    patch:
+      summary: Save SDI metadata for the active draft version.
+      tags:
+      - Datasets
+      operationId: patch_api_v1_portal_datasets_id_sdi_metadata
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/datasets/{id}/uploads:
+    post:
+      summary: Prepare, complete, or clean up a source upload session.
+      tags:
+      - Datasets
+      operationId: post_api_v1_portal_datasets_id_uploads
+      responses:
+        '200':
+          description: Upload session or conversion registration result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadControlRequest'
+  /api/v1/portal/datasets/{id}/uploads/content:
+    post:
+      summary: Receive upload bytes using a short-lived upload capability.
+      tags:
+      - Datasets
+      operationId: post_api_v1_portal_datasets_id_uploads_content
+      responses:
+        '200':
+          description: Uploaded bytes accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      - name: X-Upload-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: One-time upload capability returned by POST /uploads.
+      - name: path
+        in: query
+        required: true
+        schema:
+          type: string
+  /api/v1/portal/datasets/{id}/conversion-status:
+    get:
+      summary: Read the latest conversion status for a dataset version.
+      tags:
+      - Datasets
+      operationId: get_api_v1_portal_datasets_id_conversion_status
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Dataset UUID.
+        schema:
+          type: string
+      - name: version
+        in: query
+        required: false
+        description: Dataset version.
+        schema:
+          type: integer
+          minimum: 1
+  /api/v1/portal/organizations:
+    get:
+      summary: List organizations visible to the current user.
+      tags:
+      - Organizations
+      operationId: get_api_v1_portal_organizations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+    post:
+      summary: Create an organization.
+      tags:
+      - Organizations
+      operationId: post_api_v1_portal_organizations
+      responses:
+        '201':
+          description: Organization created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/organizations/{id}:
+    get:
+      summary: Read organization details.
+      tags:
+      - Organizations
+      operationId: get_api_v1_portal_organizations_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Organization UUID.
+        schema:
+          type: string
+    patch:
+      summary: Update an organization.
+      tags:
+      - Organizations
+      operationId: patch_api_v1_portal_organizations_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Organization UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/memberships:
+    get:
+      summary: List user organization memberships.
+      tags:
+      - Organizations
+      operationId: get_api_v1_portal_memberships
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+    post:
+      summary: Create a membership.
+      tags:
+      - Organizations
+      operationId: post_api_v1_portal_memberships
+      responses:
+        '201':
+          description: Membership created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/memberships/{id}:
+    patch:
+      summary: Update membership role or status.
+      tags:
+      - Organizations
+      operationId: patch_api_v1_portal_memberships_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Membership UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/users/invite:
+    post:
+      summary: Invite a user to the portal.
+      tags:
+      - Organizations
+      operationId: post_api_v1_portal_users_invite
+      responses:
+        '201':
+          description: Invitation created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/indicators:
+    get:
+      summary: List indicators visible to the current user.
+      tags:
+      - Indicators
+      operationId: get_api_v1_portal_indicators
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      description: Mengembalikan indikator dalam ruang akses pengguna, dengan filter
+        pencarian, status, organisasi, paginasi server-side, dan metadata total hasil.
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Pencarian pada judul, kode, dan nama sumber (maksimum 100 karakter).
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        description: Filter satu status indikator.
+        schema:
+          type: string
+          enum:
+          - draft
+          - review
+          - published
+          - archived
+      - name: statuses
+        in: query
+        required: false
+        description: Daftar status dipisahkan koma; digunakan sebagai pengganti status.
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        description: Filter satu organisasi.
+        schema:
+          type: string
+          format: uuid
+      - name: organization_ids
+        in: query
+        required: false
+        description: Daftar UUID organisasi dipisahkan koma (maksimum 500 nilai).
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: Jumlah maksimum data per halaman.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 100
+      - name: offset
+        in: query
+        required: false
+        description: Jumlah data yang dilewati.
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100000
+          default: 0
+      - name: sort
+        in: query
+        required: false
+        description: Urutan hasil.
+        schema:
+          type: string
+          enum:
+          - updated_desc
+          - updated_asc
+          - title_asc
+          - title_desc
+          default: updated_desc
+    post:
+      summary: Create or update an indicator.
+      tags:
+      - Indicators
+      operationId: post_api_v1_portal_indicators
+      responses:
+        '201':
+          description: Indicator saved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/indicators/{id}:
+    post:
+      summary: Execute an indicator workflow action.
+      tags:
+      - Indicators
+      operationId: legacy_post_api_v1_portal_indicators_id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      deprecated: true
+      description: Alias transisi. Gunakan POST /api/v1/portal/indicators/{id}/workflow.
+    get:
+      summary: Get one portal indicator by ID.
+      description: Mengembalikan detail indikator dalam ruang akses pengguna. Lookup
+        berdasarkan ID dilakukan di database, bukan dengan memfilter daftar paginasi.
+      tags:
+      - Indicators
+      operationId: get_api_v1_portal_indicators_id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: UUID indikator.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Detail indikator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Akun tidak memiliki akses ke organisasi indikator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Indikator tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/indicators/{id}/observations:
+    get:
+      summary: List indicator observations.
+      tags:
+      - Indicators
+      operationId: get_api_v1_portal_indicators_id_observations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+    post:
+      summary: Create or update an indicator observation.
+      tags:
+      - Indicators
+      operationId: post_api_v1_portal_indicators_id_observations
+      responses:
+        '201':
+          description: Observation saved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+    patch:
+      summary: Publish an indicator observation.
+      tags:
+      - Indicators
+      operationId: legacy_patch_api_v1_portal_indicators_id_observations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      deprecated: true
+      description: Alias transisi. Gunakan PATCH /api/v1/portal/indicators/{id}/observations/{observationId}.
+  /api/v1/portal/sdi-registry:
+    post:
+      summary: Create an SDI standard, reference system, or reference-code entry.
+      tags:
+      - SDI
+      operationId: legacy_post_api_v1_portal_sdi_registry
+      responses:
+        '201':
+          description: Registry item created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      deprecated: true
+    patch:
+      summary: Verify or deprecate an SDI registry item.
+      tags:
+      - SDI
+      operationId: legacy_patch_api_v1_portal_sdi_registry
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      deprecated: true
+  /api/v1/portal/kualitas/summary:
+    get:
+      summary: Read SDI quality metrics for authorized organizations.
+      tags:
+      - SDI
+      operationId: legacy_get_api_v1_portal_kualitas_summary
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      deprecated: true
+  /api/v1/portal/integrasi/preflight:
+    post:
+      summary: Check whether published datasets are ready for an interoperability
+        target.
+      tags:
+      - SDI
+      operationId: legacy_post_api_v1_portal_integrasi_preflight
+      responses:
+        '201':
+          description: Preflight result and audit record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreflightRequest'
+      deprecated: true
+  /api/v1/portal/standar:
+    get:
+      summary: List standards available to the portal.
+      tags:
+      - SDI
+      operationId: legacy_get_api_v1_portal_standar
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      deprecated: true
+  /api/v1/datasets/{slug}/resources/{resourceId}:
+    get:
+      summary: Download a resource that belongs to the published dataset version.
+      tags:
+      - Catalog
+      operationId: legacy_get_api_v1_datasets_slug_resources_resourceId
+      responses:
+        '200':
+          description: Binary resource download.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Dataset slug.
+        schema:
+          type: string
+      - name: resourceId
+        in: path
+        required: true
+        description: Resource UUID.
+        schema:
+          type: string
+      deprecated: true
+  /api/v1/portal/audit-logs:
+    get:
+      summary: List permitted audit log entries.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_riwayat
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+  /api/v1/portal/sdi/harvest-runs:
+    get:
+      summary: List SDI preflight and harvest runs.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_sdi_runs
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/sdi/registry:
+    get:
+      summary: Read the SDI standards and reference-code registry.
+      tags:
+      - Portal
+      operationId: get_api_v1_portal_sdi_registry_catalog
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/sdi/registry/entries:
+    post:
+      summary: Create an SDI standard, reference system, or reference-code entry.
+      tags:
+      - SDI
+      operationId: post_api_v1_portal_sdi_registry
+      responses:
+        '201':
+          description: Registry item created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/sdi/registry/reviews:
+    patch:
+      summary: Verify or deprecate an SDI registry item.
+      tags:
+      - SDI
+      operationId: patch_api_v1_portal_sdi_registry
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+  /api/v1/portal/data-quality/summary:
+    get:
+      summary: Read SDI quality metrics for authorized organizations.
+      tags:
+      - SDI
+      operationId: get_api_v1_portal_kualitas_summary
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/integrations/preflight:
+    post:
+      summary: Check whether published datasets are ready for an interoperability
+        target.
+      tags:
+      - SDI
+      operationId: post_api_v1_portal_integrasi_preflight
+      responses:
+        '201':
+          description: Preflight result and audit record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreflightRequest'
+  /api/v1/portal/sdi/standards:
+    get:
+      summary: List standards available to the portal.
+      tags:
+      - SDI
+      operationId: get_api_v1_portal_standar
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+  /api/v1/portal/indicators/{id}/workflow:
+    post:
+      summary: Execute an indicator workflow action.
+      tags:
+      - Indicators
+      operationId: post_api_v1_portal_indicators_id_workflow
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Indicator UUID.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      description: Jalankan aksi alur kerja indikator seperti submit_for_review, publish,
+        return_for_changes, atau archive.
+  /api/v1/portal/indicators/{id}/observations/{observationId}:
+    patch:
+      summary: Publish a specific indicator observation.
+      tags:
+      - Indicators
+      operationId: patch_api_v1_portal_indicators_id_observations_observationId
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Autentikasi diperlukan atau sesi sudah berakhir.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validasi request gagal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+      - cookieAuth: []
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: UUID indikator.
+        schema:
+          type: string
+          format: uuid
+      - name: observationId
+        in: path
+        required: true
+        description: UUID observasi yang akan diterbitkan.
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      description: Menerbitkan satu observasi berdasarkan UUID; observasi yang terbit
+        akan menjadi nilai terkini untuk kombinasi periode dan dimensi yang sama.
+  /api/v1/organizations/{slug}:
+    get:
+      summary: Read an active public organization by slug.
+      description: Returns public organization profile and published dataset count.
+        Inactive or unknown organizations are not exposed.
+      tags:
+      - Catalog
+      operationId: get_api_v1_organizations_slug
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        description: Stable organization slug.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Organization detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Organization not found or not active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/openapi.json:
+    get:
+      tags:
+      - Documentation
+      summary: Download OpenAPI specification (application/json)
+      operationId: get_api_openapi_json
+      description: OpenAPI 3.1 specification in JSON format.
+      responses:
+        '200':
+          description: OpenAPI specification document in JSON format.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/openapi.yaml:
+    get:
+      tags:
+      - Documentation
+      summary: Download OpenAPI specification (application/yaml)
+      operationId: get_api_openapi_yaml
+      description: OpenAPI 3.1 specification in YAML format.
+      responses:
+        '200':
+          description: OpenAPI specification document in YAML format.
+          content:
+            application/yaml:
+              schema:
+                type: string
+  /api/openapi:
+    get:
+      tags:
+      - Documentation
+      summary: Get OpenAPI specification in JSON format
+      operationId: get_api_openapi
+      description: Compatibility URL for the JSON document. Prefer /api/openapi.json;
+        YAML is available at /api/openapi.yaml.
+      responses:
+        '200':
+          description: OpenAPI specification document in JSON format.
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: wajo_portal_token
+      description: HttpOnly token cookie set by the Next.js login action for same-origin
+        portal requests.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum token
+      description: Sanctum personal access token. Browser UI normally uses the HttpOnly
+        cookie.
+  schemas:
+    ApiResponse:
+      type: object
+      description: Endpoint-specific success payload; payload shape is documented
+        in the endpoint description.
+      properties:
+        data: {}
+        job: {}
+        status:
+          type: string
+        message:
+          type: string
+        meta:
+          type: object
+      additionalProperties: true
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      additionalProperties: true
+    JsonObject:
+      type: object
+      additionalProperties: true
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          maxLength: 256
+    ForgotPasswordRequest:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+    ResetPasswordRequest:
+      type: object
+      required:
+      - token
+      - email
+      - password
+      - password_confirmation
+      properties:
+        token:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+        password_confirmation:
+          type: string
+          minLength: 12
+          maxLength: 128
+    DatasetWriteRequest:
+      type: object
+      required:
+      - title
+      - description
+      - organization_id
+      - source_name
+      - geographic_scope
+      - license_text
+      - update_frequency
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 180
+        description:
+          type: string
+          minLength: 20
+          maxLength: 5000
+        organization_id:
+          type: string
+          format: uuid
+        source_name:
+          type: string
+          maxLength: 240
+        geographic_scope:
+          type: string
+          maxLength: 240
+        license_text:
+          type: string
+          maxLength: 240
+        update_frequency:
+          type: string
+          enum:
+          - daily
+          - weekly
+          - monthly
+          - quarterly
+          - yearly
+          - irregular
+          - one_time
+        category:
+          type:
+          - string
+          - 'null'
+          maxLength: 120
+        keywords:
+          type: array
+          items:
+            type: string
+            maxLength: 80
+          maxItems: 30
+      additionalProperties: true
+    DatasetDraftCreateRequest:
+      type: object
+      description: Create a lightweight, traceable draft. Complete publication-critical metadata before submitting for review; SDI registry metadata is optional.
+      required:
+      - title
+      - organization_id
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 180
+        description:
+          type:
+          - string
+          - 'null'
+          minLength: 20
+          maxLength: 5000
+        organization_id:
+          type: string
+          format: uuid
+        source_name:
+          type:
+          - string
+          - 'null'
+          minLength: 2
+          maxLength: 240
+        geographic_scope:
+          type:
+          - string
+          - 'null'
+          minLength: 2
+          maxLength: 240
+        license_text:
+          type:
+          - string
+          - 'null'
+          minLength: 2
+          maxLength: 240
+        update_frequency:
+          type:
+          - string
+          - 'null'
+          enum:
+          - daily
+          - weekly
+          - monthly
+          - quarterly
+          - yearly
+          - irregular
+          - one_time
+          - null
+        category:
+          type:
+          - string
+          - 'null'
+          maxLength: 120
+        keywords:
+          type: array
+          items:
+            type: string
+            maxLength: 80
+          maxItems: 30
+      additionalProperties: true
+    DatasetWorkflowRequest:
+      type: object
+      required:
+      - action
+      properties:
+        action:
+          type: string
+          enum:
+          - submit_for_review
+          - publish
+          - archive
+          - return_for_changes
+          - abandon_version
+          - start_version
+        reason:
+          type: string
+          maxLength: 1000
+        change_summary:
+          type: string
+          minLength: 5
+          maxLength: 500
+      additionalProperties: false
+    UploadControlRequest:
+      type: object
+      required:
+      - action
+      properties:
+        action:
+          type: string
+          enum:
+          - prepare
+          - complete
+          - cleanup
+        filename:
+          type: string
+          maxLength: 255
+        size:
+          type: integer
+          minimum: 1
+          maximum: 26214400
+        mimeType:
+          type: string
+          maxLength: 160
+        path:
+          type: string
+          maxLength: 1024
+        checksumSha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+      additionalProperties: false
+    PreflightRequest:
+      type: object
+      required:
+      - target
+      properties:
+        target:
+          type: string
+          enum:
+          - sdi_flat
+          - dcat_jsonld
+          - geoportal
+      additionalProperties: false
+    PaginatedListResponse:
+      type: object
+      description: Respons list server-side dengan jumlah total sebelum limit dan
+        offset diterapkan.
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meta:
+          type: object
+          required:
+          - total
+          - limit
+          - offset
+          properties:
+            total:
+              type: integer
+              minimum: 0
+              description: Jumlah seluruh hasil setelah filter, sebelum paginasi.
+            limit:
+              type: integer
+              minimum: 1
+              maximum: 500
+            offset:
+              type: integer
+              minimum: 0
+              maximum: 100000
+          additionalProperties: false
+      additionalProperties: false

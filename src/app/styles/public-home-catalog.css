@@ -1,0 +1,145 @@
+.home-section {
+  @apply pt-[3.75rem] pb-[3.75rem];
+}
+
+.home-topic-grid {
+  @apply grid-cols-5 gap-[.65rem];
+}
+
+/* Header navigation styles are centralized in overrides.css. */
+
+.catalog-intro {
+  @apply bg-[#edf2f4] border-b border-b-[#d6e0e5];
+}
+
+@media (max-width: 1023px) {
+  .home-hero-inner {
+    @apply grid-cols-[minmax(0,_1fr)_minmax(260px,_.8fr)] gap-[1.5rem];
+  }
+}
+
+@media (max-width: 680px) {
+  .home-hero-inner {
+    @apply grid-cols-1 gap-[1.5rem] pt-[2rem] pb-[2rem];
+  }
+
+  .home-section {
+    @apply pt-[2.75rem] pb-[2.75rem];
+  }
+}
+
+.portal-tour-target {
+  outline: 3px solid #1d4ed8 !important;
+  box-shadow:
+    0 0 0 8px rgb(29 78 216 / 12%),
+    0 10px 28px rgb(15 35 55 / 12%) !important;
+  @apply [scroll-margin-block:7rem] relative z-[105] outline-offset-[4px] rounded-[0.9rem];
+}
+
+.portal-tour-panel {
+  @apply max-h-[min(42vh,_22rem)] overflow-y-auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-tour-target {
+    @apply scroll-auto;
+  }
+}
+
+/* Static route content has no entry/reveal animation to prevent layout shift. */
+
+.home-hero-inner {
+  @apply pt-[2.4rem] pb-[2.4rem] gap-[1.75rem];
+}
+
+.home-stats {
+  @apply grid grid-cols-3 gap-0 mt-[1rem] border border-[#d4dfe5] rounded-[.5rem] bg-[#fff] overflow-hidden;
+}
+
+.home-section {
+  @apply pt-[2.6rem] pb-[2.6rem];
+}
+
+.home-section-heading {
+  @apply mb-[1.15rem] gap-[1.25rem];
+}
+
+.home-topic-grid {
+  @apply gap-[.55rem];
+}
+
+.home-section-link {
+  @apply inline-flex items-center gap-[.45rem] flex-none border border-[#cbd9e0] rounded-[.4rem] p-[.62rem_.8rem]
+  text-[#245b76] text-[.8rem] font-[650];
+}
+
+.home-section-link:hover {
+  @apply border-[#91afbf] bg-[#f3f8fa];
+}
+
+.public-page-content .section-space {
+  @apply pt-[2.5rem] pb-[3rem];
+}
+
+.organization-search-panel {
+  @apply max-w-[44rem] border border-[#d4dfe5] rounded-[.5rem] bg-[#fff] p-[1rem];
+}
+
+.organization-card {
+  @apply flex min-h-[180px] flex-col border border-[#d6e0e5] rounded-[.5rem] bg-[#fff] p-[1rem]
+  transition-[border-color_160ms_ease,_box-shadow_160ms_ease];
+}
+
+.organization-card:hover {
+  @apply border-[#a8c0cb] shadow-[0_3px_12px_rgb(25_55_72_/_.05)];
+}
+
+.organization-card-footer {
+  @apply flex items-center justify-between gap-[.75rem] mt-auto pt-[.9rem];
+}
+
+.organization-card-footer > span {
+  @apply text-[#647985] text-[.75rem];
+}
+
+.organization-card-footer > span strong {
+  @apply text-[#214b62] text-[.9rem] tabular-nums;
+}
+
+.organization-card-footer > a {
+  @apply inline-flex items-center gap-[.25rem] text-[#245b76] text-[.75rem] font-bold;
+}
+
+.organization-detail-band {
+  @apply border-b border-b-[#d6e0e5] bg-[#edf2f4];
+}
+
+.organization-detail-meta {
+  @apply flex flex-wrap gap-[.65rem_1.2rem];
+}
+
+.organization-detail-meta > span {
+  @apply inline-flex items-center gap-[.4rem] text-[#526d7b] text-[.8rem];
+}
+
+.organization-detail-meta svg {
+  @apply text-[#477b91];
+}
+
+.organization-detail-meta strong {
+  @apply text-[#23495e];
+}
+
+.organization-datasets-section {
+  @apply min-h-[30vh];
+}
+
+@media (max-width: 1023px) {
+  .home-hero-inner {
+    @apply grid-cols-[minmax(0,_1fr)_minmax(260px,_.8fr)];
+  }
+
+  .home-topic-grid {
+    @apply grid-cols-3;
+  }
+}
