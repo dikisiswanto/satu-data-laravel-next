@@ -62,7 +62,7 @@ export default async function DataQualityPage() {
     : summaryResult.data;
   const metrics = summary || {};
   return (
-    
+    <>
       <PageHeading
         eyebrow="Pemantauan"
         title="Kualitas dan siklus data"
@@ -261,7 +261,7 @@ export default async function DataQualityPage() {
         memiliki pengecualian resmi, gunakan jadwal yang sesuai dengan ketentuan
         sektornya.
       </p>
-    
+    </>
   );
 }
 

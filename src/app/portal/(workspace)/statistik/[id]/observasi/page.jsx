@@ -70,7 +70,7 @@ export default async function IndicatorObservationsPage({ params }) {
     .limit(500);
   assertBackendQuery(observationError, "portal_indicator_observations_list");
   return (
-    
+    <>
       <Link
         href="/portal/statistik"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
@@ -121,6 +121,6 @@ export default async function IndicatorObservationsPage({ params }) {
         canEdit={canEdit}
         canPublish={canPublish}
       />
-    
+    </>
   );
 }

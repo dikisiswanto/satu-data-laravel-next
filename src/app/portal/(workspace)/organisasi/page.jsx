@@ -50,7 +50,7 @@ export default async function OrganizationsPage({ searchParams }) {
       };
   const unique = [...new Map((data || []).map((o) => [o.id, o])).values()];
   return (
-    
+    <>
       <PageHeading
         eyebrow="Tata kelola kelembagaan"
         title="Organisasi"
@@ -189,6 +189,6 @@ export default async function OrganizationsPage({ searchParams }) {
         administrator data. Menonaktifkan organisasi tidak menghapus dataset
         maupun riwayat yang terkait.
       </p>
-    
+    </>
   );
 }

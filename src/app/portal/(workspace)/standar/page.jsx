@@ -77,7 +77,7 @@ export default async function SdiStandardsPage() {
     (item) => item.status === "verified",
   ).length;
   return (
-    
+    <>
       <PageHeading
         eyebrow="Interoperabilitas dan tata kelola"
         title="Standar dan kode referensi"
@@ -111,7 +111,7 @@ export default async function SdiStandardsPage() {
           canManage={canManage}
         />
       </div>
-    
+    </>
   );
 }
 

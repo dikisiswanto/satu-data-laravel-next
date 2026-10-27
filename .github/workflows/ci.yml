@@ -15,8 +15,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  frontend-lint:
+    name: Frontend lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Pasang dependensi terkunci
+        run: npm ci
+      - name: Wajibkan ESLint lulus sebelum build
+        run: npm run lint
+
   verify:
     name: Frontend
+    needs: frontend-lint
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -33,8 +49,6 @@ jobs:
         run: npm ci
       - name: Periksa struktur, integrasi, dan namespace
         run: npm run check
-      - name: Periksa kualitas kode
-        run: npm run lint
       - name: Jalankan test unit
         run: npm run test
       - name: Pasang browser untuk test E2E

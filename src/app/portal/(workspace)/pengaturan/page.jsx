@@ -24,7 +24,7 @@ export default async function SettingsPage() {
     .maybeSingle();
   assertBackendQuery(profileError, "portal_settings_profile");
   return (
-    
+    <>
       <PageHeading
         eyebrow="Akun"
         title="Pengaturan akun"
@@ -65,6 +65,6 @@ export default async function SettingsPage() {
           Perubahan akses dicatat dalam riwayat aktivitas.
         </p>
       </section>
-    
+    </>
   );
 }

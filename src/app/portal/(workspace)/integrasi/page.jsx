@@ -108,7 +108,7 @@ export default async function SdiIntegrationPage() {
     assertBackendQuery(recentRunsError, "portal_sdi_preflight_history");
 
   return (
-    
+    <>
       <PageHeading
         eyebrow="Interoperabilitas"
         title="Kesiapan integrasi Satu Data Indonesia"
@@ -357,7 +357,7 @@ export default async function SdiIntegrationPage() {
           </div>
         </div>
       </section>
-    
+    </>
   );
 }
 

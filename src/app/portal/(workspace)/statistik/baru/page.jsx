@@ -51,7 +51,7 @@ export default async function NewIndicatorPage() {
       .filter(Boolean);
   }
   return (
-    
+    <>
       <PageHeading
         eyebrow="Indikator statistik"
         title={
@@ -65,6 +65,6 @@ export default async function NewIndicatorPage() {
       <PortalContextGuide />
 
       <IndicatorForm organizations={orgs} />
-    
+    </>
   );
 }

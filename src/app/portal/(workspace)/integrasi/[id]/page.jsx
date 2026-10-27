@@ -71,7 +71,7 @@ export default async function EditSdiMetadataPage({ params }) {
       : `draf awal versi ${dataset.current_version}`;
 
   return (
-    
+    <>
       <Link
         href="/portal/integrasi"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
@@ -93,6 +93,6 @@ export default async function EditSdiMetadataPage({ params }) {
         standards={standards}
         referenceSystems={referenceSystems}
       />
-    
+    </>
   );
 }

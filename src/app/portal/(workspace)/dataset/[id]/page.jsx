@@ -194,7 +194,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
         }
       : null;
   return (
-    
+    <>
       <Link href="/portal/dataset" className="text-sm font-medium text-primary">
         ← Kembali ke daftar
       </Link>
@@ -585,6 +585,6 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
           ) : null}
         </aside>
       </div>
-    
+    </>
   );
 }

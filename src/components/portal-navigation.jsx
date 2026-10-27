@@ -223,7 +223,6 @@ function NavigationLoadingState() {
 
 export function PortalNavigation({ roles = [], loading = false }) {
   const pathname = usePathname();
-  if (loading) return <NavigationLoadingState />;
   const normalizedRoles = useMemo(() => new Set(roles), [roles]);
   const visibleGroups = useMemo(
     () =>
@@ -248,6 +247,7 @@ export function PortalNavigation({ roles = [], loading = false }) {
       groups[0].items[0],
     [pathname, visibleGroups],
   );
+  if (loading) return <NavigationLoadingState />;
 
   return (
     <>

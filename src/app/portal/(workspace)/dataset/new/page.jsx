@@ -76,7 +76,7 @@ export default async function NewDatasetPage({ searchParams }) {
   const { standards, referenceSystems } =
     await getVerifiedSdiRegistryOptions(supabase);
   return (
-    
+    <>
       <PageHeading
         eyebrow="Pengelolaan data"
         title={
@@ -185,6 +185,6 @@ export default async function NewDatasetPage({ searchParams }) {
         </section>
       )}
       <DatasetPreparationAssistant />
-    
+    </>
   );
 }

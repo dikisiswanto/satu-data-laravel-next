@@ -444,7 +444,7 @@ const checks = [
   ],
   [
     "src/lib/backend/compat-server.js",
-    /indicatorId \? `\/api\/v1\/portal\/indicators\/\$\{encodeURIComponent\(indicatorId\)\}`/,
+    /table === "indicators"[\s\S]{0,120}get\("id"\)[\s\S]{0,180}api\/v1\/portal\/indicators\/\$\{encodeURIComponent\(indicatorId\)\}/,
     "Pencarian indikator berdasarkan ID harus memakai endpoint detail khusus",
   ],
   [

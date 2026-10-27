@@ -8,6 +8,7 @@
   },
   "packageManager": "npm@10.9.2",
   "scripts": {
+    "prepare": "husky",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -25,6 +26,20 @@
     "format:php": "composer --working-dir=backend format",
     "format:php:check": "composer --working-dir=backend format:check",
     "format:all": "npm run format:write && npm run format:php"
+  },
+  "lint-staged": {
+    "{src,tests,scripts}/**/*.{js,jsx,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{js,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "{src,tests,scripts,.github}/**/*.{css,json,md,yaml,yml}": "prettier --write",
+    "*.{json,md,yaml,yml}": "prettier --write",
+    "backend/*.json": "prettier --write",
+    "backend/{app,bootstrap,config,database,routes,tests,public}/**/*.php": "php backend/vendor/bin/pint --config=backend/pint.json"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.5",
@@ -49,6 +64,8 @@
     "@vitest/coverage-v8": "5.0.3",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "postcss": "^8.5.29",
     "prettier": "3.9.9",
     "tailwindcss": "4.3.3",

@@ -65,7 +65,7 @@ export default async function EditIndicatorPage({ params }) {
       .filter(Boolean);
   }
   return (
-    
+    <>
       <PageHeading
         eyebrow="Indikator statistik"
         title="Ubah indikator"
@@ -74,6 +74,6 @@ export default async function EditIndicatorPage({ params }) {
       <PortalContextGuide />
 
       <IndicatorForm organizations={orgs} initial={indicator} />
-    
+    </>
   );
 }

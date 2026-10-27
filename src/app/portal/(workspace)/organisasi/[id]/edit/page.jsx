@@ -37,7 +37,7 @@ export default async function EditOrganizationPage({ params }) {
   assertBackendQuery(error, "portal_organization_edit_detail");
   if (!org) notFound();
   return (
-    
+    <>
       <PageHeading
         eyebrow="Tata kelola kelembagaan"
         title="Ubah organisasi"
@@ -46,6 +46,6 @@ export default async function EditOrganizationPage({ params }) {
       <PortalContextGuide />
 
       <OrganizationForm initial={org} />
-    
+    </>
   );
 }

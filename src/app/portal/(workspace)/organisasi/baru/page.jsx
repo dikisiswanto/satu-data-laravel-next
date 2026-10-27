@@ -28,7 +28,7 @@ export default async function NewOrganizationPage() {
   )
     redirect("/portal/organisasi");
   return (
-    
+    <>
       <PageHeading
         eyebrow="Tata kelola kelembagaan"
         title={
@@ -42,6 +42,6 @@ export default async function NewOrganizationPage() {
       <PortalContextGuide />
 
       <OrganizationForm />
-    
+    </>
   );
 }

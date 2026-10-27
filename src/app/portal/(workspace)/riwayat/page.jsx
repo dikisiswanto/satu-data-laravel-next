@@ -122,7 +122,7 @@ export default async function AuditHistoryPage() {
   }));
 
   return (
-    
+    <>
       <PageHeading
         eyebrow="Akuntabilitas"
         title="Riwayat perubahan"
@@ -345,6 +345,6 @@ export default async function AuditHistoryPage() {
         Detail yang tidak dicatat pada saat tindakan berlangsung tidak dapat
         direkonstruksi secara retroaktif.
       </p>
-    
+    </>
   );
 }

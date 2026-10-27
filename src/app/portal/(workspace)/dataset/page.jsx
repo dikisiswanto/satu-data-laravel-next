@@ -185,7 +185,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
   const previousHref = `/portal/dataset?${buildQuery({ ...currentParams, page: currentPage - 1 })}`;
   const nextHref = `/portal/dataset?${buildQuery({ ...currentParams, page: currentPage + 1 })}`;
   return (
-    
+    <>
       <PageHeading
         eyebrow="Pengelolaan data"
         title="Dataset"
@@ -344,7 +344,12 @@ export default async function ManageDatasetsPage({ searchParams }) {
         <p className="portal-table-mobile-hint sm:hidden">
           Geser tabel ke samping untuk melihat kolom lainnya.
         </p>
-        <div className="portal-table-wrap" role="region" aria-label="Daftar dataset" tabIndex={0}>
+        <div
+          className="portal-table-wrap"
+          role="region"
+          aria-label="Daftar dataset"
+          tabIndex={0}
+        >
           {error ? (
             <div className="portal-state-panel portal-state-error" role="alert">
               <h3>Daftar dataset belum dapat dimuat</h3>
@@ -517,6 +522,6 @@ export default async function ManageDatasetsPage({ searchParams }) {
           </a>
         </div>
       </section>
-    
+    </>
   );
 }

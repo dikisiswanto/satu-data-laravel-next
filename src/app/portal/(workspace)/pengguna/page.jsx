@@ -61,7 +61,7 @@ export default async function UserAccessPage() {
   const { data: memberships, error } = membershipsResult;
   assertBackendQuery(organizationsError, "portal_users_organizations");
   return (
-    
+    <>
       <PageHeading
         eyebrow="Administrasi akses"
         title="Pengguna dan akses"
@@ -171,6 +171,6 @@ export default async function UserAccessPage() {
         tetapkan peran dan lingkup organisasinya. Untuk mencabut akses,
         nonaktifkan aksesnya agar riwayat aktivitas tetap dapat ditelusuri.
       </p>
-    
+    </>
   );
 }

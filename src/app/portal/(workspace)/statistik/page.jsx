@@ -51,7 +51,7 @@ export default async function IndicatorsAdminPage({ searchParams }) {
   }
   const { data, error } = query ? await query : { data: [], error: null };
   return (
-    
+    <>
       <PageHeading
         eyebrow="Statistik"
         title="Indikator statistik"
@@ -228,6 +228,6 @@ export default async function IndicatorsAdminPage({ searchParams }) {
           />
         )}
       </section>
-    
+    </>
   );
 }

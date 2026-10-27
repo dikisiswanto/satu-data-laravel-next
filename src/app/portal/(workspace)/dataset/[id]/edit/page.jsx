@@ -71,7 +71,7 @@ export default async function EditDatasetPage({ params, searchParams }) {
   const { standards, referenceSystems } =
     await getVerifiedSdiRegistryOptions(supabase);
   return (
-    
+    <>
       <Link
         href={`/portal/dataset/${id}`}
         className="text-sm font-medium text-primary"
@@ -98,6 +98,6 @@ export default async function EditDatasetPage({ params, searchParams }) {
         }
         initialStatusUnknown={query?.error === "service_unavailable"}
       />
-    
+    </>
   );
 }

@@ -47,7 +47,7 @@ export default async function ReviewPage() {
   }
   const { data, error } = query ? await query : { data: [], error: null };
   return (
-    
+    <>
       <PageHeading
         eyebrow="Tata kelola"
         title="Pemeriksaan data"
@@ -156,6 +156,6 @@ export default async function ReviewPage() {
           />
         )}
       </section>
-    
+    </>
   );
 }
