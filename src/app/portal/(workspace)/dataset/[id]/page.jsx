@@ -38,6 +38,10 @@ const datasetActionErrorMessages = {
     "Status dataset berubah atau tidak lagi sesuai. Muat ulang halaman sebelum mencoba kembali.",
   service_unavailable:
     "Layanan belum berhasil menyelesaikan tindakan ini. Status dataset belum dapat dikonfirmasi; muat ulang halaman sebelum mencoba kembali.",
+  authentication_unavailable:
+    "Layanan autentikasi sedang terganggu. Sesi Anda belum dianggap berakhir; coba tindakan ini kembali sebentar lagi.",
+  authorization_unavailable:
+    "Hak akses belum dapat diperiksa. Tidak ada perubahan yang dikirim; coba kembali sebentar lagi.",
   version_in_progress:
     "Sudah ada draf versi baru. Selesaikan atau periksa versi tersebut sebelum membuat versi berikutnya.",
   version_requires_published_dataset:

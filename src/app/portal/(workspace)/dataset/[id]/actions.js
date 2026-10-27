@@ -3,21 +3,47 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import {
+  isMissingAuthSession,
+  isTransientAuthFailure,
+} from "@/lib/backend/auth-errors";
 import { invalidatePublicDatasetCache } from "@/lib/data/revalidate-public";
 import { classifyBackendError } from "@/lib/backend/query-guard";
 const idSchema = z.string().uuid();
+
+async function verifyActionSession(backend, id) {
+  const verification = await getRequestVerifiedUser(backend);
+  if (verification?.error) {
+    if (
+      Number(verification.error.status) === 401 ||
+      isMissingAuthSession(verification.error)
+    ) {
+      redirect("/portal/login");
+    }
+
+    // A temporary auth/backend failure must not discard the user's portal
+    // context by sending them to login. Keep them on the record page instead.
+    const code = isTransientAuthFailure(verification.error)
+      ? "authentication_unavailable"
+      : "authorization_unavailable";
+    redirect(`/portal/dataset/${id}?action_error=${code}`);
+  }
+
+  if (!verification?.data?.user) redirect("/portal/login");
+}
+
 export async function submitForReviewAction(formData) {
   const id = formData.get("dataset_id");
   if (!idSchema.safeParse(id).success) redirect("/portal/dataset");
   const supabase = await createBackendServerClient();
-  const {
-    data: { user },
-  } = await getRequestVerifiedUser(supabase);
-  if (!user) redirect("/portal/login");
+  await verifyActionSession(supabase, id);
   const { error } = await supabase.rpc("submit_dataset_for_review", {
     p_dataset_id: id,
   });
   if (error) {
+    if (Number(error.status) === 401 || isMissingAuthSession(error)) {
+      redirect("/portal/login");
+    }
     const message = String(error.message || "").toLowerCase();
     const code =
       message.includes("version_not_ready") ||
@@ -37,15 +63,15 @@ export async function startDatasetVersionAction(formData) {
     redirect(`/portal/dataset/${id}?action_error=version_summary_invalid`);
   }
   const supabase = await createBackendServerClient();
-  const {
-    data: { user },
-  } = await getRequestVerifiedUser(supabase);
-  if (!user) redirect("/portal/login");
+  await verifyActionSession(supabase, id);
   const { data: version, error } = await supabase.rpc("start_dataset_version", {
     p_dataset_id: id,
     p_change_summary: changeSummary,
   });
   if (error) {
+    if (Number(error.status) === 401 || isMissingAuthSession(error)) {
+      redirect("/portal/login");
+    }
     const message = String(error.message || "").toLowerCase();
     const code =
       error.code === "23505" || message.includes("version_in_progress")
@@ -67,14 +93,14 @@ export async function publishAfterValidationAction(formData) {
   const id = formData.get("dataset_id");
   if (!idSchema.safeParse(id).success) redirect("/portal/dataset");
   const supabase = await createBackendServerClient();
-  const {
-    data: { user },
-  } = await getRequestVerifiedUser(supabase);
-  if (!user) redirect("/portal/login");
+  await verifyActionSession(supabase, id);
   const { error } = await supabase.rpc("publish_dataset_after_validation", {
     p_dataset_id: id,
   });
   if (error) {
+    if (Number(error.status) === 401 || isMissingAuthSession(error)) {
+      redirect("/portal/login");
+    }
     console.error("dataset_publish_failed", error.code || "unknown");
     redirect(
       `/portal/dataset/${id}?action_error=${classifyBackendError(error)}`,
