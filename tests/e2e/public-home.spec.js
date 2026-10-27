@@ -19,7 +19,7 @@ test("beranda publik memiliki landmark, judul, dan navigasi", async ({
 test("katalog dataset mempunyai pencarian yang berlabel", async ({ page }) => {
   await page.goto("/dataset");
   await expect(
-    page.getByRole("heading", { name: "Katalog dataset" }),
+    page.getByRole("heading", { name: "Katalog dataset", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByLabel("Kata kunci"),
