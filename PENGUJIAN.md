@@ -30,6 +30,10 @@ CI backend memakai MariaDB. Pertahankan engine yang sama untuk pengujian migrati
 
 Sebagian test frontend memeriksa struktur source untuk mencegah regresi tampilan. Test seperti ini berguna untuk aturan UI yang eksplisit, tetapi tidak membuktikan perilaku runtime. Aturan bisnis kritis harus diuji pada service/API atau melalui test integrasi; jangan hanya mengandalkan pola teks di source.
 
+## Perbaikan build Docker PHP
+
+Build backend membutuhkan paket sistem `libxml2-dev` untuk menyediakan `libxml-2.0.pc` saat mengompilasi ekstensi PHP `dom`, `xml`, dan `xmlwriter`. Paket ini sudah ditambahkan ke `backend/Dockerfile`. Jika build sebelumnya gagal dengan pesan `Package 'libxml-2.0' ... not found`, bangun ulang image API. Peringatan `mbstring ... is already loaded` pada log yang sama bukan penyebab kegagalan fatal; bila tetap muncul setelah build berhasil, periksa apakah ekstensi dimuat lebih dari sekali.
+
 ## Temuan yang sudah diperbaiki
 
 - Source memakai `import "server-only"` di beberapa modul server, tetapi paketnya tidak tercatat di `package.json` maupun lockfile. Dependensi `server-only@0.0.1` sekarang dinyatakan langsung agar instalasi bersih tidak bergantung pada paket transitif (paket resmi: `npmjs.com/package/server-only`).

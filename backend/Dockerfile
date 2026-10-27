@@ -18,7 +18,7 @@ RUN set -eux; \
         install -y --no-install-recommends \
         git unzip curl \
         libpq-dev libzip-dev libpng-dev libjpeg62-turbo-dev \
-        libfreetype6-dev libicu-dev libonig-dev; \
+        libfreetype6-dev libicu-dev libonig-dev libxml2-dev; \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
