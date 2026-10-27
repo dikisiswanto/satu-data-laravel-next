@@ -46,10 +46,13 @@ describe("operator-focused dataset preparation", () => {
   });
 
   it("keeps advanced national metadata available but collapses it for a clean new draft", () => {
-    const fields = read("src/components/admin/sdi-metadata-fields.jsx").replace(/\s+/g, " ");
+    const fields = read("src/components/admin/sdi-metadata-fields.jsx").replace(
+      /\s+/g,
+      " ",
+    );
     expect(fields).toContain('<details className="group rounded-2xl');
     expect(fields).not.toContain("<details open=");
-    expect(fields).toContain('hasSavedMetadata');
+    expect(fields).toContain("hasSavedMetadata");
     expect(fields).toContain("Bisa dilengkapi setelah draf");
     expect(fields).toContain(
       "Kode SDS, ID DDP, dan kode referensi tidak boleh dibuat sendiri.",
@@ -65,12 +68,12 @@ describe("operator-focused dataset preparation", () => {
   });
 
   it("surfaces a guided template assistant and next-step cards without extra dashboard database calls", () => {
-    const createPage = read("src/app/portal/dataset/new/page.jsx");
+    const createPage = read("src/app/portal/(workspace)/dataset/new/page.jsx");
     const assistant = read(
       "src/components/admin/dataset-preparation-assistant.jsx",
     );
     const blueprints = read("src/lib/data/dataset-blueprints.js");
-    const dashboard = read("src/app/portal/page.jsx");
+    const dashboard = read("src/app/portal/(workspace)/page.jsx");
     expect(createPage).toContain("<DatasetPreparationAssistant />");
     expect(assistant).toContain('id="panduan-dataset"');
     expect(assistant).toContain("data-kamus-kolom.csv");

@@ -11,7 +11,8 @@ async function loadLiveSdiPackages() {
     backendFetch("/api/v1/sdi/data.json", { auth: false, cache: "no-store" }),
     backendFetch("/api/v1/public/stats", { auth: false, cache: "no-store" }),
   ]);
-  if (!Array.isArray(recordsPayload)) throw new Error("sdi_harvest_invalid_shape");
+  if (!Array.isArray(recordsPayload))
+    throw new Error("sdi_harvest_invalid_shape");
   const publishedCount = Number(statsPayload?.data?.published_dataset_count);
   if (!Number.isFinite(publishedCount) || publishedCount < 0) {
     throw new Error("sdi_catalog_stats_invalid_shape");

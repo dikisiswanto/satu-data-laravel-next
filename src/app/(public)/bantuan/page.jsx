@@ -15,7 +15,12 @@ export const metadata = {
   description:
     "Panduan meminta data yang belum tersedia di Portal Satu Data Kabupaten Wajo melalui PPID Kabupaten Wajo.",
   ...getCanonicalMetadata("/bantuan"),
-  ...getSocialMetadata({ path: "/bantuan", title: "Bantuan dan Permintaan Data | Satu Data Wajo", description: "Panduan meminta data yang belum tersedia melalui kanal resmi PPID Kabupaten Wajo." }),
+  ...getSocialMetadata({
+    path: "/bantuan",
+    title: "Bantuan dan Permintaan Data | Satu Data Wajo",
+    description:
+      "Panduan meminta data yang belum tersedia melalui kanal resmi PPID Kabupaten Wajo.",
+  }),
 };
 
 const ppidUrl = "https://e-ppid-utama.wajokab.go.id/";

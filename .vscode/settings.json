@@ -1,0 +1,17 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.run": "onType",
+  "eslint.format.enable": false,
+  "eslint.validate": ["javascript", "javascriptreact"],
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint",
+    "editor.formatOnSave": true
+  },
+  "laravel-pint.enable": true,
+  "laravel-pint.configPath": "backend/pint.json"
+}

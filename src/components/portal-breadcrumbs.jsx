@@ -59,7 +59,11 @@ export function PortalBreadcrumbs() {
 
   return (
     <nav aria-label="Jejak navigasi" className="portal-breadcrumbs">
-      <Link href="/portal" className="portal-breadcrumb-home" aria-label="Beranda pengelola">
+      <Link
+        href="/portal"
+        className="portal-breadcrumb-home"
+        aria-label="Beranda pengelola"
+      >
         <Home size={13} aria-hidden="true" />
         <span>Portal</span>
       </Link>

@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const publicController = readFileSync(
-  new URL("../../backend/app/Http/Controllers/Api/PublicDataController.php", import.meta.url),
+  new URL(
+    "../../backend/app/Http/Controllers/Api/PublicDataController.php",
+    import.meta.url,
+  ),
   "utf8",
 );
 const organizationDirectory = readFileSync(
@@ -37,13 +40,19 @@ describe("public portal statistics and organization directory", () => {
     expect(publicController).toContain("public_organization_count");
     expect(publicController).toContain("published_indicator_count");
     expect(publicController).toContain("where('r.is_public', true)");
-    expect(publicController).toContain("where('r.conversion_status', 'succeeded')");
+    expect(publicController).toContain(
+      "where('r.conversion_status', 'succeeded')",
+    );
     expect(publicController).toContain("where('o.is_active', true)");
-    expect(publicController).toContain("DB::table('organizations')->where('is_active', true)->count()");
+    expect(publicController).toContain(
+      "DB::table('organizations')->where('is_active', true)->count()",
+    );
   });
 
   it("returns per-organization dataset counts for the searchable public directory", () => {
-    expect(publicController).toContain("function organizations(Request $request)");
+    expect(publicController).toContain(
+      "function organizations(Request $request)",
+    );
     expect(publicController).toContain("count(distinct d.id)");
     expect(organizationDirectory).toMatch(
       /organization\.name,\s*organization\.code,\s*organization\.description/,
@@ -81,10 +90,16 @@ describe("public portal statistics and organization directory", () => {
   });
 
   it("excludes a non-public or unsuccessfully converted resource from the public catalog", () => {
-    expect(publicController).toContain("whereColumn('dataset_resources.dataset_version', 'datasets.current_version')");
+    expect(publicController).toContain(
+      "whereColumn('dataset_resources.dataset_version', 'datasets.current_version')",
+    );
     expect(publicController).toContain("where('is_public', true)");
-    expect(publicController).toContain("where('conversion_status', 'succeeded')");
+    expect(publicController).toContain(
+      "where('conversion_status', 'succeeded')",
+    );
     expect(publicController).toContain("where('published_at', '<=', now())");
-    expect(publicController).toContain("function serializeDataset($dataset, bool $includeResources)");
+    expect(publicController).toContain(
+      "function serializeDataset($dataset, bool $includeResources)",
+    );
   });
 });

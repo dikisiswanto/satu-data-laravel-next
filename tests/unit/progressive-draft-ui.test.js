@@ -7,7 +7,9 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), "utf8");
 describe("progressive dataset draft UX contract", () => {
   it("keeps only title and owning organization required at draft creation", () => {
     const form = read("src/components/admin/dataset-create-form.jsx");
-    const api = read("backend/app/Http/Controllers/Api/PortalDatasetController.php");
+    const api = read(
+      "backend/app/Http/Controllers/Api/PortalDatasetController.php",
+    );
     expect(form).toContain('name="title"');
     expect(form).toContain('name="organization_id"');
     expect(form).toContain("opsional saat membuat draf");

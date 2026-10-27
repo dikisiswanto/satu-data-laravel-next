@@ -27,14 +27,19 @@ export function DatasetResourcePreview({ slug, resource }) {
   const previewQuery = useQuery({
     queryKey: publicQueryKeys.resourceRows(slug, resource.id, page, PAGE_SIZE),
     queryFn: async ({ signal }) => {
-      const response = await fetch(`${endpoint}?page=${page}&limit=${PAGE_SIZE}`, {
-        cache: "no-store",
-        signal,
-        headers: { Accept: "application/json" },
-      });
+      const response = await fetch(
+        `${endpoint}?page=${page}&limit=${PAGE_SIZE}`,
+        {
+          cache: "no-store",
+          signal,
+          headers: { Accept: "application/json" },
+        },
+      );
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        const error = new Error(payload?.error || `preview_http_${response.status}`);
+        const error = new Error(
+          payload?.error || `preview_http_${response.status}`,
+        );
         error.status = response.status;
         throw error;
       }
@@ -47,20 +52,28 @@ export function DatasetResourcePreview({ slug, resource }) {
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
-      if ([400, 401, 403, 404, 409, 422, 429].includes(Number(error?.status || 0))) return false;
+      if (
+        [400, 401, 403, 404, 409, 422, 429].includes(Number(error?.status || 0))
+      )
+        return false;
       return failureCount < 1;
     },
   });
   const result = previewQuery.data || null;
-  const state = previewQuery.isPending ? "loading" : previewQuery.isError ? "error" : "ready";
+  const state = previewQuery.isPending
+    ? "loading"
+    : previewQuery.isError
+      ? "error"
+      : "ready";
   const rawColumns = result?.meta?.columns || resource.column_schema || [];
   const safeRawColumns = Array.isArray(rawColumns) ? rawColumns : [];
   // Converter versions may serialize headers as plain strings; older data used
   // objects with `name` or `key`. Normalize once so rendering stays stable.
   const columns = safeRawColumns.map((column, index) => {
-    const name = typeof column === "string"
-      ? column
-      : String(column?.name ?? column?.key ?? `Kolom ${index + 1}`);
+    const name =
+      typeof column === "string"
+        ? column
+        : String(column?.name ?? column?.key ?? `Kolom ${index + 1}`);
     return { name };
   });
   const rows = result?.data || [];
@@ -79,8 +92,8 @@ export function DatasetResourcePreview({ slug, resource }) {
             Pratinjau data tabel
           </h3>
           <p className="mt-1 text-sm text-muted">
-            Menampilkan {PAGE_SIZE} baris per halaman. Pratinjau dibatasi hingga 100.000 baris; data lengkap tersedia
-            melalui berkas unduhan.
+            Menampilkan {PAGE_SIZE} baris per halaman. Pratinjau dibatasi hingga
+            100.000 baris; data lengkap tersedia melalui berkas unduhan.
           </p>
         </div>
         <a

@@ -28,14 +28,16 @@
       ):not([type="reset"]),
     select
   ),
-.portal-app form :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
-      [type="hidden"]
-    ):not([type="range"]):not([type="color"]):not([type="submit"]):not(
-      [type="button"]
-    ):not([type="reset"]),
-  select
-),
+.portal-app
+  form
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+        [type="hidden"]
+      ):not([type="range"]):not([type="color"]):not([type="submit"]):not(
+        [type="button"]
+      ):not([type="reset"]),
+    select
+  ),
 .portal-app
   .portal-main
   form
@@ -158,9 +160,8 @@
   resize: vertical;
 }
 
-/* Buttons inside forms can have short Tailwind h-* classes paired with py-*.
-   Natural height plus a minimum touch target prevents their text line from
-   being squeezed while still allowing longer labels to wrap. */
+/* Form actions keep a stable hit target and one-line label. Wrapping button
+   contents made icon+label actions grow to different heights on narrow grids. */
 .public-app-shell form button,
 .page-container form button,
 .portal-app form button,
@@ -170,13 +171,22 @@
 .portal-app .portal-table-explorer-toolbar button,
 .login-form button {
   box-sizing: border-box;
-  height: auto;
+  height: 44px;
   min-height: 44px;
-  padding-top: 0.625rem;
-  padding-bottom: 0.625rem;
-  line-height: 1.4;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.public-app-shell form button svg,
+.page-container form button svg,
+.portal-app form button svg,
+.login-form button svg {
+  flex: none;
 }
 
 /* Keep label, helper, validation and server-response text at a readable line

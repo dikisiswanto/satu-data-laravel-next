@@ -126,7 +126,9 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
       );
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        const error = new Error(payload?.error || `conversion_status_http_${response.status}`);
+        const error = new Error(
+          payload?.error || `conversion_status_http_${response.status}`,
+        );
         error.status = response.status;
         throw error;
       }
@@ -171,14 +173,22 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
 
   useEffect(() => {
     const currentStatus = statusQuery.data?.status || null;
-    const wasTerminal = previousStatus.current && TERMINAL_STATUSES.has(previousStatus.current);
+    const wasTerminal =
+      previousStatus.current && TERMINAL_STATUSES.has(previousStatus.current);
     const isTerminal = currentStatus && TERMINAL_STATUSES.has(currentStatus);
-    if (currentStatus && isTerminal && !wasTerminal && !refreshStarted.current) {
+    if (
+      currentStatus &&
+      isTerminal &&
+      !wasTerminal &&
+      !refreshStarted.current
+    ) {
       refreshStarted.current = true;
       // Invalidate cached detail/list state, then refresh the Server Component
       // that owns the full dataset resource and validation presentation.
       void Promise.all([
-        queryClient.invalidateQueries({ queryKey: portalQueryKeys.dataset(datasetId) }),
+        queryClient.invalidateQueries({
+          queryKey: portalQueryKeys.dataset(datasetId),
+        }),
         queryClient.invalidateQueries({ queryKey: portalQueryKeys.datasets() }),
       ]);
       const timer = window.setTimeout(() => router.refresh(), 900);

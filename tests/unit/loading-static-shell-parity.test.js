@@ -5,30 +5,30 @@ const read = (path) =>
   readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const compact = (source) => source.replace(/\s+/g, " ").trim();
 const routeLoaders = [
-  "src/app/portal/loading.jsx",
-  "src/app/portal/dataset/loading.jsx",
-  "src/app/portal/dataset/new/loading.jsx",
-  "src/app/portal/dataset/[id]/loading.jsx",
-  "src/app/portal/dataset/[id]/edit/loading.jsx",
-  "src/app/portal/statistik/loading.jsx",
-  "src/app/portal/statistik/baru/loading.jsx",
-  "src/app/portal/statistik/[id]/edit/loading.jsx",
-  "src/app/portal/statistik/[id]/observasi/loading.jsx",
-  "src/app/portal/organisasi/loading.jsx",
-  "src/app/portal/organisasi/baru/loading.jsx",
-  "src/app/portal/organisasi/[id]/edit/loading.jsx",
-  "src/app/portal/pengguna/loading.jsx",
-  "src/app/portal/review/loading.jsx",
-  "src/app/portal/publikasi/loading.jsx",
-  "src/app/portal/riwayat/loading.jsx",
-  "src/app/portal/kualitas/loading.jsx",
-  "src/app/portal/standar/loading.jsx",
-  "src/app/portal/integrasi/loading.jsx",
-  "src/app/portal/integrasi/[id]/loading.jsx",
-  "src/app/portal/pengaturan/loading.jsx",
-  "src/app/portal/login/loading.jsx",
-  "src/app/portal/forgot-password/loading.jsx",
-  "src/app/portal/reset-password/loading.jsx",
+  "src/app/portal/(workspace)/loading.jsx",
+  "src/app/portal/(workspace)/dataset/loading.jsx",
+  "src/app/portal/(workspace)/dataset/new/loading.jsx",
+  "src/app/portal/(workspace)/dataset/[id]/loading.jsx",
+  "src/app/portal/(workspace)/dataset/[id]/edit/loading.jsx",
+  "src/app/portal/(workspace)/statistik/loading.jsx",
+  "src/app/portal/(workspace)/statistik/baru/loading.jsx",
+  "src/app/portal/(workspace)/statistik/[id]/edit/loading.jsx",
+  "src/app/portal/(workspace)/statistik/[id]/observasi/loading.jsx",
+  "src/app/portal/(workspace)/organisasi/loading.jsx",
+  "src/app/portal/(workspace)/organisasi/baru/loading.jsx",
+  "src/app/portal/(workspace)/organisasi/[id]/edit/loading.jsx",
+  "src/app/portal/(workspace)/pengguna/loading.jsx",
+  "src/app/portal/(workspace)/review/loading.jsx",
+  "src/app/portal/(workspace)/publikasi/loading.jsx",
+  "src/app/portal/(workspace)/riwayat/loading.jsx",
+  "src/app/portal/(workspace)/kualitas/loading.jsx",
+  "src/app/portal/(workspace)/standar/loading.jsx",
+  "src/app/portal/(workspace)/integrasi/loading.jsx",
+  "src/app/portal/(workspace)/integrasi/[id]/loading.jsx",
+  "src/app/portal/(workspace)/pengaturan/loading.jsx",
+  "src/app/portal/(auth)/login/loading.jsx",
+  "src/app/portal/(auth)/forgot-password/loading.jsx",
+  "src/app/portal/(auth)/reset-password/loading.jsx",
 ];
 
 describe("loading shells preserve static UI copy and route structure", () => {
@@ -121,38 +121,38 @@ describe("loading shells preserve static UI copy and route structure", () => {
   it("keeps page-heading copy aligned in core admin listings and forms", () => {
     const pairs = [
       [
-        "src/app/portal/dataset/page.jsx",
-        "src/app/portal/dataset/loading.jsx",
+        "src/app/portal/(workspace)/dataset/page.jsx",
+        "src/app/portal/(workspace)/dataset/loading.jsx",
         "Temukan dataset dengan pencarian dan filter, lalu buka judulnya untuk memeriksa metadata, berkas, dan status publikasi.",
       ],
       [
-        "src/app/portal/statistik/page.jsx",
-        "src/app/portal/statistik/loading.jsx",
+        "src/app/portal/(workspace)/statistik/page.jsx",
+        "src/app/portal/(workspace)/statistik/loading.jsx",
         "Kelola definisi indikator dan nilai statistiknya. Setiap indikator perlu memiliki satuan, sumber, dan periode yang jelas agar angkanya tidak salah ditafsirkan.",
       ],
       [
-        "src/app/portal/organisasi/baru/page.jsx",
-        "src/app/portal/organisasi/baru/loading.jsx",
+        "src/app/portal/(workspace)/organisasi/baru/page.jsx",
+        "src/app/portal/(workspace)/organisasi/baru/loading.jsx",
         "Masukkan kode dan nama resmi organisasi. Jika tersedia, tambahkan email atau situs resmi agar pengguna dapat menghubungi pengampu data.",
       ],
       [
-        "src/app/portal/statistik/baru/page.jsx",
-        "src/app/portal/statistik/baru/loading.jsx",
+        "src/app/portal/(workspace)/statistik/baru/page.jsx",
+        "src/app/portal/(workspace)/statistik/baru/loading.jsx",
         "Terangkan apa yang diukur, satuan yang dipakai, asal nilai, dan periode datanya. Informasi ini membantu orang lain membaca indikator dengan benar.",
       ],
       [
-        "src/app/portal/pengaturan/page.jsx",
-        "src/app/portal/pengaturan/loading.jsx",
+        "src/app/portal/(workspace)/pengaturan/page.jsx",
+        "src/app/portal/(workspace)/pengaturan/loading.jsx",
         "Periksa identitas akun, perbarui nama tampilan, atau ganti kata sandi.",
       ],
       [
-        "src/app/portal/kualitas/page.jsx",
-        "src/app/portal/kualitas/loading.jsx",
+        "src/app/portal/(workspace)/kualitas/page.jsx",
+        "src/app/portal/(workspace)/kualitas/loading.jsx",
         "Ringkasan ini menunjukkan hal-hal yang masih perlu diperiksa atau diperbaiki. Angkanya berasal dari pemeriksaan portal dan bukan sertifikasi kepatuhan dari instansi nasional.",
       ],
       [
-        "src/app/portal/standar/page.jsx",
-        "src/app/portal/standar/loading.jsx",
+        "src/app/portal/(workspace)/standar/page.jsx",
+        "src/app/portal/(workspace)/standar/loading.jsx",
         "Daftarkan standar dan sistem kode yang menjadi acuan metadata dataset. Catatan baru berstatus Draf sampai sumber, dokumen pendukung, versi, dan masa berlakunya diperiksa.",
       ],
     ];
@@ -170,16 +170,16 @@ describe("loading shells preserve static UI copy and route structure", () => {
   it("preserves fixed section headings and descriptions in statistics and audit-history loading shells", () => {
     const pairs = [
       [
-        "src/app/portal/statistik/page.jsx",
-        "src/app/portal/statistik/loading.jsx",
+        "src/app/portal/(workspace)/statistik/page.jsx",
+        "src/app/portal/(workspace)/statistik/loading.jsx",
         [
           "Daftar indikator",
           "Indikator yang dapat Anda akses, beserta status pemeriksaannya.",
         ],
       ],
       [
-        "src/app/portal/riwayat/page.jsx",
-        "src/app/portal/riwayat/loading.jsx",
+        "src/app/portal/(workspace)/riwayat/page.jsx",
+        "src/app/portal/(workspace)/riwayat/loading.jsx",
         [
           "Riwayat aktivitas",
           "Cari berdasarkan pengguna, tindakan, ID data, organisasi, atau hasil. Gunakan filter dan rentang tanggal untuk menemukan aktivitas tertentu.",
@@ -202,8 +202,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
   });
 
   it("does not reveal permission-gated form labels before the standards page knows the user's role", () => {
-    const loading = read("src/app/portal/standar/loading.jsx");
-    const _page = read("src/app/portal/standar/page.jsx");
+    const loading = read("src/app/portal/(workspace)/standar/loading.jsx");
+    const _page = read("src/app/portal/(workspace)/standar/page.jsx");
     const manager = read("src/components/admin/sdi-registry-manager.jsx");
     const gatedHeadings = [
       "Daftarkan standar",
@@ -214,7 +214,9 @@ describe("loading shells preserve static UI copy and route structure", () => {
       expect(manager).toMatch(
         new RegExp(`<h2 className="font-semibold">\\s*${heading}\\s*</h2>`),
       );
-      expect(compact(loading)).not.toContain(`<h2 className="font-semibold"> ${heading} </h2>`);
+      expect(compact(loading)).not.toContain(
+        `<h2 className="font-semibold"> ${heading} </h2>`,
+      );
     }
     expect(manager).toContain('label="Kode standar"');
     expect(loading).not.toContain('label="Kode standar"');
@@ -224,8 +226,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
   });
 
   it("retains the same copy for admin dashboard summary and next steps", () => {
-    const page = read("src/app/portal/page.jsx");
-    const loading = read("src/app/portal/loading.jsx");
+    const page = read("src/app/portal/(workspace)/page.jsx");
+    const loading = read("src/app/portal/(workspace)/loading.jsx");
     for (const text of [
       "Selamat datang",
       "Dataset dalam cakupan",
@@ -242,53 +244,53 @@ describe("loading shells preserve static UI copy and route structure", () => {
   it("keeps all additional admin route headings and descriptions stable during loading", () => {
     const pairs = [
       [
-        "src/app/portal/organisasi/page.jsx",
-        "src/app/portal/organisasi/loading.jsx",
+        "src/app/portal/(workspace)/organisasi/page.jsx",
+        "src/app/portal/(workspace)/organisasi/loading.jsx",
         "Kelola organisasi yang menjadi pemilik dataset dan indikator dalam portal. Daftar yang ditampilkan menyesuaikan akses akun Anda.",
       ],
       [
-        "src/app/portal/dataset/[id]/edit/page.jsx",
-        "src/app/portal/dataset/[id]/edit/loading.jsx",
+        "src/app/portal/(workspace)/dataset/[id]/edit/page.jsx",
+        "src/app/portal/(workspace)/dataset/[id]/edit/loading.jsx",
         "Di halaman ini, Anda dapat mengubah dataset yang masih berstatus Draf. Jika dataset sudah diajukan, buka halaman detail untuk melihat status pemeriksaan dan langkah selanjutnya.",
       ],
       [
-        "src/app/portal/organisasi/[id]/edit/page.jsx",
-        "src/app/portal/organisasi/[id]/edit/loading.jsx",
+        "src/app/portal/(workspace)/organisasi/[id]/edit/page.jsx",
+        "src/app/portal/(workspace)/organisasi/[id]/edit/loading.jsx",
         "Perbarui identitas dan kontak organisasi jika ada perubahan. Jika organisasi dinonaktifkan, dataset dan riwayat yang sudah tercatat tetap disimpan.",
       ],
       [
-        "src/app/portal/statistik/[id]/edit/page.jsx",
-        "src/app/portal/statistik/[id]/edit/loading.jsx",
+        "src/app/portal/(workspace)/statistik/[id]/edit/page.jsx",
+        "src/app/portal/(workspace)/statistik/[id]/edit/loading.jsx",
         "Perubahan akan disimpan sebagai draf terlebih dahulu. Periksa kembali definisi dan sumbernya sebelum menerbitkan indikator.",
       ],
       [
-        "src/app/portal/pengguna/page.jsx",
-        "src/app/portal/pengguna/loading.jsx",
+        "src/app/portal/(workspace)/pengguna/page.jsx",
+        "src/app/portal/(workspace)/pengguna/loading.jsx",
         "Atur akses sesuai pekerjaan dan organisasi pengguna. Pilih akses yang paling terbatas tetapi tetap cukup untuk tugasnya.",
       ],
       [
-        "src/app/portal/review/page.jsx",
-        "src/app/portal/review/loading.jsx",
+        "src/app/portal/(workspace)/review/page.jsx",
+        "src/app/portal/(workspace)/review/loading.jsx",
         "Periksa metadata, sumber, periode, dan hasil pengolahan berkas. Jika ada informasi yang belum jelas, kembalikan dengan catatan perbaikan yang spesifik.",
       ],
       [
-        "src/app/portal/riwayat/page.jsx",
-        "src/app/portal/riwayat/loading.jsx",
+        "src/app/portal/(workspace)/riwayat/page.jsx",
+        "src/app/portal/(workspace)/riwayat/loading.jsx",
         "Lihat siapa yang mengubah data, perubahan apa yang dilakukan, dan kapan waktunya. Daftar yang tampil menyesuaikan akses akun Anda.",
       ],
       [
-        "src/app/portal/integrasi/page.jsx",
-        "src/app/portal/integrasi/loading.jsx",
+        "src/app/portal/(workspace)/integrasi/page.jsx",
+        "src/app/portal/(workspace)/integrasi/loading.jsx",
         "Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal Wajo; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi.",
       ],
       [
-        "src/app/portal/integrasi/[id]/page.jsx",
-        "src/app/portal/integrasi/[id]/loading.jsx",
+        "src/app/portal/(workspace)/integrasi/[id]/page.jsx",
+        "src/app/portal/(workspace)/integrasi/[id]/loading.jsx",
         "Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia.",
       ],
       [
-        "src/app/portal/statistik/[id]/observasi/page.jsx",
-        "src/app/portal/statistik/[id]/observasi/loading.jsx",
+        "src/app/portal/(workspace)/statistik/[id]/observasi/page.jsx",
+        "src/app/portal/(workspace)/statistik/[id]/observasi/loading.jsx",
         "Tambahkan dan kelola nilai untuk tiap periode, wilayah, atau dimensi. Nilai berstatus Draf belum tersedia di API publik sampai diperiksa dan diterbitkan.",
       ],
     ];
@@ -307,7 +309,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
   it("keeps static navigation and disclosure text visible in route-specific loaders", () => {
     const checks = [
       [
-        "src/app/portal/dataset/new/loading.jsx",
+        "src/app/portal/(workspace)/dataset/new/loading.jsx",
         [
           "Sumber resmi untuk membantu memeriksa data",
           "Metadata standar dan pertukaran SDI (lanjutan)",
@@ -317,7 +319,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       ],
       [
-        "src/app/portal/dataset/[id]/loading.jsx",
+        "src/app/portal/(workspace)/dataset/[id]/loading.jsx",
         [
           "Kembali ke daftar",
           "Informasi dataset",
@@ -327,14 +329,14 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       ],
       [
-        "src/app/portal/dataset/[id]/edit/loading.jsx",
+        "src/app/portal/(workspace)/dataset/[id]/edit/loading.jsx",
         [
           "Kembali ke dataset",
           "Metadata standar dan pertukaran SDI (lanjutan)",
         ],
       ],
       [
-        "src/app/portal/statistik/[id]/observasi/loading.jsx",
+        "src/app/portal/(workspace)/statistik/[id]/observasi/loading.jsx",
         [
           "Kembali ke indikator",
           "Observasi indikator",
@@ -343,7 +345,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       ],
       [
-        "src/app/portal/integrasi/[id]/loading.jsx",
+        "src/app/portal/(workspace)/integrasi/[id]/loading.jsx",
         [
           "Kembali ke kesiapan integrasi",
           "Metadata standar dan pertukaran SDI (lanjutan)",
@@ -352,7 +354,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       ],
       [
-        "src/app/portal/standar/loading.jsx",
+        "src/app/portal/(workspace)/standar/loading.jsx",
         [
           "Registri standar",
           "Sistem kode referensi",
@@ -361,7 +363,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       ],
       [
-        "src/app/portal/publikasi/loading.jsx",
+        "src/app/portal/(workspace)/publikasi/loading.jsx",
         [
           "Pemeriksaan data",
           "Daftar pemeriksaan",
@@ -379,8 +381,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
   });
 
   it("reserves dashboard identity space and keeps fixed actions visible during loading", () => {
-    const page = compact(read("src/app/portal/page.jsx"));
-    const loading = compact(read("src/app/portal/loading.jsx"));
+    const page = compact(read("src/app/portal/(workspace)/page.jsx"));
+    const loading = compact(read("src/app/portal/(workspace)/loading.jsx"));
     for (const source of [page, loading]) {
       expect(source).toContain("Selamat datang");
       expect(source).toContain("Akun:");
@@ -417,8 +419,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
   it("keeps table search, fixed filter labels, reset action, and column headings consistent while loading", () => {
     const pages = [
       {
-        page: "src/app/portal/statistik/page.jsx",
-        loading: "src/app/portal/statistik/loading.jsx",
+        page: "src/app/portal/(workspace)/statistik/page.jsx",
+        loading: "src/app/portal/(workspace)/statistik/loading.jsx",
         filters: ["Status", "Organisasi"],
         headers: [
           "Indikator",
@@ -430,20 +432,20 @@ describe("loading shells preserve static UI copy and route structure", () => {
         ],
       },
       {
-        page: "src/app/portal/pengguna/page.jsx",
-        loading: "src/app/portal/pengguna/loading.jsx",
+        page: "src/app/portal/(workspace)/pengguna/page.jsx",
+        loading: "src/app/portal/(workspace)/pengguna/loading.jsx",
         filters: ["Peran", "Status", "Organisasi"],
         headers: ["Lingkup", "Peran", "Ditambahkan", "Status", "Tindakan"],
       },
       {
-        page: "src/app/portal/review/page.jsx",
-        loading: "src/app/portal/review/loading.jsx",
+        page: "src/app/portal/(workspace)/review/page.jsx",
+        loading: "src/app/portal/(workspace)/review/loading.jsx",
         filters: ["Status", "Organisasi"],
         headers: ["Dataset", "Organisasi", "Diperbarui", "Status", "Tindakan"],
       },
       {
-        page: "src/app/portal/organisasi/page.jsx",
-        loading: "src/app/portal/organisasi/loading.jsx",
+        page: "src/app/portal/(workspace)/organisasi/page.jsx",
+        loading: "src/app/portal/(workspace)/organisasi/loading.jsx",
         filters: ["Status"],
         headers: ["Organisasi", "Kontak", "Status", "Peran akun", "Tindakan"],
       },
@@ -471,8 +473,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
       for (const header of item.headers) expect(loading).toContain(header);
     }
 
-    const auditPage = read("src/app/portal/riwayat/page.jsx");
-    const auditLoading = read("src/app/portal/riwayat/loading.jsx");
+    const auditPage = read("src/app/portal/(workspace)/riwayat/page.jsx");
+    const auditLoading = read("src/app/portal/(workspace)/riwayat/loading.jsx");
     expect(auditPage).toContain(
       'searchPlaceholder="Cari pelaku, tindakan, ID objek, organisasi, atau rincian…"',
     );
@@ -487,8 +489,10 @@ describe("loading shells preserve static UI copy and route structure", () => {
       "{dateFilterLabel} sampai",
     );
 
-    const detailPage = read("src/app/portal/dataset/[id]/page.jsx");
-    const detailLoading = read("src/app/portal/dataset/[id]/loading.jsx");
+    const detailPage = read("src/app/portal/(workspace)/dataset/[id]/page.jsx");
+    const detailLoading = read(
+      "src/app/portal/(workspace)/dataset/[id]/loading.jsx",
+    );
     for (const text of [
       "Cari versi, ringkasan perubahan, sumber, atau status…",
       'dateFilterLabel="Tanggal dibuat"',
@@ -508,10 +512,18 @@ describe("loading shells preserve static UI copy and route structure", () => {
   });
 
   it("keeps SDI metadata detail collapsed consistently until the user chooses to open it", () => {
-    const page = compact(read("src/app/portal/integrasi/[id]/page.jsx"));
-    const fields = compact(read("src/components/admin/sdi-metadata-fields.jsx"));
-    const loading = compact(read("src/app/portal/integrasi/[id]/loading.jsx"));
-    const editor = compact(read("src/components/admin/sdi-metadata-editor.jsx"));
+    const page = compact(
+      read("src/app/portal/(workspace)/integrasi/[id]/page.jsx"),
+    );
+    const fields = compact(
+      read("src/components/admin/sdi-metadata-fields.jsx"),
+    );
+    const loading = compact(
+      read("src/app/portal/(workspace)/integrasi/[id]/loading.jsx"),
+    );
+    const editor = compact(
+      read("src/components/admin/sdi-metadata-editor.jsx"),
+    );
     const staticCopy = [
       "Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo.",
       "Metadata standar dan pertukaran SDI (lanjutan)",
@@ -533,7 +545,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
     const pairs = [
       [
         "src/components/admin/dataset-create-form.jsx",
-        "src/app/portal/dataset/new/loading.jsx",
+        "src/app/portal/(workspace)/dataset/new/loading.jsx",
         [
           "Cari lalu pilih organisasi…",
           "Contoh: Kabupaten Wajo",
@@ -543,12 +555,12 @@ describe("loading shells preserve static UI copy and route structure", () => {
       ],
       [
         "src/components/admin/organization-form.jsx",
-        "src/app/portal/organisasi/baru/loading.jsx",
+        "src/app/portal/(workspace)/organisasi/baru/loading.jsx",
         ["DISKOMINFO", "dinas-komunikasi-informatika", "https://..."],
       ],
       [
         "src/components/admin/indicator-form.jsx",
-        "src/app/portal/statistik/baru/loading.jsx",
+        "src/app/portal/(workspace)/statistik/baru/loading.jsx",
         [
           "IND-001",
           "jumlah-penduduk",
@@ -575,9 +587,9 @@ describe("loading shells preserve static UI copy and route structure", () => {
 
   it("uses distinct authentication loading copy instead of the same generic form skeleton", () => {
     const authLoading = read("src/components/auth/loading-state.jsx");
-    const loginPage = read("src/app/portal/login/page.jsx");
-    const forgotPage = read("src/app/portal/forgot-password/page.jsx");
-    const resetPage = read("src/app/portal/reset-password/page.jsx");
+    const loginPage = read("src/app/portal/(auth)/login/page.jsx");
+    const forgotPage = read("src/app/portal/(auth)/forgot-password/page.jsx");
+    const resetPage = read("src/app/portal/(auth)/reset-password/page.jsx");
     for (const [source, texts] of [
       [loginPage, ["Masuk ke Portal Admin", "Alamat email", "Kata sandi"]],
       [forgotPage, ["Atur ulang kata sandi", "Email akun", "Kirim instruksi"]],

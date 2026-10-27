@@ -420,210 +420,260 @@ export function DatasetCreateForm({
           ) : null}
         </div>
       ) : null}
-      <section className="portal-form-section space-y-4 border p-4 sm:p-5" aria-labelledby="dataset-core-fields-title">
+      <section
+        className="portal-form-section space-y-4 border p-4 sm:p-5"
+        aria-labelledby="dataset-core-fields-title"
+      >
         <div>
-          <h2 id="dataset-core-fields-title" className="text-sm font-semibold text-ink">Informasi utama</h2>
-          <p className="mt-1 text-xs leading-5 text-muted">Mulai dari nama data, penjelasan singkat, dan pihak yang bertanggung jawab.</p>
-        </div>
-        <div>
-        <label htmlFor="title" className="mb-2 block text-sm font-medium">
-          Judul dataset <span aria-hidden="true">*</span>
-        </label>
-        <input
-          className={fieldClass("title")}
-          id="title"
-          name="title"
-          minLength={5}
-          maxLength={180}
-          required
-          {...invalidProps("title")}
-          onInvalid={(event) =>
-            event.currentTarget.setCustomValidity(
-              fieldErrors.title || getFieldValidationMessage("title"),
-            )
-          }
-          onChange={(event) => {
-            event.currentTarget.setCustomValidity("");
-            clearFieldError("title");
-          }}
-        />
-        <FieldGuidance name="title" id="title-help" />
-        {fieldErrors.title ? (
-          <FieldError id="title-error">{fieldErrors.title}</FieldError>
-        ) : null}
-      </div>
-      <div>
-        <label htmlFor="description" className="mb-2 block text-sm font-medium">
-          Deskripsi <span className="text-xs font-normal text-muted">(opsional untuk draf)</span>
-        </label>
-        <textarea
-          className={cn(
-            "field min-h-32",
-            fieldErrors.description &&
-              "border-red-600 focus-visible:ring-red-600",
-          )}
-          id="description"
-          name="description"
-          minLength={20}
-          maxLength={5000}
-          {...invalidProps("description")}
-          onInvalid={(event) =>
-            event.currentTarget.setCustomValidity(
-              fieldErrors.description ||
-                getFieldValidationMessage("description"),
-            )
-          }
-          onChange={(event) => {
-            event.currentTarget.setCustomValidity("");
-            clearFieldError("description");
-          }}
-        />
-        <FieldGuidance name="description" id="description-help" />
-        {fieldErrors.description ? (
-          <FieldError id="description-error">
-            {fieldErrors.description}
-          </FieldError>
-        ) : null}
-      </div>
-      <div>
-        <label
-          htmlFor="organization_id"
-          className="mb-2 block text-sm font-medium"
-        >
-          Organisasi pengampu <span aria-hidden="true">*</span>
-        </label>
-        <SearchableOrganizationSelect
-          id="organization_id"
-          organizations={orgs}
-          value={selectedOrganizationId}
-          onChange={(organizationId) => {
-            setSelectedOrganizationId(organizationId);
-            clearFieldError("organization_id");
-          }}
-          invalid={Boolean(fieldErrors.organization_id)}
-          describedBy={[
-            "organization_id-help",
-            fieldErrors.organization_id ? "organization_id-error" : null,
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
-        <input
-          type="hidden"
-          name="organization_id"
-          value={selectedOrganizationId}
-        />
-        <FieldGuidance name="organization_id" id="organization_id-help" />
-        {fieldErrors.organization_id ? (
-          <FieldError id="organization_id-error">
-            {fieldErrors.organization_id}
-          </FieldError>
-        ) : null}
-        </div>
-      </section>
-      <details className="rounded-xl border border-[#dce5eb] bg-white px-4 py-3">
-        <summary className="cursor-pointer text-sm font-semibold text-ink">Lengkapi informasi data <span className="font-normal text-muted">(opsional saat membuat draf)</span></summary>
-        <p className="mt-2 text-xs leading-5 text-muted">Isi yang sudah diketahui sekarang. Informasi sumber, cakupan, lisensi, dan frekuensi perlu dilengkapi sebelum dataset diajukan untuk pemeriksaan, bukan untuk menyimpan draf.</p>
-      <section className="portal-form-section mt-4 space-y-4 border p-4 sm:p-5" aria-labelledby="dataset-source-fields-title">
-        <div>
-          <h2 id="dataset-source-fields-title" className="text-sm font-semibold text-ink">Sumber, cakupan, dan periode</h2>
-          <p className="mt-1 text-xs leading-5 text-muted">Tambahkan informasi yang sudah tersedia. Periode data boleh dibiarkan kosong jika belum ditetapkan.</p>
-        </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Nama sumber data"
-          name="source_name"
-          maxLength={240}
-          error={fieldErrors.source_name}
-          onChange={() => clearFieldError("source_name")}
-        />
-        <Field
-          label="Cakupan wilayah"
-          name="geographic_scope"
-          maxLength={240}
-          placeholder="Contoh: Kabupaten Wajo"
-          error={fieldErrors.geographic_scope}
-          onChange={() => clearFieldError("geographic_scope")}
-        />
-        <Field
-          label="Lisensi / ketentuan penggunaan"
-          name="license_text"
-          maxLength={240}
-          placeholder="Contoh: lisensi atau ketentuan penggunaan yang telah disetujui"
-          error={fieldErrors.license_text}
-          onChange={() => clearFieldError("license_text")}
-        />
-        <div>
-          <label
-            htmlFor="update_frequency"
-            className="mb-2 block text-sm font-medium"
+          <h2
+            id="dataset-core-fields-title"
+            className="text-sm font-semibold text-ink"
           >
-            Frekuensi pembaruan
+            Informasi utama
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Mulai dari nama data, penjelasan singkat, dan pihak yang bertanggung
+            jawab.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="title" className="mb-2 block text-sm font-medium">
+            Judul dataset <span aria-hidden="true">*</span>
           </label>
-          <select
-            className={fieldClass("update_frequency")}
-            id="update_frequency"
-            name="update_frequency"
-            defaultValue=""
-            {...invalidProps("update_frequency")}
+          <input
+            className={fieldClass("title")}
+            id="title"
+            name="title"
+            minLength={5}
+            maxLength={180}
+            required
+            {...invalidProps("title")}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
-                fieldErrors.update_frequency ||
-                  getFieldValidationMessage("update_frequency"),
+                fieldErrors.title || getFieldValidationMessage("title"),
               )
             }
             onChange={(event) => {
               event.currentTarget.setCustomValidity("");
-              clearFieldError("update_frequency");
+              clearFieldError("title");
             }}
+          />
+          <FieldGuidance name="title" id="title-help" />
+          {fieldErrors.title ? (
+            <FieldError id="title-error">{fieldErrors.title}</FieldError>
+          ) : null}
+        </div>
+        <div>
+          <label
+            htmlFor="description"
+            className="mb-2 block text-sm font-medium"
           >
-            <option value="" disabled>
-              Pilih frekuensi
-            </option>
-            {UPDATE_FREQUENCY_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <FieldGuidance name="update_frequency" id="update_frequency-help" />
-          {fieldErrors.update_frequency ? (
-            <FieldError id="update_frequency-error">
-              {fieldErrors.update_frequency}
+            Deskripsi{" "}
+            <span className="text-xs font-normal text-muted">
+              (opsional untuk draf)
+            </span>
+          </label>
+          <textarea
+            className={cn(
+              "field min-h-32",
+              fieldErrors.description &&
+                "border-red-600 focus-visible:ring-red-600",
+            )}
+            id="description"
+            name="description"
+            minLength={20}
+            maxLength={5000}
+            {...invalidProps("description")}
+            onInvalid={(event) =>
+              event.currentTarget.setCustomValidity(
+                fieldErrors.description ||
+                  getFieldValidationMessage("description"),
+              )
+            }
+            onChange={(event) => {
+              event.currentTarget.setCustomValidity("");
+              clearFieldError("description");
+            }}
+          />
+          <FieldGuidance name="description" id="description-help" />
+          {fieldErrors.description ? (
+            <FieldError id="description-error">
+              {fieldErrors.description}
             </FieldError>
           ) : null}
         </div>
-        <DateField
-          label="Awal periode data"
-          name="reference_period_start"
-          error={fieldErrors.reference_period_start}
-          clearError={() => {
-            clearFieldError("reference_period_start");
-            clearFieldError("reference_period_end");
-          }}
-        />
-        <DateField
-          label="Akhir periode data"
-          name="reference_period_end"
-          error={fieldErrors.reference_period_end}
-          clearError={() => {
-            clearFieldError("reference_period_start");
-            clearFieldError("reference_period_end");
-          }}
-        />
-      </div>
+        <div>
+          <label
+            htmlFor="organization_id"
+            className="mb-2 block text-sm font-medium"
+          >
+            Organisasi pengampu <span aria-hidden="true">*</span>
+          </label>
+          <SearchableOrganizationSelect
+            id="organization_id"
+            organizations={orgs}
+            value={selectedOrganizationId}
+            onChange={(organizationId) => {
+              setSelectedOrganizationId(organizationId);
+              clearFieldError("organization_id");
+            }}
+            invalid={Boolean(fieldErrors.organization_id)}
+            describedBy={[
+              "organization_id-help",
+              fieldErrors.organization_id ? "organization_id-error" : null,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          />
+          <input
+            type="hidden"
+            name="organization_id"
+            value={selectedOrganizationId}
+          />
+          <FieldGuidance name="organization_id" id="organization_id-help" />
+          {fieldErrors.organization_id ? (
+            <FieldError id="organization_id-error">
+              {fieldErrors.organization_id}
+            </FieldError>
+          ) : null}
+        </div>
       </section>
+      <details className="rounded-xl border border-[#dce5eb] bg-white px-4 py-3">
+        <summary className="cursor-pointer text-sm font-semibold text-ink">
+          Lengkapi informasi data{" "}
+          <span className="font-normal text-muted">
+            (opsional saat membuat draf)
+          </span>
+        </summary>
+        <p className="mt-2 text-xs leading-5 text-muted">
+          Isi yang sudah diketahui sekarang. Informasi sumber, cakupan, lisensi,
+          dan frekuensi perlu dilengkapi sebelum dataset diajukan untuk
+          pemeriksaan, bukan untuk menyimpan draf.
+        </p>
+        <section
+          className="portal-form-section mt-4 space-y-4 border p-4 sm:p-5"
+          aria-labelledby="dataset-source-fields-title"
+        >
+          <div>
+            <h2
+              id="dataset-source-fields-title"
+              className="text-sm font-semibold text-ink"
+            >
+              Sumber, cakupan, dan periode
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Tambahkan informasi yang sudah tersedia. Periode data boleh
+              dibiarkan kosong jika belum ditetapkan.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Nama sumber data"
+              name="source_name"
+              maxLength={240}
+              error={fieldErrors.source_name}
+              onChange={() => clearFieldError("source_name")}
+            />
+            <Field
+              label="Cakupan wilayah"
+              name="geographic_scope"
+              maxLength={240}
+              placeholder="Contoh: Kabupaten Wajo"
+              error={fieldErrors.geographic_scope}
+              onChange={() => clearFieldError("geographic_scope")}
+            />
+            <Field
+              label="Lisensi / ketentuan penggunaan"
+              name="license_text"
+              maxLength={240}
+              placeholder="Contoh: lisensi atau ketentuan penggunaan yang telah disetujui"
+              error={fieldErrors.license_text}
+              onChange={() => clearFieldError("license_text")}
+            />
+            <div>
+              <label
+                htmlFor="update_frequency"
+                className="mb-2 block text-sm font-medium"
+              >
+                Frekuensi pembaruan
+              </label>
+              <select
+                className={fieldClass("update_frequency")}
+                id="update_frequency"
+                name="update_frequency"
+                defaultValue=""
+                {...invalidProps("update_frequency")}
+                onInvalid={(event) =>
+                  event.currentTarget.setCustomValidity(
+                    fieldErrors.update_frequency ||
+                      getFieldValidationMessage("update_frequency"),
+                  )
+                }
+                onChange={(event) => {
+                  event.currentTarget.setCustomValidity("");
+                  clearFieldError("update_frequency");
+                }}
+              >
+                <option value="" disabled>
+                  Pilih frekuensi
+                </option>
+                {UPDATE_FREQUENCY_OPTIONS.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <FieldGuidance
+                name="update_frequency"
+                id="update_frequency-help"
+              />
+              {fieldErrors.update_frequency ? (
+                <FieldError id="update_frequency-error">
+                  {fieldErrors.update_frequency}
+                </FieldError>
+              ) : null}
+            </div>
+            <DateField
+              label="Awal periode data"
+              name="reference_period_start"
+              error={fieldErrors.reference_period_start}
+              clearError={() => {
+                clearFieldError("reference_period_start");
+                clearFieldError("reference_period_end");
+              }}
+            />
+            <DateField
+              label="Akhir periode data"
+              name="reference_period_end"
+              error={fieldErrors.reference_period_end}
+              clearError={() => {
+                clearFieldError("reference_period_start");
+                clearFieldError("reference_period_end");
+              }}
+            />
+          </div>
+        </section>
       </details>
       <SdiMetadataFields
         standards={standards}
         referenceSystems={referenceSystems}
       />
       <details className="rounded-xl border border-[#e1e8ed] bg-[#f8fafc] px-4 py-3">
-        <summary className="cursor-pointer text-xs font-semibold text-[#415e72]">Periksa kembali sebelum menyimpan</summary>
+        <summary className="cursor-pointer text-xs font-semibold text-[#415e72]">
+          Periksa kembali sebelum menyimpan
+        </summary>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-muted">
-          <li>Periksa apakah sumber dapat dibuka dan tautannya mengarah ke dokumen yang tepat.</li>
-          <li>Tanggal akhir periode tidak boleh lebih awal daripada tanggal mulai.</li>
-          <li>Dataset disimpan sebagai draf dan belum terlihat di portal publik sampai diperiksa serta diterbitkan.</li>
+          <li>
+            Periksa apakah sumber dapat dibuka dan tautannya mengarah ke dokumen
+            yang tepat.
+          </li>
+          <li>
+            Tanggal akhir periode tidak boleh lebih awal daripada tanggal mulai.
+          </li>
+          <li>
+            Dataset disimpan sebagai draf dan belum terlihat di portal publik
+            sampai diperiksa serta diterbitkan.
+          </li>
         </ul>
       </details>
       <div className="flex flex-wrap items-center gap-3 border-t pt-5">
@@ -640,7 +690,8 @@ export function DatasetCreateForm({
           </span>
         </PendingActionButton>
         <p className="self-center text-xs leading-5 text-muted">
-          Untuk menyimpan draf, cukup isi judul dan organisasi pengampu. Lengkapi informasi lain sebelum mengajukan pemeriksaan.
+          Untuk menyimpan draf, cukup isi judul dan organisasi pengampu.
+          Lengkapi informasi lain sebelum mengajukan pemeriksaan.
         </p>
       </div>
     </form>

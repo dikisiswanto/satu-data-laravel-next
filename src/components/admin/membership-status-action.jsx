@@ -40,16 +40,19 @@ export function MembershipStatusAction({ membership }) {
     if (!beginSubmission()) return;
     setError("");
     try {
-      const response = await fetch(`/api/v1/portal/memberships/${membership.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: membership.user_id,
-          organization_id: membership.organization_id,
-          role: membership.role,
-          is_active: next,
-        }),
-      });
+      const response = await fetch(
+        `/api/v1/portal/memberships/${membership.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: membership.user_id,
+            organization_id: membership.organization_id,
+            role: membership.role,
+            is_active: next,
+          }),
+        },
+      );
       const result = await readApiMutationResponse(response);
       if (!response.ok) {
         if (response.status >= 500) markUncertain();

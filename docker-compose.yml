@@ -9,7 +9,12 @@ services:
       MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in root .env}
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in root .env}
       TZ: Asia/Makassar
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--transaction-isolation=READ-COMMITTED"]
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--transaction-isolation=READ-COMMITTED",
+      ]
     volumes:
       - database-data:/var/lib/mysql
     healthcheck:
@@ -87,7 +92,11 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O /dev/null http://127.0.0.1:8080/api/health || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -115,7 +124,18 @@ services:
       SESSION_DRIVER: database
       QUEUE_CONNECTION: database
       FILESYSTEM_DISK: private
-    command: ["php", "artisan", "queue:work", "database", "--queue=conversions,default", "--sleep=2", "--tries=3", "--timeout=900", "--max-time=3600"]
+    command:
+      [
+        "php",
+        "artisan",
+        "queue:work",
+        "database",
+        "--queue=conversions,default",
+        "--sleep=2",
+        "--tries=3",
+        "--timeout=900",
+        "--max-time=3600",
+      ]
     volumes:
       - app-storage:/var/www/html/storage/app
       - framework-storage:/var/www/html/storage/framework
@@ -142,7 +162,13 @@ services:
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?Set NEXT_PUBLIC_SITE_URL in root .env}
       NEXT_PUBLIC_GEOPORTAL_URL: ${NEXT_PUBLIC_GEOPORTAL_URL:-https://geoportal-wajo.vercel.app}
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 20s
       timeout: 5s
       retries: 8
@@ -174,7 +200,14 @@ services:
     profiles: [tunnel]
     environment:
       CLOUDFLARE_TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
-    command: ["tunnel", "--no-autoupdate", "run", "--token", "${CLOUDFLARE_TUNNEL_TOKEN:-}"]
+    command:
+      [
+        "tunnel",
+        "--no-autoupdate",
+        "run",
+        "--token",
+        "${CLOUDFLARE_TUNNEL_TOKEN:-}",
+      ]
     depends_on:
       - edge
     networks: [internal]

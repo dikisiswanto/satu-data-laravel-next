@@ -148,12 +148,18 @@ export function SourceUploadForm({
       } catch {
         let cleaned = false;
         try {
-          const cleanupResponse = await fetch(`/api/v1/portal/datasets/${datasetId}/uploads`, {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ action: "cleanup", path: prepared.path }),
-          });
+          const cleanupResponse = await fetch(
+            `/api/v1/portal/datasets/${datasetId}/uploads`,
+            {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({ action: "cleanup", path: prepared.path }),
+            },
+          );
           cleaned = cleanupResponse.ok;
         } catch {
           cleaned = false;
@@ -215,15 +221,28 @@ export function SourceUploadForm({
         // Known, structured failures are safe to clean because registration did
         // not complete for these error contracts.
         try {
-          const cleanupResponse = await fetch(`/api/v1/portal/datasets/${datasetId}/uploads`, {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ action: "cleanup", path: prepared.path }),
-          });
-          if (!cleanupResponse.ok) console.error("source_upload_cleanup_failed", cleanupResponse.status);
+          const cleanupResponse = await fetch(
+            `/api/v1/portal/datasets/${datasetId}/uploads`,
+            {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({ action: "cleanup", path: prepared.path }),
+            },
+          );
+          if (!cleanupResponse.ok)
+            console.error(
+              "source_upload_cleanup_failed",
+              cleanupResponse.status,
+            );
         } catch (cleanupError) {
-          console.error("source_upload_cleanup_failed", cleanupError?.message || "unknown");
+          console.error(
+            "source_upload_cleanup_failed",
+            cleanupError?.message || "unknown",
+          );
         }
         setMessage({
           type: "error",
@@ -280,7 +299,9 @@ export function SourceUploadForm({
       setFile(null);
       formElement.reset();
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: portalQueryKeys.dataset(datasetId) }),
+        queryClient.invalidateQueries({
+          queryKey: portalQueryKeys.dataset(datasetId),
+        }),
         queryClient.invalidateQueries({ queryKey: portalQueryKeys.datasets() }),
       ]);
       router.refresh();

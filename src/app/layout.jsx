@@ -40,10 +40,23 @@ export const metadata = {
     locale: "id_ID",
     siteName: "Portal Satu Data Kabupaten Wajo",
     title: "Portal Satu Data Kabupaten Wajo",
-    description: "Portal resmi untuk menemukan, memahami, dan menggunakan data publik Kabupaten Wajo.",
-    images: [{ url: "/wajo-hero-panorama.webp", width: 2103, height: 748, alt: "Portal Satu Data Kabupaten Wajo" }],
+    description:
+      "Portal resmi untuk menemukan, memahami, dan menggunakan data publik Kabupaten Wajo.",
+    images: [
+      {
+        url: "/wajo-hero-panorama.webp",
+        width: 2103,
+        height: 748,
+        alt: "Portal Satu Data Kabupaten Wajo",
+      },
+    ],
   },
-  twitter: { card: "summary_large_image", title: "Portal Satu Data Kabupaten Wajo", description: "Portal resmi data publik Kabupaten Wajo.", images: ["/wajo-hero-panorama.webp"] },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portal Satu Data Kabupaten Wajo",
+    description: "Portal resmi data publik Kabupaten Wajo.",
+    images: ["/wajo-hero-panorama.webp"],
+  },
   robots: {
     index: true,
     follow: true,

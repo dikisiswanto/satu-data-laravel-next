@@ -33,7 +33,12 @@ export const metadata = {
   description:
     "Temukan dataset, indikator, dan informasi resmi dari perangkat daerah Kabupaten Wajo.",
   ...getCanonicalMetadata("/"),
-  ...getSocialMetadata({ path: "/", title: "Portal Satu Data Kabupaten Wajo", description: "Temukan dataset, indikator, dan informasi resmi dari perangkat daerah Kabupaten Wajo." }),
+  ...getSocialMetadata({
+    path: "/",
+    title: "Portal Satu Data Kabupaten Wajo",
+    description:
+      "Temukan dataset, indikator, dan informasi resmi dari perangkat daerah Kabupaten Wajo.",
+  }),
 };
 
 const topics = [

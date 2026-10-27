@@ -10,7 +10,9 @@ const nextConfig = {
   serverExternalPackages: ["exceljs", "pdfkit"],
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
   async rewrites() {
-    const backend = (process.env.BACKEND_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+    const backend = (
+      process.env.BACKEND_API_URL || "http://127.0.0.1:8000"
+    ).replace(/\/$/, "");
     return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
   },
   async redirects() {

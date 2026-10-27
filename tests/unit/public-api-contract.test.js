@@ -1,12 +1,15 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+const read = (path) =>
+  readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const parseJson = (path) => JSON.parse(read(path));
 
 const preview = read("src/components/dataset-resource-preview.jsx");
 const apiDocs = read("src/app/(public)/api-data/page.jsx");
-const controller = read("backend/app/Http/Controllers/Api/PublicDataController.php");
+const controller = read(
+  "backend/app/Http/Controllers/Api/PublicDataController.php",
+);
 const openapi = parseJson("backend/openapi/openapi.json");
 const siteConfig = read("src/lib/site-config.js");
 const organizations = read("src/lib/data/organizations.js");
@@ -24,7 +27,10 @@ describe("public frontend and API contract regression guard", () => {
   it("paginates stored preview rows rather than overstating the source dataset count", () => {
     expect(controller).toContain("where('resource_id', $resourceId)->count()");
     expect(controller).toContain("page_out_of_range");
-    expect(openapi.paths["/api/v1/datasets/{slug}/resources/{resourceId}/rows"].get.responses["400"]).toBeTruthy();
+    expect(
+      openapi.paths["/api/v1/datasets/{slug}/resources/{resourceId}/rows"].get
+        .responses["400"],
+    ).toBeTruthy();
   });
 
   it("keeps public API documentation aligned with implemented downloads and organization routes", () => {
@@ -37,7 +43,9 @@ describe("public frontend and API contract regression guard", () => {
   });
 
   it("does not silently truncate the public organization directory at the first API page", () => {
-    expect(organizations).toContain("/api/v1/organizations?limit=${pageSize}&page=${page}");
+    expect(organizations).toContain(
+      "/api/v1/organizations?limit=${pageSize}&page=${page}",
+    );
     expect(organizations).toContain("rawLastPage");
     expect(organizations).toContain("Promise.all(batch.map(fetchPage))");
   });

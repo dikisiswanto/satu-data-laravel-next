@@ -1,5 +1,9 @@
 import { PageHeading } from "@/components/page-heading";
-import { getCanonicalMetadata, getPublicSiteOrigin, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getPublicSiteOrigin,
+  getSocialMetadata,
+} from "@/lib/site-config";
 
 const configuredOrigin = getPublicSiteOrigin();
 const displayBaseUrl = configuredOrigin || "https://domain-portal-anda.example";
@@ -9,7 +13,12 @@ export const metadata = {
   description:
     "Panduan menggunakan API publik Satu Data Kabupaten Wajo: endpoint, parameter, contoh request, format respons, dan cara menangani error.",
   ...getCanonicalMetadata("/api-data"),
-  ...getSocialMetadata({ path: "/api-data", title: "API Data Terbuka | Satu Data Wajo", description: "Referensi teknis API publik Kabupaten Wajo untuk mengambil dataset, membaca pratinjau tabel, melihat organisasi, dan menggunakan indikator statistik." }),
+  ...getSocialMetadata({
+    path: "/api-data",
+    title: "API Data Terbuka | Satu Data Wajo",
+    description:
+      "Referensi teknis API publik Kabupaten Wajo untuk mengambil dataset, membaca pratinjau tabel, melihat organisasi, dan menggunakan indikator statistik.",
+  }),
 };
 
 const datasetListExample = `{
@@ -504,11 +513,11 @@ export default function ApiDocsPage() {
           <div className="mt-4 rounded-xl border border-[#dce8e3] bg-[#f3faf6] p-4 text-sm leading-6 text-[#235741]">
             Respons berbentuk daftar menyertakan <code>data</code> dan{" "}
             <code>meta</code> untuk informasi pagination. Daftar dataset juga
-            menyediakan metadata kompatibilitas <code>pagination</code>, sedangkan
-            endpoint pratinjau baris menyediakan <code>links.self</code> dan{" "}
-            <code>links.next</code>. Pada halaman terakhir, <code>next</code>{" "}
-            bernilai <code>null</code>. Respons detail membungkus satu objek di
-            dalam <code>data</code>.
+            menyediakan metadata kompatibilitas <code>pagination</code>,
+            sedangkan endpoint pratinjau baris menyediakan{" "}
+            <code>links.self</code> dan <code>links.next</code>. Pada halaman
+            terakhir, <code>next</code> bernilai <code>null</code>. Respons
+            detail membungkus satu objek di dalam <code>data</code>.
           </div>
         </section>
 

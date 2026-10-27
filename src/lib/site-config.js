@@ -41,11 +41,15 @@ export function getCanonicalMetadata(pathname) {
   return getPublicSiteOrigin() ? { alternates: { canonical: pathname } } : {};
 }
 
-
 /** Consistent social previews for public routes. Child Open Graph metadata replaces
  * the parent object in Next.js, so every route that customizes Open Graph must
  * define its own image instead of relying on the root layout. */
-export function getSocialMetadata({ path = "/", title, description, type = "website" }) {
+export function getSocialMetadata({
+  path = "/",
+  title,
+  description,
+  type = "website",
+}) {
   const origin = getPublicSiteOrigin();
   const image = "/wajo-hero-panorama.webp";
   const absolutePath = origin ? new URL(path, origin).toString() : undefined;

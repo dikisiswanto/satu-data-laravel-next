@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddApiSecurityHeaders;
 use App\Http\Middleware\AttachFrontendToken;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\RequireSameOriginForMutations;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(AddApiSecurityHeaders::class);
         $middleware->alias([
             'frontend.token' => AttachFrontendToken::class,
             'same.origin' => RequireSameOriginForMutations::class,

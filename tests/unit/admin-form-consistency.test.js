@@ -26,7 +26,7 @@ describe("admin form consistency and user-facing guidance", () => {
   });
 
   it("preserves a single outlined dataset search control around the icon", () => {
-    const datasetPage = read("src/app/portal/dataset/page.jsx");
+    const datasetPage = read("src/app/portal/(workspace)/dataset/page.jsx");
     expect(datasetPage).toMatch(
       /<div className="relative">[\s\S]*?<Search[\s\S]*?<input[\s\S]*?className="field pl-9"/,
     );
@@ -36,9 +36,11 @@ describe("admin form consistency and user-facing guidance", () => {
   });
 
   it("keeps page guidance actionable and avoids mixed English for basic actions", () => {
-    const datasetPage = read("src/app/portal/dataset/page.jsx");
-    const editDataset = read("src/app/portal/dataset/[id]/edit/page.jsx");
-    const auditPage = read("src/app/portal/riwayat/page.jsx");
+    const datasetPage = read("src/app/portal/(workspace)/dataset/page.jsx");
+    const editDataset = read(
+      "src/app/portal/(workspace)/dataset/[id]/edit/page.jsx",
+    );
+    const auditPage = read("src/app/portal/(workspace)/riwayat/page.jsx");
     expect(datasetPage).toContain(
       "Temukan dataset dengan pencarian dan filter",
     );

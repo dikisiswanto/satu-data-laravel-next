@@ -96,10 +96,10 @@ export function RouteProgress() {
 
   return (
     <div
-      className={`route-progress${active ? " is-active" : ""}`}
+      className={`pointer-events-none fixed inset-x-0 top-0 z-[100] h-0.5 transition-opacity duration-150 ${active ? "opacity-100" : "opacity-0"}`}
       aria-hidden="true"
     >
-      <span />
+      <span className="block h-full w-full bg-[#62839a]" />
     </div>
   );
 }

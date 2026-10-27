@@ -49,6 +49,8 @@
       "Composer\\Config::disableProcessTimeout",
       "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:work --queue=conversions,default --tries=3 --timeout=900\" --names=api,queue --kill-others"
     ],
+    "format": "pint app bootstrap config database routes tests",
+    "format:check": "pint --test app bootstrap config database routes tests",
     "test": "@php artisan test",
     "lint": "@php artisan about --only=environment"
   },

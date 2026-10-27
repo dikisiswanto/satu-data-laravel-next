@@ -70,8 +70,15 @@ describe("admin dashboard view model", () => {
   });
 
   it("distinguishes an account without membership from a failed membership request", () => {
-    const empty = buildDashboardViewModel({ memberships: [], summary: summary() });
-    const failed = buildDashboardViewModel({ memberships: null, summary: null, error: true });
+    const empty = buildDashboardViewModel({
+      memberships: [],
+      summary: summary(),
+    });
+    const failed = buildDashboardViewModel({
+      memberships: null,
+      summary: null,
+      error: true,
+    });
 
     expect(empty.nextTask.state).toBe("no-scope");
     expect(failed.nextTask.state).toBe("unavailable");

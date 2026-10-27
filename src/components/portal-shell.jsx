@@ -5,28 +5,7 @@ import { logoutAction } from "@/app/portal/actions";
 import { PortalNavigation } from "@/components/portal-navigation";
 import { PortalOnboarding } from "@/components/portal-onboarding";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
-import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-
-import { assertBackendQuery } from "@/lib/backend/query-guard";
-export async function PortalShell({
-  children,
-  email,
-  shellContext: providedContext,
-}) {
-  let shellContext = providedContext || null;
-  if (!shellContext) {
-    const supabase = await createBackendServerClient();
-    const {
-      data: { user },
-    } = await getRequestVerifiedUser(supabase);
-    // One RLS-respecting RPC replaces two sequential reads on each admin page.
-    const { data, error } = user
-      ? await supabase.rpc("get_portal_shell_context")
-      : { data: null, error: null };
-    assertBackendQuery(error, "portal_shell_context");
-    shellContext = data;
-  }
+export function PortalShell({ children, email, shellContext = null }) {
   const roles = Array.isArray(shellContext?.roles)
     ? [
         ...new Set(
@@ -46,7 +25,7 @@ export async function PortalShell({
             ? "Pemeriksa data"
             : "Pengguna portal";
   return (
-    <div className="portal-app min-h-screen">
+    <div className="portal-app min-h-screen !bg-[#f5f7f8] text-[#172f43]">
       {shellContext ? (
         <PortalOnboarding
           roleLabel={roleLabel}
@@ -54,7 +33,7 @@ export async function PortalShell({
           completed={Boolean(shellContext.onboarding_completed_at)}
         />
       ) : null}
-      <header className="portal-topbar sticky top-0 z-30 border-b">
+      <header className="portal-topbar sticky top-0 z-30 min-h-16 border-b border-[#dce5ec] bg-white shadow-[0_1px_2px_rgb(22_47_66_/_0.04)]">
         <div className="page-container flex min-h-16 items-center justify-between gap-4">
           <Link
             href="/portal"
@@ -102,7 +81,7 @@ export async function PortalShell({
             </div>
             <form action={logoutAction}>
               <FormSubmitButton
-                className="portal-logout inline-flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#d7e2e9] bg-[#f9fbfc] px-3 py-2.5 text-sm font-semibold text-[#344e62] transition-colors hover:bg-[#f0f5f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7] focus-visible:ring-offset-2"
                 pendingText="Keluar…"
                 aria-label="Keluar dari akun"
               >
@@ -115,12 +94,12 @@ export async function PortalShell({
       </header>
       <div className="page-container grid gap-6 py-6 sm:py-8 lg:grid-cols-[236px_minmax(0,1fr)] lg:gap-8">
         <aside className="min-w-0 lg:sticky lg:top-[100px] lg:self-start">
-          <div className="portal-sidebar rounded-2xl border p-3 sm:p-4">
+          <div className="rounded-xl border border-[#dce5ec] bg-white p-3 shadow-[0_1px_3px_rgb(22_47_66_/_0.04)] sm:p-4 lg:p-4">
             <p className="px-3 pb-3 pt-1 text-xs font-bold uppercase tracking-[0.16em] text-muted">
               Menu pengelola
             </p>
             <PortalNavigation roles={roles} />
-            <div className="portal-sidebar-note mt-4 rounded-xl p-3.5">
+            <div className="mt-4 hidden rounded-lg border border-[#e0e9ef] bg-[#f7fafc] p-3.5 lg:block">
               <p className="text-xs font-semibold text-ink">Area pengelola</p>
               <p className="mt-1 text-xs leading-5 text-muted">
                 Menu dan data yang tampil menyesuaikan peran serta organisasi
@@ -139,7 +118,7 @@ export async function PortalShell({
         <main
           id="konten-utama"
           tabIndex={-1}
-          className="portal-main min-w-0 rounded-2xl sm:rounded-[1.5rem]"
+          className="portal-main min-w-0 rounded-2xl"
         >
           {children}
         </main>

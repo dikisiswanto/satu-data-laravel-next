@@ -11,7 +11,12 @@ export const metadata = {
   description:
     "Cari perangkat daerah pengampu data Kabupaten Wajo dan lihat jumlah dataset yang telah dipublikasikan.",
   ...getCanonicalMetadata("/organisasi"),
-  ...getSocialMetadata({ path: "/organisasi", title: "Perangkat Daerah | Satu Data Wajo", description: "Temukan perangkat daerah pengampu data dan dataset publik Kabupaten Wajo." }),
+  ...getSocialMetadata({
+    path: "/organisasi",
+    title: "Perangkat Daerah | Satu Data Wajo",
+    description:
+      "Temukan perangkat daerah pengampu data dan dataset publik Kabupaten Wajo.",
+  }),
 };
 
 export default async function OrganizationsPage() {

@@ -3,14 +3,21 @@ import Link from "next/link";
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
 
 function Block({ className = "" }) {
-  return <div aria-hidden="true" className={`loading-skeleton ${className}`} />;
+  return (
+    <div aria-hidden="true" className={`rounded bg-[#edf1f3] ${className}`} />
+  );
 }
 
 function Field({ label, hint = false, password = false }) {
   return (
     <div>
-      <label className="login-label">{label}</label>
-      <div className="field flex h-11 items-center px-3" aria-hidden="true">
+      <label className="mb-1.5 block text-sm font-semibold text-[#344e59]">
+        {label}
+      </label>
+      <div
+        className="flex h-11 items-center rounded-md border border-[#d8e1e5] bg-white px-3"
+        aria-hidden="true"
+      >
         <Block className={`h-4 ${password ? "w-2/3" : "w-3/4"}`} />
       </div>
       {hint ? (
@@ -23,16 +30,22 @@ function Field({ label, hint = false, password = false }) {
 function LoginLoading() {
   return (
     <main
-      className="login-page"
+      className="flex min-h-screen flex-col items-center justify-center bg-[#f4f7f8] px-4 py-8 sm:px-6"
       aria-busy="true"
       aria-label="Memuat halaman masuk"
     >
-      <section className="login-card" aria-labelledby="login-title">
-        <Link href="/" className="login-back-link">
+      <section
+        className="w-full max-w-lg rounded-xl border border-[#dce5ec] bg-white p-5 shadow-sm sm:p-8"
+        aria-labelledby="login-title"
+      >
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-[#376b70]"
+        >
           <ArrowLeft size={16} aria-hidden="true" />
           Kembali ke portal publik
         </Link>
-        <div className="login-brand">
+        <div className="mt-7 flex items-center gap-3 border-b border-[#e4ebea] pb-5">
           <Image
             src="/logo-kabupaten-wajo.webp"
             alt="Lambang Kabupaten Wajo"
@@ -41,23 +54,32 @@ function LoginLoading() {
             priority
           />
           <div>
-            <p>Pemerintah Kabupaten Wajo</p>
-            <strong>Ruang Pengelola Data</strong>
+            <p className="text-xs font-medium text-muted">
+              Pemerintah Kabupaten Wajo
+            </p>
+            <strong className="mt-1 block text-sm font-semibold text-[#244650]">
+              Ruang Pengelola Data
+            </strong>
           </div>
         </div>
-        <div className="login-title-block">
-          <span className="login-title-icon">
+        <div className="mt-6 flex items-start gap-3">
+          <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#d7e5e1] bg-[#f4f8f6] text-[#326e69]">
             <LockKeyhole size={19} aria-hidden="true" />
           </span>
           <div>
-            <h1 id="login-title">Masuk ke Portal Admin</h1>
-            <p>
+            <h1
+              id="login-title"
+              className="text-xl font-semibold tracking-tight text-[#203e49] sm:text-2xl"
+            >
+              Masuk ke Portal Admin
+            </h1>
+            <p className="mt-1 text-sm leading-6 text-muted">
               Gunakan alamat email dan kata sandi akun yang didaftarkan oleh
               administrator portal.
             </p>
           </div>
         </div>
-        <form className="login-form" aria-hidden="true">
+        <form className="login-form mt-6 space-y-4" aria-hidden="true">
           <Field
             label="Alamat email"
             hint="Masukkan email akun yang diberikan administrator. Akun baru tidak dapat dibuat dari halaman ini."
@@ -67,23 +89,27 @@ function LoginLoading() {
             hint="Masukkan kata sandi akun. Jika lupa, gunakan tautan pemulihan kata sandi."
             password
           />
-          <div className="login-form-meta">
+          <div className="flex justify-end text-sm font-medium text-[#1d5fa7]">
             <span>Lupa kata sandi?</span>
           </div>
-          <div className="login-submit flex items-center justify-center">
+          <div className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#eaf1f6] px-4 py-2.5 text-sm font-semibold text-[#527087]">
             Masuk{" "}
             <ArrowLeft size={16} aria-hidden="true" className="rotate-180" />
           </div>
         </form>
-        <div className="login-access-note">
-          <ShieldCheck size={17} aria-hidden="true" />
+        <div className="mt-6 flex items-start gap-2.5 border-t border-[#e4ebea] pt-4 text-xs leading-5 text-muted">
+          <ShieldCheck
+            className="mt-0.5 shrink-0 text-[#5d8580]"
+            size={17}
+            aria-hidden="true"
+          />
           <p>
             Portal Admin hanya dapat digunakan oleh akun yang diundang
             administrator. Akun baru tidak dapat didaftarkan sendiri.
           </p>
         </div>
       </section>
-      <p className="login-footer">
+      <p className="mt-5 text-center text-xs text-[#74858a]">
         Portal Satu Data Kabupaten Wajo · Akses pengelola
       </p>
       <p className="sr-only" role="status">

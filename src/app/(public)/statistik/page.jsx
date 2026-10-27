@@ -11,7 +11,12 @@ export const metadata = {
   description:
     "Jelajahi indikator dan data makro Kabupaten Wajo dengan definisi, satuan, periode, dan sumber yang jelas.",
   ...getCanonicalMetadata("/statistik"),
-  ...getSocialMetadata({ path: "/statistik", title: "Statistik dan Indikator | Satu Data Wajo", description: "Jelajahi indikator publik Kabupaten Wajo dengan definisi, satuan, periode, dan sumber yang jelas." }),
+  ...getSocialMetadata({
+    path: "/statistik",
+    title: "Statistik dan Indikator | Satu Data Wajo",
+    description:
+      "Jelajahi indikator publik Kabupaten Wajo dengan definisi, satuan, periode, dan sumber yang jelas.",
+  }),
 };
 
 const PAGE_SIZE = 24;

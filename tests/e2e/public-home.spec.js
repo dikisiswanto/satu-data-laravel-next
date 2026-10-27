@@ -21,9 +21,7 @@ test("katalog dataset mempunyai pencarian yang berlabel", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Katalog dataset", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByLabel("Kata kunci"),
-  ).toBeVisible();
+  await expect(page.getByLabel("Kata kunci")).toBeVisible();
 });
 test("Portal Admin meminta pengguna masuk", async ({ page }) => {
   await page.goto("/portal");
@@ -91,7 +89,9 @@ test("menu seluler membuka navigasi yang dapat diakses dan Portal Admin menuju l
     page.getByRole("navigation", { name: "Navigasi seluler" }),
   ).toBeVisible();
   await expect(
-    page.locator("#site-mobile-navigation").getByRole("link", { name: /Masuk Portal Admin/ }),
+    page
+      .locator("#site-mobile-navigation")
+      .getByRole("link", { name: /Masuk Portal Admin/ }),
   ).toHaveAttribute("href", "/portal/login");
   await page.keyboard.press("Escape");
   await expect(

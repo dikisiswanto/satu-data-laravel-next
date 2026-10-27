@@ -13,15 +13,21 @@ const explorer = readFileSync(
   "utf8",
 );
 const auditPage = readFileSync(
-  new URL("../../src/app/portal/riwayat/page.jsx", import.meta.url),
+  new URL("../../src/app/portal/(workspace)/riwayat/page.jsx", import.meta.url),
   "utf8",
 );
 const auditController = readFileSync(
-  new URL("../../backend/app/Http/Controllers/Api/PortalAdminController.php", import.meta.url),
+  new URL(
+    "../../backend/app/Http/Controllers/Api/PortalAdminController.php",
+    import.meta.url,
+  ),
   "utf8",
 );
 const auditSchema = readFileSync(
-  new URL("../../backend/database/migrations/2026_10_01_000003_create_indicator_sdi_audit_tables.php", import.meta.url),
+  new URL(
+    "../../backend/database/migrations/2026_10_01_000003_create_indicator_sdi_audit_tables.php",
+    import.meta.url,
+  ),
   "utf8",
 );
 const styles = readFileSync(
@@ -55,14 +61,20 @@ describe("administrative table exploration and audit accountability", () => {
   });
 
   it("enforces audit role checks and organization scope in the Laravel API", () => {
-    expect(auditController).toContain("requireAnyRole($user, ['super_admin', 'data_admin', 'admin_opd', 'reviewer', 'auditor'])");
-    expect(auditController).toContain("whereIn('a.organization_id', $organizationIds)");
+    expect(auditController).toContain(
+      "requireAnyRole($user, ['super_admin', 'data_admin', 'admin_opd', 'reviewer', 'auditor'])",
+    );
+    expect(auditController).toContain(
+      "whereIn('a.organization_id', $organizationIds)",
+    );
     expect(auditController).toContain("accessibleOrganizationIds($user)");
     expect(auditController).toContain("'a.request_id'");
     expect(auditController).toContain("Cache-Control' => 'private, no-store");
     expect(auditController).toContain("Cache-Control' => 'private, no-store");
     expect(auditSchema).toContain("Schema::create('audit_logs'");
-    expect(auditSchema).toContain("foreignUuid('actor_user_id')->nullable()->constrained('users')->nullOnDelete()");
+    expect(auditSchema).toContain(
+      "foreignUuid('actor_user_id')->nullable()->constrained('users')->nullOnDelete()",
+    );
   });
 
   it("styles the shared controls for readable, responsive filter layouts", () => {

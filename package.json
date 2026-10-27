@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "check": "node scripts/check-project.mjs && node scripts/check-local-imports.mjs && node scripts/check-php-namespaces.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,7 +20,11 @@
     "test:e2e:ui": "playwright test --ui",
     "test:coverage": "vitest run --coverage",
     "security:check": "npm audit --omit=dev",
-    "format:write": "prettier --write ."
+    "format:write": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:php": "composer --working-dir=backend format",
+    "format:php:check": "composer --working-dir=backend format:check",
+    "format:all": "npm run format:write && npm run format:php"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.5",

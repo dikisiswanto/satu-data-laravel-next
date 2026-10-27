@@ -33,7 +33,7 @@ describe("human-centered wording across public and admin UI", () => {
   });
 
   it("describes local SDI readiness without claiming national acceptance", () => {
-    const integration = read("src/app/portal/integrasi/page.jsx");
+    const integration = read("src/app/portal/(workspace)/integrasi/page.jsx");
     const metadataEditor = read("src/components/admin/sdi-metadata-editor.jsx");
     expect(integration).toContain(
       "hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional",
@@ -55,13 +55,23 @@ describe("human-centered wording across public and admin UI", () => {
   });
 
   it("uses the updated, human-facing wording for account access and changed data", () => {
-    const login = compact(read("src/app/portal/login/page.jsx"));
-    const users = compact(read("src/app/portal/pengguna/page.jsx"));
-    const membership = compact(read("src/components/admin/membership-form.jsx"));
-    const accountSettings = compact(read("src/app/portal/pengaturan/page.jsx"));
-    const editDataset = compact(read("src/app/portal/dataset/[id]/edit/page.jsx"));
-    const createDataset = compact(read("src/app/portal/dataset/new/page.jsx"));
-    const createForm = compact(read("src/components/admin/dataset-create-form.jsx"));
+    const login = compact(read("src/app/portal/(auth)/login/page.jsx"));
+    const users = compact(read("src/app/portal/(workspace)/pengguna/page.jsx"));
+    const membership = compact(
+      read("src/components/admin/membership-form.jsx"),
+    );
+    const accountSettings = compact(
+      read("src/app/portal/(workspace)/pengaturan/page.jsx"),
+    );
+    const editDataset = compact(
+      read("src/app/portal/(workspace)/dataset/[id]/edit/page.jsx"),
+    );
+    const createDataset = compact(
+      read("src/app/portal/(workspace)/dataset/new/page.jsx"),
+    );
+    const createForm = compact(
+      read("src/components/admin/dataset-create-form.jsx"),
+    );
     const preparationAssistant = compact(
       read("src/components/admin/dataset-preparation-assistant.jsx"),
     );
@@ -106,10 +116,12 @@ describe("human-centered wording across public and admin UI", () => {
     const navigation = read("src/components/portal-navigation.jsx");
     expect(designSystem).toContain(".portal-page-heading");
     expect(designSystem).toContain("prefers-reduced-motion: reduce");
-    expect(designSystem).toContain(".portal-mobile-navigation-panel");
+    expect(navigation).toContain(
+      "portal-mobile-navigation-panel grid gap-3 border-t",
+    );
     expect(pageHeading).toContain("portal-page-title");
     expect(pageHeading).toContain("portal-page-actions");
-    expect(navigation).toContain("aria-label=\"Navigasi pengelola\"");
+    expect(navigation).toContain('aria-label="Navigasi pengelola"');
     expect(navigation).toContain("portal-mobile-navigation");
   });
 });

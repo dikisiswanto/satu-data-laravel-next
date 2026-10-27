@@ -16,7 +16,6 @@ export const portalQueryKeys = {
   memberships: () => ["portal", "memberships"],
 };
 
-
 export const publicQueryKeys = {
   root: ["public"],
   datasets: () => ["public", "datasets"],

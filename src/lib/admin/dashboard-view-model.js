@@ -3,9 +3,26 @@
  * only; Laravel remains authoritative for every authorization decision.
  */
 const GLOBAL_ROLES = new Set(["super_admin", "data_admin", "auditor"]);
-const CREATE_ROLES = new Set(["super_admin", "data_admin", "admin_opd", "editor"]);
-const REVIEW_ROLES = new Set(["super_admin", "data_admin", "admin_opd", "reviewer"]);
-const INTEGRATION_ROLES = new Set(["super_admin", "data_admin", "admin_opd", "reviewer", "editor", "auditor"]);
+const CREATE_ROLES = new Set([
+  "super_admin",
+  "data_admin",
+  "admin_opd",
+  "editor",
+]);
+const REVIEW_ROLES = new Set([
+  "super_admin",
+  "data_admin",
+  "admin_opd",
+  "reviewer",
+]);
+const INTEGRATION_ROLES = new Set([
+  "super_admin",
+  "data_admin",
+  "admin_opd",
+  "reviewer",
+  "editor",
+  "auditor",
+]);
 const USER_ADMIN_ROLES = new Set(["super_admin", "data_admin"]);
 const USER_AUDIT_ROLES = new Set(["auditor"]);
 
@@ -21,27 +38,45 @@ function readCount(summary, key, available) {
   return Number.isSafeInteger(count) && count >= 0 ? count : null;
 }
 
-export function buildDashboardViewModel({ memberships, summary, error = false }) {
+export function buildDashboardViewModel({
+  memberships,
+  summary,
+  error = false,
+}) {
   const membershipDataAvailable = Array.isArray(memberships);
   const activeMemberships = membershipDataAvailable
     ? memberships.filter((membership) => membership?.is_active !== false)
     : [];
-  const roles = [...new Set(activeMemberships.map((membership) => membership?.role).filter((role) => typeof role === "string"))];
+  const roles = [
+    ...new Set(
+      activeMemberships
+        .map((membership) => membership?.role)
+        .filter((role) => typeof role === "string"),
+    ),
+  ];
   const globalMembership = activeMemberships.some(
-    (membership) => (membership.organization_id === null || membership.organization_id === undefined) && GLOBAL_ROLES.has(membership.role),
+    (membership) =>
+      (membership.organization_id === null ||
+        membership.organization_id === undefined) &&
+      GLOBAL_ROLES.has(membership.role),
   );
-  const organizationIds = [...new Set(
-    activeMemberships
-      .map((membership) => membership.organization_id)
-      .filter((id) => typeof id === "string" && id.length > 0),
-  )];
-  const hasScope = membershipDataAvailable && (globalMembership || organizationIds.length > 0);
+  const organizationIds = [
+    ...new Set(
+      activeMemberships
+        .map((membership) => membership.organization_id)
+        .filter((id) => typeof id === "string" && id.length > 0),
+    ),
+  ];
+  const hasScope =
+    membershipDataAvailable && (globalMembership || organizationIds.length > 0);
   const canCreateDataset = containsAny(roles, CREATE_ROLES);
   const canReviewQueue = containsAny(roles, REVIEW_ROLES);
   const canManageIntegrations = containsAny(roles, INTEGRATION_ROLES);
   const canManageUsers = containsAny(roles, USER_ADMIN_ROLES);
-  const canViewUserAccess = canManageUsers || containsAny(roles, USER_AUDIT_ROLES);
-  const summaryAvailable = !error && summary != null && typeof summary === "object";
+  const canViewUserAccess =
+    canManageUsers || containsAny(roles, USER_AUDIT_ROLES);
+  const summaryAvailable =
+    !error && summary != null && typeof summary === "object";
   const total = readCount(summary, "total", summaryAvailable && hasScope);
   const review = readCount(summary, "review", summaryAvailable && hasScope);
   const draft = readCount(summary, "draft", summaryAvailable && hasScope);
@@ -51,7 +86,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   if (!membershipDataAvailable) {
     nextTask = {
       title: "Ringkasan belum dapat dimuat",
-      description: "Status akses akun belum berhasil diperiksa. Muat ulang halaman sebelum mengambil tindakan yang bergantung pada angka ringkasan.",
+      description:
+        "Status akses akun belum berhasil diperiksa. Muat ulang halaman sebelum mengambil tindakan yang bergantung pada angka ringkasan.",
       action: "Muat ulang setelah memeriksa koneksi",
       href: "/portal",
       state: "unavailable",
@@ -59,7 +95,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   } else if (!hasScope) {
     nextTask = {
       title: "Akses organisasi belum tersedia",
-      description: "Akun ini belum terhubung ke organisasi aktif. Administrator portal perlu menetapkan organisasi dan peran yang sesuai.",
+      description:
+        "Akun ini belum terhubung ke organisasi aktif. Administrator portal perlu menetapkan organisasi dan peran yang sesuai.",
       action: "Kembali ke ringkasan",
       href: "/portal",
       state: "no-scope",
@@ -67,7 +104,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   } else if (error || total === null || review === null || draft === null) {
     nextTask = {
       title: "Ringkasan data belum berhasil dimuat",
-      description: "Angka tidak ditampilkan sebagai nol karena data belum dapat dipastikan. Buka katalog untuk memeriksa status sebenarnya.",
+      description:
+        "Angka tidak ditampilkan sebagai nol karena data belum dapat dipastikan. Buka katalog untuk memeriksa status sebenarnya.",
       action: "Buka katalog dataset",
       href: "/portal/dataset",
       state: "unavailable",
@@ -91,7 +129,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   } else if (total === 0 && canCreateDataset) {
     nextTask = {
       title: "Mulai katalog data Anda",
-      description: "Buat satu dataset dengan organisasi pengampu serta sumber yang jelas. Berkas dapat ditambahkan setelah draf tersimpan.",
+      description:
+        "Buat satu dataset dengan organisasi pengampu serta sumber yang jelas. Berkas dapat ditambahkan setelah draf tersimpan.",
       action: "Buat dataset pertama",
       href: "/portal/dataset/new",
       state: "empty",
@@ -99,7 +138,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   } else if (canCreateDataset) {
     nextTask = {
       title: "Lanjutkan pengelolaan katalog",
-      description: "Buka daftar dataset untuk membuat data baru, memperbarui draf, atau memeriksa status pemrosesan yang sedang berjalan.",
+      description:
+        "Buka daftar dataset untuk membuat data baru, memperbarui draf, atau memeriksa status pemrosesan yang sedang berjalan.",
       action: "Kelola dataset",
       href: "/portal/dataset",
       state: "catalog",
@@ -107,7 +147,8 @@ export function buildDashboardViewModel({ memberships, summary, error = false })
   } else {
     nextTask = {
       title: "Temukan data dalam cakupan akses Anda",
-      description: "Gunakan katalog untuk mencari dataset dan memeriksa statusnya. Tindakan perubahan hanya tersedia untuk peran yang sesuai.",
+      description:
+        "Gunakan katalog untuk mencari dataset dan memeriksa statusnya. Tindakan perubahan hanya tersedia untuk peran yang sesuai.",
       action: "Buka katalog dataset",
       href: "/portal/dataset",
       state: "catalog",

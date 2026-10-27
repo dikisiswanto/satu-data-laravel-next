@@ -23,7 +23,12 @@ export const metadata = {
   description:
     "Temukan dataset Kabupaten Wajo melalui pencarian judul, isi, metadata, sumber, dan kata kunci dengan filter organisasi serta topik.",
   ...getCanonicalMetadata("/dataset"),
-  ...getSocialMetadata({ path: "/dataset", title: "Katalog Dataset | Satu Data Wajo", description: "Telusuri data resmi Kabupaten Wajo berdasarkan topik, organisasi, periode, dan format berkas." }),
+  ...getSocialMetadata({
+    path: "/dataset",
+    title: "Katalog Dataset | Satu Data Wajo",
+    description:
+      "Telusuri data resmi Kabupaten Wajo berdasarkan topik, organisasi, periode, dan format berkas.",
+  }),
 };
 
 export default async function DatasetCatalogPage({ searchParams }) {

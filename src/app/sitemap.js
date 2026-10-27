@@ -1,5 +1,8 @@
 import { getPublicSiteOrigin } from "@/lib/site-config";
-import { getPublishedDatasetsResult, getPublishedIndicatorsResult } from "@/lib/data/public";
+import {
+  getPublishedDatasetsResult,
+  getPublishedIndicatorsResult,
+} from "@/lib/data/public";
 import { getPublicOrganizationsResult } from "@/lib/data/organizations";
 import { connection } from "next/server";
 
@@ -46,8 +49,15 @@ async function getSitemapIndicators() {
   let unavailable = false;
   // Indicator details are public landing pages too; include them so crawlers do
   // not depend on discovering them through client-side links from the index.
-  for (let offset = 0; offset < SITEMAP_URL_LIMIT; offset += INDICATOR_PAGE_SIZE) {
-    const result = await getPublishedIndicatorsResult({ limit: INDICATOR_PAGE_SIZE, offset });
+  for (
+    let offset = 0;
+    offset < SITEMAP_URL_LIMIT;
+    offset += INDICATOR_PAGE_SIZE
+  ) {
+    const result = await getPublishedIndicatorsResult({
+      limit: INDICATOR_PAGE_SIZE,
+      offset,
+    });
     if (result.unavailable) {
       unavailable = true;
       console.error("sitemap_indicator_catalog_incomplete", { offset });
@@ -66,13 +76,18 @@ export default async function sitemap() {
     console.error("sitemap_unavailable_site_origin_not_configured");
     return [];
   }
-  const [datasetResult, indicatorResult, organizationResult] = await Promise.all([
-    getSitemapDatasets(),
-    getSitemapIndicators(),
-    getPublicOrganizationsResult(),
-  ]);
+  const [datasetResult, indicatorResult, organizationResult] =
+    await Promise.all([
+      getSitemapDatasets(),
+      getSitemapIndicators(),
+      getPublicOrganizationsResult(),
+    ]);
   // Avoid caching a partial sitemap as complete while any public query is failing.
-  if (datasetResult.unavailable || indicatorResult.unavailable || organizationResult.unavailable)
+  if (
+    datasetResult.unavailable ||
+    indicatorResult.unavailable ||
+    organizationResult.unavailable
+  )
     await connection();
   const datasets = datasetResult.data;
   const indicators = indicatorResult.data;
@@ -117,7 +132,10 @@ export default async function sitemap() {
   // sitemap protocol's 50,000-URL ceiling; datasets fill the remaining capacity.
   const roomForDatasets = Math.max(
     0,
-    SITEMAP_URL_LIMIT - fixed.length - organizationEntries.length - indicatorEntries.length,
+    SITEMAP_URL_LIMIT -
+      fixed.length -
+      organizationEntries.length -
+      indicatorEntries.length,
   );
   return [
     ...fixed,

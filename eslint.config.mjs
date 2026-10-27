@@ -4,11 +4,20 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 export default defineConfig([
   ...nextVitals,
   globalIgnores([
+    "**/node_modules/**",
+    "**/vendor/**",
     ".next/**",
-    "node_modules/**",
+    "out/**",
+    "build/**",
+    "dist/**",
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    "backend/storage/**",
+    "backend/bootstrap/cache/**",
+    "backend/public/build/**",
+    "backend/openapi/**",
+    "**/*.min.js",
   ]),
   {
     files: ["**/*.js", "**/*.jsx"],

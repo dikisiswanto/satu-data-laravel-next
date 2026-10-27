@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const publicController = readFileSync(
-  new URL("../../backend/app/Http/Controllers/Api/PublicDataController.php", import.meta.url),
+  new URL(
+    "../../backend/app/Http/Controllers/Api/PublicDataController.php",
+    import.meta.url,
+  ),
   "utf8",
 );
 const organizationPage = readFileSync(

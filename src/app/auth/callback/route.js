@@ -8,7 +8,10 @@ import { getPublicSiteOrigin } from "@/lib/site-config";
  */
 export async function GET(request) {
   const origin = getPublicSiteOrigin() || new URL(request.url).origin;
-  return NextResponse.redirect(new URL("/portal/login?error=configuration", origin), {
-    headers: { "Cache-Control": "no-store" },
-  });
+  return NextResponse.redirect(
+    new URL("/portal/login?error=configuration", origin),
+    {
+      headers: { "Cache-Control": "no-store" },
+    },
+  );
 }

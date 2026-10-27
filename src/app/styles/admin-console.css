@@ -1,18 +1,35 @@
-/* Admin console UX pass: clearer hierarchy, responsive workspace, visible focus and calmer density. */
-.portal-app { background: #f3f6f8; color: #173247; }
-.portal-topbar { background: rgb(255 255 255 / .94); border-color: #dbe4eb; box-shadow: 0 1px 3px rgb(15 36 52 / .035); backdrop-filter: blur(14px); }
-.portal-sidebar { background: #fff; border-color: #dbe4eb; box-shadow: 0 5px 24px rgb(18 47 67 / .035); }
-.portal-sidebar .portal-nav a { min-height: 42px; border-radius: 10px; transition: background-color .16s ease, color .16s ease, transform .16s ease; }
-.portal-sidebar .portal-nav a:hover { background: #f0f6fa; transform: translateX(1px); }
-.portal-sidebar .portal-nav a[aria-current="page"] { background: #eaf3fa; color: #174f76; box-shadow: inset 3px 0 #246d99; font-weight: 650; }
-.portal-sidebar-note { background: linear-gradient(145deg,#f3f8fb,#f8fafc); border: 1px solid #e0e9ef; }
-.portal-main { min-width: 0; }
-#portal-dashboard-overview { position: relative; overflow: hidden; background: linear-gradient(112deg,#fff 0%,#fff 65%,#f0f7fb 100%); border-color: #dbe5eb; box-shadow: 0 8px 26px rgb(17 48 70 / .035); }
-#portal-dashboard-overview:after { content: ""; position: absolute; right: -60px; top: -115px; width: 250px; height: 250px; border: 1px solid rgb(38 109 153 / .10); border-radius: 50%; box-shadow: 0 0 0 28px rgb(38 109 153 / .035),0 0 0 58px rgb(38 109 153 / .025); pointer-events: none; }
-.portal-dashboard-kpis > * { border-radius: 16px; box-shadow: 0 5px 20px rgb(17 48 70 / .035); transition: transform .18s ease, box-shadow .18s ease; }
-.portal-dashboard-kpis > *:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgb(17 48 70 / .07); }
-.portal-app :is(.rounded-xl.border,.rounded-2xl.border) { border-color: #dbe5eb; }
-.portal-app :is(button,a) { transition-duration: 160ms; }
-.portal-app :is(button,a):focus-visible { outline: 3px solid rgb(36 109 153 / .3); outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { .portal-app *, .portal-app *:before, .portal-app *:after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
-@media (max-width: 1023px) { .portal-app .portal-nav { padding-bottom: .35rem; scrollbar-width: thin; } .portal-app .portal-nav a { white-space: nowrap; } }
+/* Keep page-level details light; portal chrome is styled in its JSX components. */
+.portal-main {
+  min-width: 0;
+}
+.portal-dashboard-kpis > * {
+  border-radius: 16px;
+}
+.portal-app :is(.rounded-xl.border, .rounded-2xl.border) {
+  border-color: #dbe5eb;
+}
+.portal-app :is(button, a) {
+  transition-duration: 160ms;
+}
+.portal-app :is(button, a):focus-visible {
+  outline: 3px solid rgb(36 109 153 / 0.3);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal-app *,
+  .portal-app *:before,
+  .portal-app *:after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 1023px) {
+  .portal-app .portal-nav {
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+  }
+  .portal-app .portal-nav a {
+    white-space: nowrap;
+  }
+}

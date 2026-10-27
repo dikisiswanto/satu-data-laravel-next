@@ -36,12 +36,13 @@ const textValue = (value) => (typeof value === "string" ? value.trim() : "");
  */
 export function getSdiExportResources(resources = [], currentVersion) {
   if (!Array.isArray(resources)) return [];
-  return resources.filter((resource) =>
-    resource &&
-    ![true, 1, "1"].includes(resource.is_source) &&
-    [true, 1, "1"].includes(resource.is_public) &&
-    resource.conversion_status === "succeeded" &&
-    Number(resource.dataset_version) === Number(currentVersion),
+  return resources.filter(
+    (resource) =>
+      resource &&
+      ![true, 1, "1"].includes(resource.is_source) &&
+      [true, 1, "1"].includes(resource.is_public) &&
+      resource.conversion_status === "succeeded" &&
+      Number(resource.dataset_version) === Number(currentVersion),
   );
 }
 

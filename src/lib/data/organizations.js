@@ -18,7 +18,11 @@ async function queryPublicOrganizations() {
 
   const first = await fetchPage(1);
   const rawLastPage = Number(first?.meta?.last_page ?? 1);
-  if (!Number.isSafeInteger(rawLastPage) || rawLastPage < 1 || rawLastPage > maxPages) {
+  if (
+    !Number.isSafeInteger(rawLastPage) ||
+    rawLastPage < 1 ||
+    rawLastPage > maxPages
+  ) {
     throw new Error("public_organization_page_bound_exceeded");
   }
 
@@ -40,7 +44,8 @@ async function queryPublicOrganizations() {
       throw new Error("public_organization_catalog_duplicate_or_missing_id");
     }
     seenIds.add(organization.id);
-    const rawCount = organization.dataset_count ?? organization.published_dataset_count;
+    const rawCount =
+      organization.dataset_count ?? organization.published_dataset_count;
     const datasetCount = Number(rawCount);
     if (!Number.isFinite(datasetCount) || datasetCount < 0) {
       throw new Error("public_organization_dataset_count_invalid");
@@ -52,9 +57,13 @@ async function queryPublicOrganizations() {
 }
 
 export async function getPublicOrganizationsResult() {
-  try { return { data: await queryPublicOrganizations(), unavailable: false }; }
-  catch (error) {
-    console.error("public_organization_query_failed", error?.code || "unknown_error");
+  try {
+    return { data: await queryPublicOrganizations(), unavailable: false };
+  } catch (error) {
+    console.error(
+      "public_organization_query_failed",
+      error?.code || "unknown_error",
+    );
     return { data: [], unavailable: true };
   }
 }
@@ -63,26 +72,43 @@ export async function getPublicOrganizations() {
   return (await getPublicOrganizationsResult()).data;
 }
 
-export const getPublicOrganizationBySlugResult = cache(async function getOrganizationBySlug(slug) {
-  const safeSlug = typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)
-    ? slug.slice(0, 120)
-    : "";
-  if (!safeSlug) return { data: null, unavailable: false };
-  try {
-    const payload = await backendFetch(`/api/v1/organizations/${encodeURIComponent(safeSlug)}`, { cache: "no-store", auth: false });
-    const organization = payload?.data;
-    if (!organization || typeof organization !== "object" || organization.slug !== safeSlug) {
-      throw new Error("public_organization_detail_invalid_result");
+export const getPublicOrganizationBySlugResult = cache(
+  async function getOrganizationBySlug(slug) {
+    const safeSlug =
+      typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)
+        ? slug.slice(0, 120)
+        : "";
+    if (!safeSlug) return { data: null, unavailable: false };
+    try {
+      const payload = await backendFetch(
+        `/api/v1/organizations/${encodeURIComponent(safeSlug)}`,
+        { cache: "no-store", auth: false },
+      );
+      const organization = payload?.data;
+      if (
+        !organization ||
+        typeof organization !== "object" ||
+        organization.slug !== safeSlug
+      ) {
+        throw new Error("public_organization_detail_invalid_result");
+      }
+      const rawCount =
+        organization.dataset_count ?? organization.published_dataset_count;
+      const datasetCount = Number(rawCount);
+      if (!Number.isFinite(datasetCount) || datasetCount < 0) {
+        throw new Error("public_organization_dataset_count_invalid");
+      }
+      return {
+        data: { ...organization, dataset_count: datasetCount },
+        unavailable: false,
+      };
+    } catch (error) {
+      if (error?.status === 404) return { data: null, unavailable: false };
+      console.error(
+        "public_organization_detail_failed",
+        error?.code || "unknown_error",
+      );
+      return { data: null, unavailable: true };
     }
-    const rawCount = organization.dataset_count ?? organization.published_dataset_count;
-    const datasetCount = Number(rawCount);
-    if (!Number.isFinite(datasetCount) || datasetCount < 0) {
-      throw new Error("public_organization_dataset_count_invalid");
-    }
-    return { data: { ...organization, dataset_count: datasetCount }, unavailable: false };
-  } catch (error) {
-    if (error?.status === 404) return { data: null, unavailable: false };
-    console.error("public_organization_detail_failed", error?.code || "unknown_error");
-    return { data: null, unavailable: true };
-  }
-});
+  },
+);

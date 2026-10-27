@@ -34,7 +34,9 @@ export async function generateMetadata({ params }) {
         ...getSocialMetadata({
           path: `/organisasi/${org.slug}`,
           title: `${org.name} | Satu Data Wajo`,
-          description: (org.description || `Dataset publik yang dikelola ${org.name}.`).slice(0, 160),
+          description: (
+            org.description || `Dataset publik yang dikelola ${org.name}.`
+          ).slice(0, 160),
         }),
       }
     : {

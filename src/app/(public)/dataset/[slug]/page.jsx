@@ -13,7 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { getPublishedDatasetBySlugResult } from "@/lib/data/public";
 import { formatDate, formatBytes, safeHttpUrl } from "@/lib/utils";
 import { getUpdateFrequencyLabel } from "@/lib/dataset-options";
-import { getCanonicalMetadata, getPublicSiteOrigin, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getPublicSiteOrigin,
+  getSocialMetadata,
+} from "@/lib/site-config";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { DatasetResourcePreview } from "@/components/dataset-resource-preview";
 
@@ -85,7 +89,9 @@ export async function generateMetadata({ params }) {
     ...getSocialMetadata({
       path: `/dataset/${dataset.slug}`,
       title: dataset.title,
-      description: (dataset.description || "Metadata dataset resmi Kabupaten Wajo.").slice(0, 160),
+      description: (
+        dataset.description || "Metadata dataset resmi Kabupaten Wajo."
+      ).slice(0, 160),
       type: "article",
     }),
   };

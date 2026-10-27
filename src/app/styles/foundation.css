@@ -120,65 +120,15 @@
   }
 
   .loading-skeleton {
-    @apply rounded-md [background:linear-gradient(100deg,_#e8edf1_20%,_#f5f7f8_38%,_#e8edf1_56%)] bg-size-[220%_100%]
-    animate-[skeleton-shimmer_1.5s_ease-in-out_infinite];
+    @apply rounded-md bg-[#edf1f4];
   }
 
   .home-hero {
     @apply [background:radial-gradient(ellipse_at_90%_5%,_rgb(220_232_240_/_0.62),_transparent_38%),_#fff];
   }
 
-  .portal-app {
-    --app-canvas: #f5f7f8;
-    --app-surface: #ffffff;
-    --app-text: #172d3c;
-    --app-text-muted: #526474;
-    --app-border: #d5dfe6;
-    --app-primary: #1d5fa7;
-    --app-primary-foreground: #ffffff;
-    --app-accent: #eaf2ff;
-    --app-focus: #1d5fa7;
-    --portal-ink: #172f43;
-    --portal-muted: #607486;
-    --portal-line: #dce5ec;
-    @apply [background:radial-gradient(ellipse_at_94%_0%,_rgb(213_232_241_/_0.55),_transparent_34rem),_linear-gradient(180deg,_#f3f7fa_0%,_#f7f9fb_42%,_#f4f7f9_100%)] [color:var(--portal-ink)];
-  }
-
-  .portal-topbar {
-    @apply backdrop-blur-[14px] bg-[rgb(255_255_255_/_0.92)] border-[rgb(215_226_234_/_0.9)];
-  }
-
-  .portal-brand-mark {
-    @apply [background:linear-gradient(145deg,_#f0f6f9,_#e1edf4)] border border-[#d7e5ed];
-  }
-
-  .portal-logout {
-    @apply border-[#d7e2e9] text-[#344e62] bg-[#f9fbfc];
-  }
-
-  .portal-sidebar {
-    @apply bg-[rgb(255_255_255_/_0.86)] border-[#dce6ec] shadow-[0_4px_18px_rgb(28_58_78_/_0.035)];
-  }
-
-  .portal-nav-link {
-    @apply text-[#5a6f80] border border-transparent;
-  }
-
-  .portal-nav-link:hover {
-    @apply bg-[#eaf2ff] text-[#1d5fa7];
-  }
-
-  .portal-nav-link-active {
-    @apply [background:linear-gradient(105deg,_#eaf2ff,_#f5f8ff)] text-[#1d5fa7] border-[#d4e3f5]
-    shadow-[inset_3px_0_0_#1d5fa7];
-  }
-
-  .portal-sidebar-note {
-    @apply [background:linear-gradient(135deg,_#edf5f8,_#f6f9fb)] border border-[#e0ebf0];
-  }
-
   .portal-main {
-    @apply animate-[portal-enter_220ms_ease-out_both] min-w-0;
+    @apply min-w-0;
   }
 
   .portal-main > div:first-child > .eyebrow {
@@ -189,17 +139,6 @@
   .portal-main [class*="rounded-card"][class*="border"],
   .portal-main [class*="rounded-xl"][class*="border"] {
     @apply border-[#dce5eb];
-  }
-
-  @keyframes portal-enter {
-    from {
-      opacity: 0.82;
-      transform: translateY(3px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   .field {
@@ -229,22 +168,6 @@
   }
   50% {
     opacity: 1;
-  }
-}
-
-@keyframes skeleton-shimmer {
-  to {
-    background-position-x: -220%;
-  }
-}
-
-@media (max-width: 1023px) {
-  .portal-sidebar {
-    @apply p-[0.75rem];
-  }
-
-  .portal-sidebar-note {
-    @apply hidden;
   }
 }
 

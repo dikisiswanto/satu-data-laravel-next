@@ -62,13 +62,11 @@ Build backend membutuhkan paket sistem `libxml2-dev` untuk menyediakan `libxml-2
 
 Di lingkungan audit, `npm run check`, `node --check` untuk skrip/test JS, `php -l` untuk seluruh file PHP, smoke test langsung service anggaran pratinjau, sinkronisasi `package.json`/lockfile, kesetaraan OpenAPI JSON/YAML, dan parsing YAML CI/Compose lulus. **Vitest, ESLint, dan build Next.js belum berjalan** karena executable `vitest`/`eslint`/`next` tidak tersedia; pemasangan dependensi `npm ci` mengalami timeout. Composer/vendor tidak tersedia, sehingga PHPUnit dan migration MariaDB belum dijalankan lokal; job `backend-tests` sekarang menjalankannya di CI dengan MariaDB 11.4. Perintah Playwright lokal memanggil CLI global yang tidak memiliki perintah `test`, sehingga tidak ada skenario E2E yang berjalan. Playwright lokal juga belum tersedia dari instalasi proyek; jalankan kembali setelah `npm ci` bersih atau melalui CI. Jangan menyebut rilis bebas bug sampai semua langkah tersebut lulus.
 
-
 ## CI GitHub Actions
 
 Seluruh pemeriksaan berjalan pada satu workflow, `.github/workflows/ci.yml`, dengan tiga job: frontend, backend Laravel + MariaDB, dan build image Docker. Job image hanya berjalan setelah frontend dan backend lulus. Workflow backend terpisah dihapus agar migration dan PHPUnit tidak dijalankan dua kali pada commit yang sama.
 
 Pemeriksaan inti: `npm run check`, `npm run lint`, `npm run test`, `npm run test:e2e`, `npm run build`, `php artisan migrate --force`, `php artisan test`, serta build kedua image produksi. Versi Node.js berasal dari `.nvmrc` (22.16.0) dan npm harus 10.9.2.
-
 
 ## Prasyarat runtime Laravel di CI dan Docker
 

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("consistent admin search, filters and date selection", () => {
-  const datasetPage = read("src/app/portal/dataset/page.jsx");
+  const datasetPage = read("src/app/portal/(workspace)/dataset/page.jsx");
   const explorer = read("src/components/admin/portal-data-table-explorer.jsx");
   const datePicker = read("src/components/admin/date-picker.jsx");
   const styles = read("src/app/styles/overrides.css");
@@ -13,7 +13,9 @@ describe("consistent admin search, filters and date selection", () => {
   const createDatasetForm = read(
     "src/components/admin/dataset-create-form.jsx",
   );
-  const datasetDetailPage = read("src/app/portal/dataset/[id]/page.jsx");
+  const datasetDetailPage = read(
+    "src/app/portal/(workspace)/dataset/[id]/page.jsx",
+  );
   const dataTable = read("src/components/admin/portal-data-table.jsx");
   const tableExplorer = read(
     "src/components/admin/portal-data-table-explorer.jsx",

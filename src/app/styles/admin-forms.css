@@ -22,8 +22,13 @@
   }
 
   .portal-filter-form {
-    @apply [align-items:end] grid grid-cols-[minmax(15rem,_1.5fr)_repeat(3,_minmax(9rem,_.8fr))_auto] gap-[.75rem]
+    @apply [align-items:end] grid grid-cols-[repeat(auto-fit,_minmax(min(100%,_12rem),_1fr))] gap-[.75rem]
     p-[1rem_1.35rem] border-b border-b-[#e4eaf0] bg-[#fafcfd];
+  }
+
+  .portal-filter-form > *,
+  .portal-table-explorer-toolbar > * {
+    @apply min-w-0;
   }
 
   .portal-filter-form label,
@@ -36,7 +41,7 @@
   }
 
   .portal-filter-actions {
-    @apply flex items-center gap-[.65rem] whitespace-nowrap;
+    @apply flex min-w-0 flex-wrap items-center gap-[.65rem];
   }
 
   .portal-filter-actions button {
@@ -111,7 +116,7 @@
   }
 
   .portal-pagination a {
-    @apply inline-flex items-center gap-[.3rem] text-[#245b79] font-[650];
+    @apply inline-flex min-h-10 shrink-0 items-center justify-center gap-[.3rem] rounded-md px-2 text-[#245b79] font-[650] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7]/25;
   }
 
   .portal-pagination a.is-disabled {
@@ -119,7 +124,7 @@
   }
 
   .portal-pagination span {
-    @apply whitespace-nowrap;
+    @apply min-w-0 text-center tabular-nums;
   }
 
   .portal-empty-state,
@@ -182,36 +187,6 @@
 
   .portal-template-links a:hover {
     @apply bg-[#f1f7fa] border-[#b9d0dd];
-  }
-
-  .route-progress {
-    @apply fixed z-[100] inset-[0_0_auto] h-[3px] pointer-events-none opacity-[0] transition-[opacity_120ms_ease];
-  }
-
-  .route-progress.is-active {
-    @apply opacity-[1];
-  }
-
-  .route-progress > span:first-child {
-    @apply block w-[30%] h-full transform-[translateX(-120%)] bg-[#287c91] shadow-[0_0_8px_rgb(40_124_145_/_.2)];
-  }
-
-  .route-progress.is-active > span:first-child {
-    @apply animate-[route-progress-run_1.1s_ease-in-out_infinite];
-  }
-
-  @keyframes route-progress-run {
-    0% {
-      transform: translateX(-120%);
-      width: 24%;
-    }
-    50% {
-      width: 44%;
-    }
-    100% {
-      transform: translateX(420%);
-      width: 28%;
-    }
   }
 
   .portal-app .portal-dashboard-heading {
@@ -283,14 +258,6 @@
 
   .portal-template-links {
     @apply w-full;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .route-progress,
-  .route-progress.is-active > span:first-child {
-    animation: none !important;
-    transition: none !important;
   }
 }
 

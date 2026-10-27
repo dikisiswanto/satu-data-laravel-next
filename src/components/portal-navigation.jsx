@@ -156,9 +156,9 @@ function isActive(pathname, item) {
 
 function NavigationGroups({ groups: visibleGroups, pathname }) {
   return visibleGroups.map((group, groupIndex) => (
-    <div key={group.label} className="portal-nav-group">
+    <div key={group.label} className="flex min-w-0 flex-col gap-0.5">
       <p
-        className={`portal-nav-group-title ${groupIndex === 0 ? "is-first" : ""}`}
+        className={`mx-2 mb-1 mt-2 border-t border-[#e8eef3] pt-3 text-[10px] font-bold uppercase leading-[1.4] tracking-[0.12em] text-[#748697] ${groupIndex === 0 ? "mt-0 border-0 pt-0" : ""}`}
       >
         {group.label}
       </p>
@@ -181,8 +181,49 @@ function NavigationGroups({ groups: visibleGroups, pathname }) {
   ));
 }
 
-export function PortalNavigation({ roles = [] }) {
+function NavigationLoadingState() {
+  const groups = [4, 3, 2, 1, 1];
+  return (
+    <>
+      <nav
+        aria-label="Navigasi pengelola sedang dimuat"
+        aria-hidden="true"
+        className="hidden flex-col gap-3 lg:flex"
+      >
+        {groups.map((itemCount, groupIndex) => (
+          <div key={groupIndex} className="flex flex-col gap-1">
+            <div
+              className={`mx-2 mb-1 mt-2 h-3 w-20 rounded-sm bg-[#edf1f3] ${groupIndex === 0 ? "mt-0" : "border-t border-[#e8eef3] pt-3"}`}
+            />
+            {Array.from({ length: itemCount }, (_, itemIndex) => (
+              <div
+                key={itemIndex}
+                className="flex min-h-10 items-center gap-2.5 rounded-lg px-3 py-2"
+              >
+                <span className="size-[17px] shrink-0 rounded bg-[#edf1f3]" />
+                <span
+                  className={`h-3 rounded-sm bg-[#edf1f3] ${itemIndex % 2 ? "w-24" : "w-32"}`}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div
+        aria-label="Navigasi pengelola sedang dimuat"
+        aria-busy="true"
+        className="flex h-[54px] items-center gap-2.5 rounded-lg border border-[#e4ebf0] bg-white px-2.5 lg:hidden"
+      >
+        <span className="size-[34px] shrink-0 rounded-lg bg-[#edf1f3]" />
+        <span className="h-3 w-28 rounded-sm bg-[#edf1f3]" />
+      </div>
+    </>
+  );
+}
+
+export function PortalNavigation({ roles = [], loading = false }) {
   const pathname = usePathname();
+  if (loading) return <NavigationLoadingState />;
   const normalizedRoles = useMemo(() => new Set(roles), [roles]);
   const visibleGroups = useMemo(
     () =>
@@ -212,38 +253,44 @@ export function PortalNavigation({ roles = [] }) {
     <>
       <nav
         aria-label="Navigasi pengelola"
-        className="portal-nav portal-nav-desktop hidden lg:flex"
+        className="portal-nav-desktop hidden flex-col gap-3 lg:flex"
       >
         <NavigationGroups groups={visibleGroups} pathname={pathname} />
       </nav>
 
-      <details className="portal-mobile-navigation lg:hidden">
-        <summary className="portal-mobile-navigation-trigger">
-          <span className="portal-mobile-navigation-icon">
+      <details className="portal-mobile-navigation group block overflow-hidden rounded-lg border border-[#e4ebf0] bg-white lg:hidden">
+        <summary className="flex min-h-[54px] cursor-pointer list-none items-center gap-2.5 px-2.5 py-2 [&::-webkit-details-marker]:hidden">
+          <span className="flex size-[34px] shrink-0 items-center justify-center rounded-lg border border-[#dce8f1] bg-[#f3f7fa] text-[#285d82]">
             <Menu size={17} aria-hidden="true" />
           </span>
-          <span className="portal-mobile-navigation-label">
-            <span>Menu pengelola</span>
-            <strong>{activeItem.label}</strong>
+          <span className="flex min-w-0 flex-1 flex-col gap-px">
+            <span className="text-[10px] font-bold uppercase leading-[1.35] tracking-[0.08em] text-[#718394]">
+              Menu pengelola
+            </span>
+            <strong className="truncate text-[13px] font-semibold text-[#17384f]">
+              {activeItem.label}
+            </strong>
           </span>
           <ChevronDown
-            className="portal-mobile-navigation-chevron"
+            className="shrink-0 text-[#61788a] transition-transform group-open:rotate-180"
             size={17}
             aria-hidden="true"
           />
         </summary>
         <nav
           aria-label="Navigasi pengelola"
-          className="portal-mobile-navigation-panel"
+          className="portal-mobile-navigation-panel grid gap-3 border-t border-[#e8eef3] bg-[#fbfcfd] px-2.5 pb-3 pt-1"
         >
           {visibleGroups.map((group) => (
             <section
               key={group.label}
-              className="portal-mobile-navigation-group"
+              className="min-w-0"
               aria-label={group.label}
             >
-              <h2>{group.label}</h2>
-              <div className="portal-mobile-navigation-items">
+              <h2 className="mb-1.5 mt-2 px-0.5 text-[10px] font-bold uppercase tracking-[0.11em] text-[#738697]">
+                {group.label}
+              </h2>
+              <div className="grid grid-cols-2 gap-1.5 max-[639px]:grid-cols-1">
                 {group.items.map((item) => {
                   const Icon = icons[item.icon];
                   return (

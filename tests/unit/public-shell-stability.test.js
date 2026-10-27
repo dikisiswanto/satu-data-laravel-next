@@ -5,7 +5,7 @@ const read = (path) =>
   readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
 const header = read("src/components/site-header.jsx");
-const login = read("src/app/portal/login/page.jsx");
+const login = read("src/app/portal/(auth)/login/page.jsx");
 const template = read("src/app/(public)/template.jsx");
 const sectionReveal = read("src/components/section-reveal.jsx");
 const publicResponsive = read("src/app/styles/public-responsive.css");

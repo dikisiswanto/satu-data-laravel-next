@@ -51,15 +51,16 @@ export function PasswordForm() {
         setMessage({
           error: true,
           text:
-            result.error === "validation_failed" && result.errors?.current_password
+            result.error === "validation_failed" &&
+            result.errors?.current_password
               ? "Kata sandi saat ini tidak benar. Periksa kembali lalu coba lagi."
               : result.error === "validation_failed"
-              ? "Kata sandi baru harus minimal 12 karakter, berisi huruf besar, huruf kecil, angka, dan berbeda dari kata sandi saat ini."
-              : apiErrorMessage(
-                  result.error,
-                  response.status,
-                  "Kata sandi belum berubah. Masuk kembali jika sesi sudah berakhir, lalu coba lagi.",
-                ),
+                ? "Kata sandi baru harus minimal 12 karakter, berisi huruf besar, huruf kecil, angka, dan berbeda dari kata sandi saat ini."
+                : apiErrorMessage(
+                    result.error,
+                    response.status,
+                    "Kata sandi belum berubah. Masuk kembali jika sesi sudah berakhir, lalu coba lagi.",
+                  ),
         });
         return;
       }
@@ -104,7 +105,10 @@ export function PasswordForm() {
       ) : null}
       <div className="mt-4 space-y-4">
         <div>
-          <label htmlFor="current-password" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="current-password"
+            className="mb-2 block text-sm font-medium"
+          >
             Kata sandi saat ini
           </label>
           <input
