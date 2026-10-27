@@ -23,7 +23,7 @@ CI backend memakai MariaDB. Pertahankan engine yang sama untuk pengujian migrati
 
 ## Cakupan saat ini
 
-- **Vitest:** 24 berkas / 132 kasus terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, dan UI publik.
+- **Vitest:** 25 berkas / 133 kasus terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, dan UI publik.
 - **Playwright:** 1 berkas / 9 skenario navigasi, pencarian, login portal, filter, statistik, pratinjau, dan viewport mobile.
 - **PHPUnit:** 8 berkas suite / 30 kasus untuk izin, katalog role, workflow indikator, draf progresif, API publik, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya (di luar kelas dasar `TestCase`).
 - **Pemeriksaan statis:** kontrak Next.js/Laravel dan OpenAPI, import relatif/alias, namespace serta method rute PHP.
@@ -81,5 +81,8 @@ Sebelum Composer menjalankan penemuan paket atau Artisan menjalankan migration, 
 - Metadata SDI lanjutan tetap tertutup secara default; jumlah metadata yang tersimpan tetap terlihat. Test tidak lagi mengharapkan atribut `open` otomatis yang berlawanan dengan perilaku ini.
 - Riwayat audit membatasi catatan pengguna lokal ke organisasi yang dapat diakses dan mengirim `request_id` agar kolom permintaan tidak kosong.
 - Login hanya mengarahkan sesi yang telah terverifikasi; stylesheet keselamatan teks formulir dimuat sesudah seluruh stylesheet halaman.
+- Nama indeks gabungan pada `dataset_validation_runs` kini ditetapkan eksplisit sebagai `validation_run_ds_ver_created_idx` (di bawah batas 64 karakter MySQL/MariaDB). Test regresi memeriksa agar nama default yang terlalu panjang tidak kembali.
+- Berkas contoh `.env.example` di root dan `backend/.env.example` dipulihkan. Keduanya diperlukan oleh pemeriksaan konfigurasi Docker Compose, CI, serta `scripts/setup-env.sh`; `.env` hasil setup tetap harus berisi rahasia unik dan tidak boleh dikomit.
+- Test keamanan teks formulir menormalkan spasi selector CSS sebelum memeriksa `.login-form .field`, karena pemisahan selector ke beberapa baris adalah format CSS yang valid dan tidak mengubah perilaku.
 
 Validasi statis terbaru: `npm run check`, pemeriksaan sintaks seluruh test/helper JavaScript, lint sintaks PHP, parsing OpenAPI JSON, serta parsing YAML CI dan Docker Compose telah lulus. Test Vitest, ESLint, build Next.js, PHPUnit, dan migration runtime belum dapat dijalankan di lingkungan audit ini karena paket npm/Composer tidak tersedia lengkap dan akses npm registry mengalami kegagalan DNS (`EAI_AGAIN`). Jalankan pipeline CI untuk verifikasi runtime final.

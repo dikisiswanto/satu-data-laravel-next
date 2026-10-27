@@ -103,7 +103,7 @@ return new class extends Migration
             $table->string('converter_version', 80);
             $table->string('worker_run_id', 180);
             $table->timestampTz('created_at')->useCurrent();
-            $table->index(['dataset_id', 'dataset_version', 'created_at']);
+            $table->index(['dataset_id', 'dataset_version', 'created_at'], 'validation_run_ds_ver_created_idx');
             $table->foreign(['dataset_id', 'dataset_version'], 'validation_run_dataset_version_fk')
                 ->references(['dataset_id', 'version'])->on('dataset_versions')->restrictOnDelete();
         });

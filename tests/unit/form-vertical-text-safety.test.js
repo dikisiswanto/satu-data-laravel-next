@@ -6,6 +6,7 @@ const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("form vertical text safety across public and admin pages", () => {
   const safety = read("src/app/styles/form-text-safety.css");
+  const normalizedSafety = safety.replace(/\s+/g, " ");
   const globals = read("src/app/globals.css");
 
   it("loads form text safety after all page and responsive styles", () => {
@@ -23,7 +24,7 @@ describe("form vertical text safety across public and admin pages", () => {
     );
     expect(safety).toContain(".portal-app .portal-table-search input");
     expect(safety).toContain(".catalog-filter-popover-panel");
-    expect(safety).toContain(".login-form .field");
+    expect(normalizedSafety).toContain(".login-form .field");
     expect(safety).toContain(".portal-app form :is(");
   });
 

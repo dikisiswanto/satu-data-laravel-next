@@ -29,6 +29,8 @@ for (const required of [
   "src/components/portal-query-cache-guard.jsx",
   "src/components/dataset-resource-preview.jsx",
   "src/lib/api/query-keys.js",
+  ".env.example",
+  "backend/.env.example",
   "backend/artisan",
   "backend/bootstrap/cache/.gitignore",
   "backend/routes/api.php",
@@ -63,6 +65,7 @@ for (const required of [
   "backend/app/Models/Role.php",
   "backend/app/Models/Permission.php",
   "backend/tests/Feature/AuthorizationCatalogTest.php",
+  "tests/unit/migration-index-identifiers.test.js",
 ]) {
   try { await stat(path.join(root, required)); }
   catch { errors.push(`Berkas proyek wajib tidak ditemukan: ${required}`); }
@@ -151,6 +154,15 @@ const checks = [
 for (const [file, pattern, message] of checks) {
   const text = await readFile(path.join(root, file), "utf8").catch(() => "");
   if (!pattern.test(text)) errors.push(message);
+}
+
+const workflowMigration = await readFile(path.join(root, "backend/database/migrations/2026_10_01_000002_create_dataset_workflow_tables.php"), "utf8");
+const validationIndex = workflowMigration.match(/\$table->index\(\['dataset_id', 'dataset_version', 'created_at'\], '([^']+)'\);/);
+if (!validationIndex || validationIndex[1].length > 64 || validationIndex[1] !== "validation_run_ds_ver_created_idx") {
+  errors.push("Indeks riwayat validasi harus memakai nama eksplisit yang tidak melebihi batas 64 karakter MySQL/MariaDB");
+}
+if (workflowMigration.includes("dataset_validation_runs_dataset_id_dataset_version_created_at_index")) {
+  errors.push("Nama indeks riwayat validasi otomatis yang terlalu panjang masih ditemukan");
 }
 
 const bootstrapSource = await readFile(path.join(root, "backend/bootstrap/app.php"), "utf8");
