@@ -267,7 +267,7 @@ body:has(.public-home) .home-hero {
       rgb(11 42 67 / 62%) 43%,
       rgb(15 45 65 / 20%) 100%
     ),
-    var(--home-hero-image, url("/wajo-hero-panorama.webp"));
+    var(--home-hero-image, url("/portal-social.svg"));
   background-position:
     center,
     center 48%;

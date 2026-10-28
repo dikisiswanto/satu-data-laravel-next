@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { backendBaseUrl } from "@/lib/backend/server";
+import { setFrontendToken } from "@/lib/auth/session-cookie";
 import { safeReturnPath } from "@/lib/utils";
 
 const loginSchema = z.object({
@@ -53,7 +54,7 @@ export async function loginAction(formData) {
     ? Math.max(1, Math.floor((tokenExpiresAt - Date.now()) / 1000))
     : 14 * 24 * 60 * 60;
   if (maxAge <= 1) redirect("/portal/login?error=unavailable");
-  cookieStore.set("wajo_portal_token", payload.data.token, {
+  setFrontendToken(cookieStore, payload.data.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

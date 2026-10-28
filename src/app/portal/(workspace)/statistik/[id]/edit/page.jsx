@@ -23,7 +23,11 @@ export default async function EditIndicatorPage({ params }) {
     throw error;
   }
   if (!indicator) notFound();
-  if (!["draft", "review"].includes(indicator.status))
+  // The API intentionally prevents direct edits during review. Published
+  // definitions may be revised, which returns them to draft for a fresh review.
+  if (indicator.status === "review")
+    redirect(`/portal/statistik/${encodeURIComponent(id)}/observasi`);
+  if (!["draft", "published"].includes(indicator.status))
     redirect("/portal/statistik");
   const { memberships = [] } = await getPortalShell();
   if (
@@ -52,7 +56,11 @@ export default async function EditIndicatorPage({ params }) {
       <PageHeading
         eyebrow="Indikator statistik"
         title="Ubah indikator"
-        description="Perubahan akan disimpan sebagai draf terlebih dahulu. Periksa kembali definisi dan sumbernya sebelum menerbitkan indikator."
+        description={
+          indicator.status === "published"
+            ? "Anda sedang memperbarui indikator yang sudah terbit. Penyimpanan akan menarik definisi dari publik sampai versi perubahan diperiksa dan diterbitkan kembali; riwayat nilainya tetap tersimpan."
+            : "Simpan perubahan definisi sebagai draf. Setelah itu ajukan pemeriksaan dan terbitkan definisinya sebelum menerbitkan nilai statistik ke publik."
+        }
       />
       <PortalContextGuide />
 

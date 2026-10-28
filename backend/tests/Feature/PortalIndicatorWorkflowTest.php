@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Indicator;
+use App\Models\IndicatorObservation;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\User;
@@ -92,6 +93,62 @@ class PortalIndicatorWorkflowTest extends TestCase
             'published_at' => null,
         ]);
         $this->assertSame($revisionBefore, $this->catalogRevision(), 'Mengarsipkan indikator yang belum publik tidak boleh menaikkan revisi katalog.');
+    }
+
+    public function test_archived_indicator_is_read_only_for_new_observations(): void
+    {
+        [$user, $organization, $indicator, $token] = $this->createScenario('archived', 'admin_opd');
+        $this->withHeaders([
+            'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
+            'Accept' => 'application/json',
+        ])->withToken($token)
+            ->postJson('/api/v1/portal/indicators/'.$indicator->id.'/observations', [
+                'period_label' => '2025',
+                'dimension_key' => 'overall',
+                'value_numeric' => 25,
+                'unit' => 'sekolah',
+                'source_name' => 'Dinas Contoh',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['indicator']);
+
+        $this->assertDatabaseMissing('indicator_observations', [
+            'indicator_id' => $indicator->id,
+            'period_label' => '2025',
+        ]);
+    }
+
+    public function test_observation_cannot_be_published_before_its_indicator_definition_is_published(): void
+    {
+        [$user, $organization, $indicator, $token] = $this->createScenario('draft', 'admin_opd');
+        $observation = IndicatorObservation::query()->create([
+            'id' => (string) Str::uuid(),
+            'indicator_id' => $indicator->id,
+            'period_label' => '2025',
+            'value_numeric' => 123,
+            'unit' => 'sekolah',
+            'source_name' => 'Dinas Contoh',
+            'revision_no' => 1,
+            'is_current' => false,
+            'status' => 'draft',
+            'quality_status' => 'unreviewed',
+            'created_by' => $user->id,
+        ]);
+
+        $this->withHeaders([
+            'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
+            'Accept' => 'application/json',
+        ])->withToken($token)
+            ->patchJson('/api/v1/portal/indicators/'.$indicator->id.'/observations/'.$observation->id, ['action' => 'publish'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['indicator']);
+
+        $this->assertDatabaseHas('indicator_observations', [
+            'id' => $observation->id,
+            'status' => 'draft',
+            'is_current' => false,
+            'published_at' => null,
+        ]);
     }
 
     private function performIndicatorAction(Indicator $indicator, string $token, string $action)

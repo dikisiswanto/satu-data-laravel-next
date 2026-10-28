@@ -17,8 +17,8 @@ import {
 
 const TARGETS = [
   { value: "sdi_flat", label: "JSON untuk konektor SDI" },
-  { value: "dcat_jsonld", label: "Katalog berformat DCAT/JSON-LD" },
-  { value: "geoportal", label: "Daftar data untuk GeoPortal" },
+  { value: "dcat_jsonld", label: "Katalog DCAT/JSON-LD" },
+  { value: "geoportal", label: "Manifest GeoPortal" },
 ];
 export function SdiPreflightButton() {
   const router = useRouter();
@@ -80,17 +80,20 @@ export function SdiPreflightButton() {
             Periksa kesiapan katalog
           </h2>
           <p className="mt-1 text-sm leading-5 text-[#45677f]">
-            Pemeriksaan ini menilai kelengkapan metadata dan berkas yang sedang
-            diterbitkan, lalu menyimpan laporannya. Pemeriksaan tidak mengirim
-            data ke SPLP.
+            Pemeriksaan ini mengecek metadata dan berkas versi terbit, lalu
+            menyimpan hasilnya. Pemeriksaan ini tidak mengirim data ke sistem
+            lain.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <label className="sr-only" htmlFor="sdi-preflight-target">
-              Profil yang diperiksa
+            <label
+              className="mb-1 block text-sm font-medium sm:sr-only"
+              htmlFor="sdi-preflight-target"
+            >
+              Format yang akan diperiksa
             </label>
             <select
               id="sdi-preflight-target"
-              className="field h-11 min-w-0 flex-1 bg-white"
+              className="field sdi-preflight-select h-auto min-h-11 min-w-0 flex-1 bg-white px-3 py-2 text-sm leading-5"
               value={target}
               onChange={(event) => setTarget(event.target.value)}
               disabled={busy}
@@ -116,7 +119,7 @@ export function SdiPreflightButton() {
               ) : (
                 <Play size={16} aria-hidden="true" />
               )}
-              {busy ? "Memeriksa…" : "Periksa sekarang"}
+              {busy ? "Memeriksa…" : "Periksa kesiapan"}
             </button>
           </div>
         </div>

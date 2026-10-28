@@ -47,13 +47,51 @@ describe("admin workflows are grouped around the user's task", () => {
     );
     expect(workspace).toContain('role="group"');
     expect(workspace).toContain("aria-pressed={selected}");
-    expect(workspace).toContain("hasUnsavedInput");
-    expect(workspace).toContain(
-      "Formulir ini berisi isian yang belum disimpan.",
+    expect(workspace).toContain('form?.dataset.userModified === "true"');
+    expect(workspace).toContain("Ada perubahan yang belum disimpan.");
+    expect(read("src/components/admin/invite-user-form.jsx")).toContain(
+      "onInputCapture",
     );
-    expect(workspace).toContain("Pengguna baru");
-    expect(workspace).toContain("Akun sudah ada");
+    expect(read("src/components/admin/membership-form.jsx")).toContain(
+      "onChangeCapture",
+    );
+    expect(workspace).toContain("Undang akun baru");
+    expect(workspace).toContain("Akun terdaftar");
+    const membership = read("src/components/admin/membership-form.jsx");
+    expect(membership).toContain('name="user_email"');
+    expect(membership).not.toContain('name="user_id"');
+    expect(
+      read("backend/app/Http/Controllers/Api/PortalAdminController.php"),
+    ).toContain("user_email");
     expect(workspace).toContain("{selected ? (");
-    expect(loading).toContain("Tambahkan pengguna atau akses");
+    expect(loading).toContain("Tambah pengguna");
+    expect(loading).toContain("akun yang sudah terdaftar");
+  });
+
+  it("uses an email instead of a technical user UUID when assigning existing-account access", () => {
+    const form = read("src/components/admin/membership-form.jsx");
+    const controller = read(
+      "backend/app/Http/Controllers/Api/PortalAdminController.php",
+    );
+    const featureTest = read(
+      "backend/tests/Feature/PortalMembershipByEmailTest.php",
+    );
+    expect(form).toContain('name="user_email"');
+    expect(form).toContain('type="email"');
+    expect(form).not.toContain('name="user_id"');
+    expect(controller).toContain("LOWER(email) = ?");
+    expect(controller).toContain(
+      "Existing API clients may continue to send user_id",
+    );
+    expect(featureTest).toContain(
+      "test_super_admin_can_add_existing_user_by_email",
+    );
+    expect(featureTest).toContain(
+      "test_membership_api_keeps_support_for_existing_user_id_clients",
+    );
+    expect(form).toContain(
+      'defaultValue={organizations.length === 1 ? organizations[0].id : ""}',
+    );
+    expect(form).toContain("Akses aktif");
   });
 });

@@ -141,6 +141,19 @@
   overflow: visible;
 }
 
+/* SDI connector selector sits outside a form; avoid fixed-height clipping of
+   the selected native option on platforms with taller control font metrics. */
+.portal-app .portal-main .sdi-preflight-select {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 44px;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem 2.25rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  white-space: normal;
+}
+
 /* Textareas grow to their content baseline instead of squeezing several lines
    into a fixed height or inheriting the large body line-height unexpectedly. */
 .public-app-shell form textarea,

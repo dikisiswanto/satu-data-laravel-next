@@ -24,7 +24,8 @@ export default function NewDatasetLoading() {
         description="Untuk mulai cukup isi judul dan organisasi pengampu. Unggah sumber dan lengkapi persyaratan pemeriksaan setelah draf tersimpan."
       />
       {/******** Static loading shell mirrors the resolved page order. ********/}
-      {/^kabupaten wajo$/i.test(siteConfig.regionName) ? (
+      {siteConfig.brandProfile === "wajo" &&
+      /^kabupaten wajo$/i.test(siteConfig.regionName) ? (
         <details className="mb-4 w-full max-w-none rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
           <summary className="cursor-pointer font-semibold text-[#214f3c]">
             Sumber resmi untuk membantu memeriksa data
@@ -72,6 +73,7 @@ export default function NewDatasetLoading() {
             Lengkapi informasi data (opsional saat membuat draf)
           </summary>
           <div className="mt-4 grid gap-4 sm:grid-cols-2" aria-hidden="true">
+            <LoadingField label="Kategori dataset (opsional)" name="category" />
             <LoadingField
               label="Nama sumber data (wajib sebelum pemeriksaan)"
               name="source_name"

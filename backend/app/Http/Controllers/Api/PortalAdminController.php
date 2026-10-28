@@ -192,18 +192,42 @@ class PortalAdminController extends Controller
     {
         $this->access->requireAnyRole($request->user(), ['super_admin']);
         $data = $request->validate([
-            'id' => ['sometimes', 'nullable', 'uuid'], 'user_id' => ['required', 'uuid', 'exists:users,id'],
+            'id' => ['sometimes', 'nullable', 'uuid'],
+            // Existing API clients may continue to send user_id. The admin UI
+            // uses email so operators do not need to copy a technical UUID.
+            'user_id' => ['sometimes', 'nullable', 'uuid', 'exists:users,id'],
+            'user_email' => ['sometimes', 'nullable', 'email:rfc', 'max:254'],
             'organization_id' => ['present', 'nullable', 'uuid', 'exists:organizations,id'],
             'role' => ['required', 'in:super_admin,data_admin,admin_opd,reviewer,editor,viewer,auditor'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+        $recordId = $id ?: ($data['id'] ?? null);
+        $userId = $data['user_id'] ?? null;
+        $userEmail = isset($data['user_email']) ? mb_strtolower(trim((string) $data['user_email'])) : '';
+        if ($userId && $userEmail !== '') {
+            throw ValidationException::withMessages(['user_email' => ['Isi ID akun atau email, bukan keduanya.']]);
+        }
+        if ($userEmail !== '') {
+            $existingUser = User::query()->whereRaw('LOWER(email) = ?', [$userEmail])->first();
+            if (! $existingUser || ! $existingUser->is_active) {
+                throw ValidationException::withMessages(['user_email' => ['Email tidak ditemukan atau akun tidak aktif. Periksa email atau undang pengguna tersebut terlebih dahulu.']]);
+            }
+            $userId = $existingUser->id;
+        }
+        if (! $userId && ! $recordId) {
+            throw ValidationException::withMessages(['user_email' => ['Masukkan email akun aktif yang sudah terdaftar.']]);
+        }
+        if ($userId) {
+            $data['user_id'] = $userId;
+        }
+        unset($data['user_email']);
+
         if (in_array($data['role'], ['super_admin', 'data_admin', 'auditor'], true) && $data['organization_id'] !== null) {
             throw ValidationException::withMessages(['organization_id' => ['Peran global tidak memakai organisasi.']]);
         }
         if (in_array($data['role'], ['admin_opd', 'reviewer', 'editor', 'viewer'], true) && ! $data['organization_id']) {
             throw ValidationException::withMessages(['organization_id' => ['Peran OPD memerlukan organisasi.']]);
         }
-        $recordId = $id ?: ($data['id'] ?? null);
         $membership = DB::transaction(function () use ($request, $data, $recordId): OrganizationMembership {
             // Serialize global-admin edits so two concurrent requests cannot remove the last active super admin.
             $activeSuperAdmins = OrganizationMembership::query()->whereNull('organization_id')->where('role', 'super_admin')
@@ -221,7 +245,7 @@ class PortalAdminController extends Controller
                 throw ValidationException::withMessages(['role' => ['Setidaknya satu administrator super aktif harus tetap tersedia.']]);
             }
             $membership->fill([
-                'user_id' => $data['user_id'], 'organization_id' => $data['organization_id'], 'role' => $data['role'],
+                'user_id' => $data['user_id'] ?? $membership->user_id, 'organization_id' => $data['organization_id'], 'role' => $data['role'],
                 'is_active' => $data['is_active'] ?? ($membership->exists ? $membership->is_active : true),
                 'created_by' => $membership->exists && $membership->created_by ? $membership->created_by : $request->user()->id,
             ]);

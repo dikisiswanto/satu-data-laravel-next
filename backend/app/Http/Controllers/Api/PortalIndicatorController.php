@@ -230,6 +230,9 @@ class PortalIndicatorController extends Controller
     {
         $indicator = Indicator::query()->findOrFail($id);
         $this->access->requirePermissionInOrganization($request->user(), $indicator->organization_id, 'indicators.manage');
+        if ($indicator->status === 'archived') {
+            throw ValidationException::withMessages(['indicator' => ['Indikator sudah diarsipkan dan hanya dapat dilihat. Aktifkan atau buat indikator baru sebelum menambahkan nilai.']]);
+        }
         $data = $request->validate([
             'id' => ['sometimes', 'nullable', 'uuid'], 'period_start' => ['nullable', 'date_format:Y-m-d'],
             'period_end' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:period_start'], 'period_label' => ['required', 'string', 'min:1', 'max:160'],
@@ -245,6 +248,9 @@ class PortalIndicatorController extends Controller
         $observation = DB::transaction(function () use ($data, $indicator, $request, $numeric, $text) {
             $lockedIndicator = Indicator::query()->lockForUpdate()->findOrFail($indicator->id);
             $this->access->requirePermissionInOrganization($request->user(), $lockedIndicator->organization_id, 'indicators.manage');
+            if ($lockedIndicator->status === 'archived') {
+                throw ValidationException::withMessages(['indicator' => ['Indikator sudah diarsipkan dan hanya dapat dilihat. Aktifkan atau buat indikator baru sebelum menambahkan nilai.']]);
+            }
             $dimensionKey = trim((string) ($data['dimension_key'] ?? 'overall')) ?: 'overall';
             if (! empty($data['id'])) {
                 $previous = IndicatorObservation::query()->where('id', $data['id'])->where('indicator_id', $lockedIndicator->id)->lockForUpdate()->firstOrFail();
@@ -282,6 +288,9 @@ class PortalIndicatorController extends Controller
         $published = DB::transaction(function () use ($request, $id, $observationId): IndicatorObservation {
             $indicator = Indicator::query()->lockForUpdate()->findOrFail($id);
             $this->access->requirePermissionInOrganization($request->user(), $indicator->organization_id, 'indicators.publish');
+            if ($indicator->status !== 'published' || $indicator->published_at === null) {
+                throw ValidationException::withMessages(['indicator' => ['Terbitkan definisi indikator terlebih dahulu sebelum menerbitkan nilai statistik.']]);
+            }
             $observation = IndicatorObservation::query()->where('id', $observationId)->where('indicator_id', $id)->lockForUpdate()->firstOrFail();
             if ($observation->status !== 'draft') {
                 throw ValidationException::withMessages(['observation' => ['Hanya observasi draf yang dapat diterbitkan. Buat revisi baru untuk mengembalikan data historis.']]);

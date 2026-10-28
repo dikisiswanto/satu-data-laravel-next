@@ -71,7 +71,10 @@ export function DatasetArchiveAction({ id, status }) {
       finishSubmission();
     }
   }
-  if (status === "archived") return null;
+  // Match the backend workflow contract: archived and in-review datasets
+  // cannot be archived directly. Hide unsupported actions rather than expose
+  // a button that can only return a validation error.
+  if (!["draft", "published"].includes(status)) return null;
   return (
     <div className="mt-4 border-t pt-4">
       <PendingActionButton

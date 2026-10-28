@@ -171,9 +171,33 @@ export function IndicatorForm({ organizations, initial = null }) {
           {uncertain ? <MutationStatusCheck href="/portal/statistik" /> : null}
         </div>
       ) : null}
+      <nav
+        aria-label="Bagian formulir indikator"
+        className="flex flex-wrap gap-2 rounded-xl border border-line bg-white p-3"
+      >
+        {[
+          ["indicator-identity-title", "Identitas"],
+          ["indicator-definition-title", "Definisi dan pengampu"],
+          ["indicator-values-title", "Periode dan nilai"],
+        ].map(([target, label]) => (
+          <a
+            key={target}
+            href={`#${target}`}
+            className="inline-flex min-h-9 items-center rounded-control border border-line px-3 py-2 text-xs font-semibold hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2 border-b border-line pb-2">
-          <h2 className="text-sm font-semibold text-ink">
+        <div
+          id="indicator-identity"
+          className="sm:col-span-2 border-b border-line pb-2"
+        >
+          <h2
+            id="indicator-identity-title"
+            className="text-sm font-semibold text-ink"
+          >
             1. Identitas indikator
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">
@@ -213,8 +237,14 @@ export function IndicatorForm({ organizations, initial = null }) {
             onChange={() => clearFieldError("title")}
           />
         </div>
-        <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
-          <h2 className="text-sm font-semibold text-ink">
+        <div
+          id="indicator-definition"
+          className="sm:col-span-2 border-b border-line pb-2 pt-2"
+        >
+          <h2
+            id="indicator-definition-title"
+            className="text-sm font-semibold text-ink"
+          >
             2. Definisi dan pengampu
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">
@@ -336,8 +366,14 @@ export function IndicatorForm({ organizations, initial = null }) {
             </FieldError>
           ) : null}
         </div>
-        <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
-          <h2 className="text-sm font-semibold text-ink">
+        <div
+          id="indicator-values"
+          className="sm:col-span-2 border-b border-line pb-2 pt-2"
+        >
+          <h2
+            id="indicator-values-title"
+            className="text-sm font-semibold text-ink"
+          >
             3. Periode dan nilai awal (opsional)
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">

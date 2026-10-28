@@ -40,7 +40,7 @@ export function MembershipForm({ organizations }) {
     setError("");
     const raw = Object.fromEntries(new FormData(form).entries());
     const payload = {
-      user_id: raw.user_id.trim(),
+      user_email: raw.user_email.trim().toLocaleLowerCase("id-ID"),
       organization_id: ["super_admin", "data_admin", "auditor"].includes(role)
         ? null
         : raw.organization_id,
@@ -67,13 +67,14 @@ export function MembershipForm({ organizations }) {
               : apiErrorMessage(
                   result.error,
                   response.status,
-                  "Akses belum dapat disimpan. Periksa ID akun pengguna.",
+                  "Akses belum dapat disimpan. Periksa email akun yang sudah ada.",
                 ),
         );
         return;
       }
       router.refresh();
       form.reset();
+      delete form.dataset.userModified;
       setRole("editor");
     } catch (error) {
       markUncertain();
@@ -85,13 +86,18 @@ export function MembershipForm({ organizations }) {
   return (
     <form
       onSubmit={submit}
+      onInputCapture={(event) => {
+        event.currentTarget.dataset.userModified = "true";
+      }}
+      onChangeCapture={(event) => {
+        event.currentTarget.dataset.userModified = "true";
+      }}
       aria-busy={busy}
       className="w-full space-y-4 portal-form-card p-5"
     >
       <h2 className="font-semibold">Tambahkan akses pengguna</h2>
       <p className="text-sm leading-6 text-muted">
-        Buat akun pengguna terlebih dahulu. Setelah itu, salin ID akun dari
-        daftar pengguna agar akses diberikan kepada orang yang tepat.
+        Masukkan email akun aktif, lalu pilih peran dan organisasi.
       </p>
       {error ? (
         <p
@@ -105,25 +111,30 @@ export function MembershipForm({ organizations }) {
         <MutationStatusCheck href="/portal/pengguna" />
       ) : null}
       <div>
-        <label htmlFor="user_id" className="mb-2 block text-sm font-medium">
-          ID akun pengguna *
+        <label htmlFor="user_email" className="mb-2 block text-sm font-medium">
+          Email akun yang sudah ada *
         </label>
         <input
-          id="user_id"
-          name="user_id"
-          className="field font-mono"
+          id="user_email"
+          name="user_email"
+          type="email"
+          className="field"
           required
-          pattern="[0-9a-fA-F-]{36}"
-          placeholder="00000000-0000-0000-0000-000000000000"
-          aria-describedby="user_id-help"
+          maxLength={254}
+          autoComplete="email"
+          placeholder="nama@instansi.go.id"
+          aria-describedby="user_email-help"
           onInvalid={(event) =>
             event.currentTarget.setCustomValidity(
-              getFieldValidationMessage("user_id"),
+              getFieldValidationMessage("email"),
             )
           }
           onInput={(event) => event.currentTarget.setCustomValidity("")}
         />
-        <FieldGuidance name="user_id" id="user_id-help" />
+        <FieldGuidance
+          id="user_email-help"
+          text="Gunakan email yang sama dengan akun yang sudah aktif di portal."
+        />
       </div>
       <div>
         <label htmlFor="role" className="mb-2 block text-sm font-medium">
@@ -158,7 +169,7 @@ export function MembershipForm({ organizations }) {
             name="organization_id"
             className="field"
             required
-            defaultValue=""
+            defaultValue={organizations.length === 1 ? organizations[0].id : ""}
             aria-describedby="organization_id-help"
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
@@ -191,7 +202,7 @@ export function MembershipForm({ organizations }) {
           defaultChecked
           className="size-4 rounded border-line text-primary focus:ring-focus"
         />
-        Kewenangan aktif
+        Akses aktif
       </label>
       <FieldGuidance name="is_active" id="membership-is_active-help" />
       <PendingActionButton

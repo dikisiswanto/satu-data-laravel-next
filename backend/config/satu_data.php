@@ -1,15 +1,17 @@
 <?php
 
-$regionName = trim((string) env('PORTAL_REGION_NAME', 'Kabupaten Wajo'));
+$configuredRegionName = trim((string) env('PORTAL_REGION_NAME', ''));
+$hasConfiguredRegion = $configuredRegionName !== '';
+$regionName = $hasConfiguredRegion ? $configuredRegionName : 'Instansi';
 $organizationName = trim((string) env('PORTAL_ORGANIZATION_NAME', ''));
-$organizationName = $organizationName !== '' ? $organizationName : 'Pemerintah '.$regionName;
+$organizationName = $organizationName !== '' ? $organizationName : ($hasConfiguredRegion ? 'Pemerintah '.$regionName : 'Instansi pengampu');
 $regionShortName = trim((string) env('PORTAL_REGION_SHORT_NAME', ''));
 if ($regionShortName === '') {
     $regionShortName = preg_replace('/^(Kabupaten|Kota|Provinsi|Kecamatan)\s+/i', '', $regionName) ?: $regionName;
 }
 $regionSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $regionShortName), '-'));
 $brandName = trim((string) env('PORTAL_BRAND_NAME', ''));
-$brandName = $brandName !== '' ? $brandName : 'Portal Satu Data '.$regionName;
+$brandName = $brandName !== '' ? $brandName : ($hasConfiguredRegion ? 'Portal Satu Data '.$regionName : 'Portal Satu Data');
 $sdiProfileId = trim((string) env('SDI_EXPORT_PROFILE_ID', ''));
 $sdiProfileId = $sdiProfileId !== '' ? $sdiProfileId : $regionSlug.'-sdi-harvest-flat';
 $geoportalProfileId = trim((string) env('GEOPORTAL_MANIFEST_PROFILE_ID', ''));

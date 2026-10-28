@@ -2,12 +2,14 @@ import "server-only";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import {
+  getFrontendToken,
+  FRONTEND_TOKEN_COOKIE,
+} from "@/lib/auth/session-cookie";
+import {
   createPrivateReadCacheIdentity,
   getOrCreatePrivateReadCache,
   invalidatePrivateReadCache,
 } from "@/lib/backend/private-read-cache";
-
-const TOKEN_COOKIE = "wajo_portal_token";
 
 export function backendBaseUrl() {
   return (process.env.BACKEND_API_URL || "http://127.0.0.1:8000").replace(
@@ -69,7 +71,7 @@ async function performBackendFetch(path, options = {}) {
   const allowCrossRequestCache = options.memoize !== false;
   delete fetchOptions.memoize;
   const cookieStore = auth ? await cookies() : null;
-  const token = cookieStore?.get(TOKEN_COOKIE)?.value;
+  const token = getFrontendToken(cookieStore);
   const headers = new Headers(options.headers || {});
   if (!headers.has("Accept")) headers.set("Accept", "application/json");
   if (token && !headers.has("Authorization"))
@@ -172,5 +174,5 @@ export async function backendData(path, options) {
 }
 
 export function getBackendTokenCookieName() {
-  return TOKEN_COOKIE;
+  return FRONTEND_TOKEN_COOKIE;
 }

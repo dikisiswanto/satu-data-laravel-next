@@ -27,6 +27,7 @@ for (const required of [
   "src/app/portal/layout.jsx",
   "src/app/portal/(workspace)/layout.jsx",
   "src/lib/backend/server.js",
+  "src/lib/auth/session-cookie.js",
   "src/lib/backend/portal-api.js",
   "src/lib/backend/request-user.js",
   "src/lib/data/public.js",
@@ -98,6 +99,11 @@ const checks = [
   ],
   [
     "backend/bootstrap/app.php",
+    /prependToPriorityList\([\s\S]*AuthenticatesRequests::class[\s\S]*AttachFrontendToken::class/,
+    "Konversi cookie ke Bearer harus diprioritaskan sebelum autentikasi Laravel",
+  ],
+  [
+    "backend/bootstrap/app.php",
     /TrustConfiguredProxies::class/,
     "Bootstrap harus menghindari config() sebelum container Laravel siap",
   ],
@@ -118,8 +124,8 @@ const checks = [
   ],
   [
     "src/lib/backend/server.js",
-    /wajo_portal_token/,
-    "Permintaan server Next.js harus meneruskan cookie sesi Laravel",
+    /getFrontendToken\(cookieStore\)/,
+    "Permintaan server Next.js harus membaca cookie sesi yang dapat dikonfigurasi",
   ],
   [
     "src/lib/backend/server.js",
@@ -128,8 +134,8 @@ const checks = [
   ],
   [
     "src/proxy.js",
-    /wajo_portal_token/,
-    "Penjaga rute portal harus memakai cookie token Laravel",
+    /getFrontendToken\(request\.cookies\)/,
+    "Penjaga rute portal harus memakai cookie token yang dapat dikonfigurasi",
   ],
   [
     "src/app/robots.js",

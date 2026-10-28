@@ -80,6 +80,10 @@ export default async function ManageDatasetsPage({ searchParams }) {
   const params = await searchParams;
   const q = safeSearch(params?.q);
   const status = VALID_STATUSES.has(params?.status) ? params.status : "";
+  const category =
+    typeof params?.category === "string"
+      ? params.category.trim().slice(0, 120)
+      : "";
   const createdFrom = safeDate(params?.created_from);
   const createdTo = safeDate(params?.created_to);
   const organizationId =
@@ -114,6 +118,8 @@ export default async function ManageDatasetsPage({ searchParams }) {
   });
   if (q) search.set("q", q);
   if (status) search.set("status", status);
+  if (category) search.set("category", category);
+  search.set("include_categories", "1");
   if (createdFrom) search.set("created_from", createdFrom);
   if (createdTo) search.set("created_to", createdTo);
   if (organizationIdIsWellFormed && organizationId)
@@ -126,18 +132,25 @@ export default async function ManageDatasetsPage({ searchParams }) {
   ]);
   const data = datasetResult.data || [];
   const total = datasetResult.meta?.total || 0;
+  const categories = Array.isArray(datasetResult.meta?.categories)
+    ? datasetResult.meta.categories
+    : [];
+  const categoryOptions = [
+    ...new Set([...categories, ...(category ? [category] : [])]),
+  ];
   const error = null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.min(page, pages);
   if (page !== currentPage)
     redirect(
-      `/portal/dataset?${buildQuery({ q, status, organization: organizationId, sort, created_from: createdFrom, created_to: createdTo, page: currentPage })}`,
+      `/portal/dataset?${buildQuery({ q, status, category, organization: organizationId, sort, created_from: createdFrom, created_to: createdTo, page: currentPage })}`,
     );
   const visibleFrom = total ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
   const visibleTo = Math.min(currentPage * PAGE_SIZE, total);
   const currentParams = {
     q,
     status,
+    category,
     organization: organizationId,
     sort,
     created_from: createdFrom,
@@ -150,7 +163,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
       <PageHeading
         eyebrow="Pengelolaan data"
         title="Dataset"
-        description="Temukan dataset dengan pencarian dan filter, lalu buka judulnya untuk memeriksa metadata, berkas, dan status publikasi."
+        description="Cari berdasarkan judul, kategori, status, atau organisasi. Buka dataset untuk melengkapi informasi, mengelola berkas, dan mengatur pengajuan."
       >
         {canCreate ? (
           <Button href="/portal/dataset/new">
@@ -222,6 +235,24 @@ export default async function ManageDatasetsPage({ searchParams }) {
               {Object.entries(statusLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="portal-field-label" htmlFor="dataset-category">
+              Kategori
+            </label>
+            <select
+              className="field"
+              id="dataset-category"
+              name="category"
+              defaultValue={category}
+            >
+              <option value="">Semua kategori</option>
+              {categoryOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
                 </option>
               ))}
             </select>

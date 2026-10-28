@@ -20,11 +20,13 @@ import {
 } from "@/components/admin/form-field-guidance";
 import { UPDATE_FREQUENCY_OPTIONS } from "@/lib/dataset-options";
 import { SdiMetadataFields } from "@/components/admin/sdi-metadata-fields";
+import { DatasetCategoryField } from "@/components/admin/dataset-category-field";
 import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
 import { siteConfig } from "@/lib/site-config";
 
 const FIELD_MESSAGES = {
   title: "Judul wajib diisi dan harus memiliki 5–180 karakter.",
+  category: "Kategori maksimal 120 karakter.",
   description: "Deskripsi harus memiliki 20–5.000 karakter jika diisi.",
   organization_id:
     "Pilih organisasi pengampu yang aktif dan menjadi tanggung jawab Anda.",
@@ -72,6 +74,7 @@ function firstInvalidField(fields) {
     "title",
     "description",
     "organization_id",
+    "category",
     "source_name",
     "geographic_scope",
     "license_text",
@@ -294,6 +297,7 @@ export function DatasetCreateForm({
       title: raw.title,
       description: raw.description?.trim() || null,
       organization_id: raw.organization_id,
+      category: raw.category?.trim() || null,
       source_name: raw.source_name?.trim() || null,
       geographic_scope: raw.geographic_scope?.trim() || null,
       license_text: raw.license_text?.trim() || null,
@@ -571,6 +575,7 @@ export function DatasetCreateForm({
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
+            <DatasetCategoryField defaultValue="" />
             <Field
               label="Nama sumber data (wajib sebelum pemeriksaan)"
               name="source_name"

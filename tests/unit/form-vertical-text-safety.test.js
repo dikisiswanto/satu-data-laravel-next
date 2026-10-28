@@ -68,8 +68,14 @@ describe("form vertical text safety across public and admin pages", () => {
   it("keeps SDI integration controls and endpoint labels readable at narrow widths", () => {
     expect(integrationPage).toContain("min-w-0 flex-1 break-words");
     expect(integrationPage).toContain("shrink-0 whitespace-nowrap");
-    expect(preflight).toContain(
+    expect(preflight).toContain("sdi-preflight-select h-auto min-h-11");
+    expect(preflight).toContain("Katalog DCAT/JSON-LD");
+    expect(preflight).not.toContain(
       'className="field h-11 min-w-0 flex-1 bg-white"',
+    );
+    expect(normalizedSafety).toContain(".sdi-preflight-select");
+    expect(normalizedSafety).toMatch(
+      /sdi-preflight-select\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*44px;[^}]*line-height:\s*1\.4;/,
     );
     expect(preflight).toContain("min-h-11 items-center");
   });

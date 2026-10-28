@@ -30,8 +30,9 @@ describe("guided dataset workflow UX", () => {
       "backend/app/Http/Controllers/Api/PortalDatasetController.php",
     );
     const workflow = read("backend/app/Services/DatasetWorkflowService.php");
-    expect(form).toContain("2. Klasifikasi, sumber, dan periode");
-    expect(form).toContain("3. Metode dan kepatuhan SDI");
+    expect(form).toContain("2. Kategori dan kata kunci");
+    expect(form).toContain("3. Sumber, cakupan, dan periode");
+    expect(form).toContain("4. Definisi, metode, dan standar SDI");
     expect(form).toContain("wajib sebelum pemeriksaan");
     expect(createForm).toContain("opsional saat draf");
     for (const fieldLabel of [

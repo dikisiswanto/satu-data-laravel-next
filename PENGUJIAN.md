@@ -23,9 +23,9 @@ CI backend memakai MariaDB. Pertahankan engine yang sama untuk pengujian migrati
 
 ## Cakupan saat ini
 
-- **Vitest:** 32 berkas test terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, UI publik, alur dataset bertahap, upload sumber, dan panduan workflow admin. Perbarui angka jumlah kasus dengan output `vitest run` ketika runner tersedia.
+- **Vitest:** 35 berkas test terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, UI publik, alur dataset bertahap, upload sumber, dan panduan workflow admin. Perbarui angka jumlah kasus dengan output `vitest run` ketika runner tersedia.
 - **Playwright:** 1 berkas / 16 skenario navigasi, pencarian, login portal, filter, statistik, pratinjau, CRUD organisasi, dan viewport mobile. Satu skenario bisa ditandai skipped berdasarkan kondisi fixture.
-- **PHPUnit:** 11 berkas test backend mencakup izin, katalog role, workflow indikator, draf progresif, API publik, autentikasi cookie, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya.
+- **PHPUnit:** 14 kelas test backend mencakup izin, katalog role, workflow indikator, draf progresif, API publik, autentikasi cookie, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya.
 - **Pemeriksaan statis:** kontrak Next.js/Laravel dan OpenAPI, import relatif/alias, namespace serta method rute PHP.
 
 Sebagian test frontend memeriksa struktur source untuk mencegah regresi tampilan. Test seperti ini berguna untuk aturan UI yang eksplisit, tetapi tidak membuktikan perilaku runtime. Aturan bisnis kritis harus diuji pada service/API atau melalui test integrasi; jangan hanya mengandalkan pola teks di source.
@@ -36,6 +36,9 @@ Sebagian test frontend memeriksa struktur source untuk mencegah regresi tampilan
 - `admin-workflow-guidance.test.js`: memastikan form indikator dikelompokkan menurut identitas/definisi/nilai, identitas organisasi dibedakan dari kontak opsional, dan form pengguna hanya menampilkan satu alur (undang pengguna baru atau tambahkan akses untuk akun yang sudah ada).
 - `loading-static-shell-parity.test.js`: memastikan label dan contoh tetap sama antara loading shell dan halaman resolved agar transisi loading tidak menyesatkan.
 - `admin-form-consistency.test.js`: memeriksa pola visual kontrol/form.
+- `dataset-management-architecture.test.js`: memeriksa metadata lebih dahulu, pemisahan sumber dan distribusi, paritas loading shell, statistik indikator tanpa fetch tambahan, profil branding generik, dan urutan middleware autentikasi.
+- `tenant-branding.test.js`: memeriksa brand generik, wilayah terkonfigurasi, dan aset Wajo yang hanya aktif lewat profil eksplisit.
+- `FrontendCookieAuthenticationTest.php`: memastikan verifikasi sesi berulang dan perubahan profil lewat cookie frontend terautentikasi; `AttachFrontendTokenTest.php` juga mencakup cookie legacy. Tes request JSON secara eksplisit memanggil `withCredentials()`, sebab helper JSON Laravel mengosongkan cookie secara default jika opsi credentials tidak diaktifkan.
 - `ProgressiveDatasetDraftTest.php`: mencakup penyimpanan metadata bertahap dan menolak pengajuan review sampai metadata penting lengkap.
 
 ## Perbaikan build Docker PHP
@@ -94,3 +97,53 @@ Sebelum Composer menjalankan penemuan paket atau Artisan menjalankan migration, 
 - Test keamanan teks formulir menormalkan spasi selector CSS sebelum memeriksa `.login-form .field`, karena pemisahan selector ke beberapa baris adalah format CSS yang valid dan tidak mengubah perilaku.
 
 Validasi statis terbaru: `npm run check`, pemeriksaan sintaks seluruh test/helper JavaScript, lint sintaks PHP, parsing OpenAPI JSON, serta parsing YAML CI dan Docker Compose telah lulus. Test Vitest, ESLint, build Next.js, PHPUnit, dan migration runtime belum dapat dijalankan di lingkungan audit ini karena paket npm/Composer tidak tersedia lengkap dan akses npm registry mengalami kegagalan DNS (`EAI_AGAIN`). Jalankan pipeline CI untuk verifikasi runtime final.
+
+### Regresi UX admin: pengguna, kategori, dan kesiapan SDI
+
+- `tests/unit/admin-workflow-guidance.test.js`: alur undangan vs akun terdaftar, input email (bukan UUID teknis), organisasi otomatis jika hanya ada satu, dan peringatan ketika berpindah formulir yang sudah diubah.
+- `tests/unit/dataset-category-management.test.js`: saran kategori yang bisa dikonfigurasi, filter kategori dari data backend tanpa request tambahan di browser, batas 120 karakter, serta wiring variable kategori pada Compose/Dockerfile. Opsi di form adalah saran, bukan tabel taksonomi terpisah; kategori baru masih boleh dibuat dengan mengetik nama.
+- `tests/unit/form-vertical-text-safety.test.js`: select konektor SDI harus memiliki `height: auto`, `min-height: 44px`, dan `line-height` aman.
+- `tests/unit/loading-static-shell-parity.test.js`: kategori dataset tampil pada loading shell agar struktur tidak berubah setelah halaman selesai dimuat.
+- `backend/tests/Feature/PortalMembershipByEmailTest.php`: API menerima email akun aktif secara case-insensitive dan tetap kompatibel dengan klien lama yang mengirim UUID.
+
+Jalankan `npm run test`, `npm run test:e2e`, dan `cd backend && php artisan test` pada lingkungan lengkap. Pemeriksaan sintaks/statis tidak menggantikan tes runtime ini.
+
+## Catatan branding dan resource model
+
+- Nilai `NEXT_PUBLIC_*` ditanam saat build Next.js; mengubah `.env` tanpa rebuild tidak memperbarui title/ikon/hero pada bundle yang sedang berjalan.
+- `.env` real dan `backend/.env` tidak dibundel dalam ZIP source. Gunakan `.env.example` generik sebagai referensi, tetapi jangan menimpa secret dan konfigurasi deployment tanpa backup.
+- Kontrak dataset saat ini memiliki satu `source_resource_id` utama per versi. Tests mengawasi pemisahan berkas sumber dan distribusi, tetapi tidak mengklaim dukungan resource manager CKAN penuh (banyak file/URL eksternal bebas) sebelum skema dan API tersebut benar-benar dibangun.
+- `php artisan test` belum dijalankan dalam lingkungan audit ini karena `backend/vendor` tidak tersedia; lulus `php -l` tidak membuktikan kedua tes cookie-auth lulus runtime. Jalankan dua tes tersebut terlebih dahulu pada CI setelah Composer install.
+
+### Regresi alur dataset, indikator, branding, dan cookie
+
+- `tests/unit/dataset-management-architecture.test.js`: urutan metadata → sumber → distribusi → versi → pemeriksaan; akses cepat; sumber asli dan distribusi terpisah; loading shell sejalan.
+- `tests/e2e/public-home.spec.js`: smoke test harus menggunakan nama aplikasi generik dan cookie kanonis `portal_session_token`, bukan mengasumsikan deployment Wajo.
+- `backend/tests/Feature/FrontendCookieAuthenticationTest.php`: verifikasi sesi berulang dan mutasi profil harus berhasil dari cookie frontend; jalankan `php artisan test` setelah perubahan bootstrap middleware.
+- Branding default dibaca dari `.env.example`; `.env` server yang sudah ada tidak ditimpa saat ekstraksi ZIP. Setelah perubahan `NEXT_PUBLIC_*`, rebuild image frontend.
+
+### Pencarian katalog berbasis intent
+
+- `tests/unit/public-dataset-intent-search.test.js`: kontrak pencarian public catalog, cakupan metadata, ranking, dan contoh intent yang terlihat pada UI.
+- `backend/tests/Unit/PublicDatasetSearchTest.php`: ekspansi sinonim topik (pendidikan, kesehatan, penduduk, ekonomi), pembuangan kata hubung, dan batas jumlah istilah untuk query bahasa alami.
+- Query tetap melewati `publishedDatasetQuery()` sehingga pencarian tidak memperlihatkan draf, organisasi nonaktif, resource nonpublik, konversi gagal, atau versi lama. Runner Vitest dan PHPUnit perlu dijalankan pada lingkungan yang sudah memasang dependency proyek; tidak ada hasil runtime test yang boleh disimpulkan hanya dari lint/static checks.
+
+## Regresi UX statistik dan tindakan dataset — 28 Oktober 2026
+
+Perubahan alur admin baru menambahkan/menegaskan pemeriksaan berikut:
+
+- `dataset-management-architecture.test.js`: aksi detail dataset mengikuti workflow backend; pengajuan pemeriksaan baru aktif jika metadata wajib lengkap, sumber versi yang sedang diproses siap, dan validasi untuk checksum sumber tersebut berstatus `passed`; pengarsipan tidak ditawarkan saat pemeriksaan; pengembalian untuk perbaikan dan pembuatan versi baru ditampilkan pada status yang sesuai.
+- `dataset-management-architecture.test.js`: halaman statistik membedakan definisi indikator dari observasi berkala, menampilkan antrean draf/pemeriksaan/terbit, memberi tautan untuk nilai/tren, dan mencegah tautan edit menjadi jalan buntu saat indikator masih diperiksa atau diarsipkan.
+- `PortalIndicatorWorkflowTest.php`: publikasi observasi ditolak sebelum definisi indikator terbit; indikator yang telah diarsipkan juga bersifat baca-saja untuk penambahan observasi baru.
+- `PortalIndicatorController`: pemeriksaan status dilakukan lagi di dalam transaksi saat observasi disimpan, sehingga pengarsipan yang terjadi bersamaan tidak dapat dilewati dari form atau permintaan API.
+
+Hasil validasi yang benar-benar dijalankan setelah perubahan ini:
+
+- `npm run check` — lulus; cek proyek/kontrak, 235 modul JS/JSX, serta namespace dan referensi method route PHP.
+- Pemeriksaan parser TypeScript terhadap sumber JS/JSX — 225/225 berkas lulus.
+- `php -l` — 75 berkas PHP lulus pemeriksaan sintaks.
+- `node --check tests/unit/dataset-management-architecture.test.js` — lulus.
+- `node --check tests/e2e/public-home.spec.js` — lulus.
+- 11 pemeriksaan manual source-level atas prasyarat tombol, status indikator, dan guard backend — lulus; ini bukan pengganti test runner resmi.
+
+Batasan penting: `npm run test -- --run` belum dapat dijalankan karena executable `vitest` tidak terpasang (`vitest: not found`). `php artisan test` belum dapat dijalankan karena `backend/vendor/autoload.php` tidak tersedia. Percobaan `npm ci --ignore-scripts --prefer-offline --no-audit --no-fund` timeout dan tidak menghasilkan instalasi dependency yang dapat dipakai. Karena itu, hasil di atas adalah validasi statis/sintaks, **bukan** klaim bahwa suite Vitest, PHPUnit, Next build, atau Playwright lulus. Jalankan suite penuh pada lingkungan dengan dependency lengkap sebelum deploy.

@@ -23,7 +23,7 @@ const FIELD_GUIDANCE = {
   methodology:
     "Jelaskan cara data dikumpulkan dan diolah, termasuk rumus, proses pembersihan, serta asumsi penting jika ada.",
   category:
-    "Pilih kategori yang paling sesuai dengan isi dataset agar pengguna mudah menemukan data sejenis.",
+    "Pilih saran yang tersedia agar penamaan konsisten. Jika belum ada yang cocok, ketik kategori baru; gunakan ejaan yang sama untuk dataset sejenis.",
   keywords:
     "Pisahkan kata kunci dengan koma. Gunakan istilah yang mungkin diketik orang saat mencari data, bukan kalimat panjang.",
   code: "Gunakan kode resmi jika tersedia. Untuk kode internal, ikuti pola yang ditetapkan portal dan pastikan tidak sama dengan kode lain. Contoh: IND-PEND-001.",
@@ -47,7 +47,7 @@ const FIELD_GUIDANCE = {
     "Masukkan nama yang ingin ditampilkan di portal sesuai kebijakan instansi.",
   email:
     "Masukkan alamat email aktif yang dapat menerima undangan atau pemberitahuan.",
-  role: "Pilih akses yang cukup untuk tugas pengguna. Peran global dapat menjangkau banyak organisasi, jadi berikan hanya jika memang diperlukan.",
+  role: "Pilih peran sesuai tugas. Peran global memberi akses lintas organisasi; pilih hanya jika diperlukan.",
   user_id:
     "Salin ID dari daftar pengguna. Jangan gunakan email atau nama tampilan. ID berbentuk seperti 00000000-0000-0000-0000-000000000000.",
   is_active:
@@ -75,7 +75,7 @@ const FIELD_VALIDATION = {
   reference_period_end:
     "Tanggal akhir harus sama dengan atau setelah tanggal mulai.",
   code: "Isi kode yang belum dipakai oleh catatan lain.",
-  slug: "Gunakan huruf kecil, angka, dan tanda hubung tanpa spasi. Contoh: jumlah-sekolah-wajo.",
+  slug: "Gunakan huruf kecil, angka, dan tanda hubung tanpa spasi. Contoh: jumlah-sekolah.",
   name: "Isi nama resmi sesuai dokumen sumber.",
   short_name:
     "Nama singkat terlalu panjang. Ringkas sesuai nama resmi yang digunakan.",

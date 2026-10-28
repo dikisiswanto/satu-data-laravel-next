@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\FrontendTokenCookie;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,8 +25,7 @@ class RequireSameOriginForMutations
 
         // For requests carrying the browser's HttpOnly auth cookie, require a verifiable
         // Origin or Referer. Non-browser integrations using an explicit Bearer header remain usable.
-        $cookieName = (string) config('app.frontend_token_cookie', 'wajo_portal_token');
-        $hasFrontendCookie = $request->cookies->has($cookieName);
+        $hasFrontendCookie = FrontendTokenCookie::has($request);
         if ($hasFrontendCookie && ! $originNormalized) {
             $referer = (string) $request->headers->get('Referer', '');
             $parts = $referer !== '' ? parse_url($referer) : false;

@@ -121,17 +121,24 @@ export function IndicatorActions({
           ) : null}
         </>
       ) : null}
+      {status === "published" && canEdit ? (
+        <Link
+          href={`/portal/statistik/${id}/edit`}
+          className="rounded-control border px-3 py-2 text-sm font-medium hover:bg-slate-50"
+          prefetch={false}
+          title="Perubahan akan menarik definisi dari publik sampai pemeriksaan dan publikasi ulang selesai."
+        >
+          Ubah definisi
+        </Link>
+      ) : null}
+      {status === "review" && canEdit && !canReview ? (
+        <span className="rounded-control border border-line px-3 py-2 text-xs text-muted">
+          Menunggu pemeriksaan; perubahan perlu dikembalikan ke draf oleh
+          peninjau.
+        </span>
+      ) : null}
       {status === "review" ? (
         <>
-          {canEdit ? (
-            <Link
-              href={`/portal/statistik/${id}/edit`}
-              className="rounded-control border px-3 py-2 text-sm font-medium hover:bg-slate-50"
-              prefetch={false}
-            >
-              Ubah
-            </Link>
-          ) : null}
           {canReview ? (
             <PendingActionButton
               onClick={() => act("publish")}
@@ -169,7 +176,7 @@ export function IndicatorActions({
           }}
         />
       ) : null}
-      {status !== "archived" && status !== "published" && canArchive ? (
+      {status !== "archived" && canArchive ? (
         <PendingActionButton
           onClick={() => act("archive")}
           pending={pendingAction === "archive"}

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Support\FrontendTokenCookie;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -19,8 +20,7 @@ class AppServiceProvider extends ServiceProvider
         // without storing the credential itself in the rate-limit key. Anonymous
         // public traffic keeps a separate per-IP budget.
         RateLimiter::for('backend-api', function (Request $request) {
-            $token = $request->bearerToken()
-                ?: $request->cookie((string) config('app.frontend_token_cookie', 'wajo_portal_token'));
+            $token = $request->bearerToken() ?: FrontendTokenCookie::read($request);
             $hasSessionToken = is_string($token) && strlen($token) >= 20 && strlen($token) <= 512;
             $limit = $hasSessionToken
                 ? (int) config('satu_data.rate_limit_per_minute', 1200)

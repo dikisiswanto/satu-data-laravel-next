@@ -83,6 +83,7 @@ export function InviteUserForm({ organizations }) {
         text: `Undangan dikirim ke ${result.data.email}.`,
       });
       form.reset();
+      delete form.dataset.userModified;
       setRole("editor");
       router.refresh();
     } catch (error) {
@@ -95,6 +96,12 @@ export function InviteUserForm({ organizations }) {
   return (
     <form
       onSubmit={submit}
+      onInputCapture={(event) => {
+        event.currentTarget.dataset.userModified = "true";
+      }}
+      onChangeCapture={(event) => {
+        event.currentTarget.dataset.userModified = "true";
+      }}
       aria-busy={busy}
       className="w-full space-y-4 portal-form-card p-5"
     >
@@ -115,7 +122,7 @@ export function InviteUserForm({ organizations }) {
           htmlFor="display_name"
           className="mb-2 block text-sm font-medium"
         >
-          Nama lengkap *
+          Nama pengguna *
         </label>
         <input
           className="field"
@@ -136,7 +143,7 @@ export function InviteUserForm({ organizations }) {
       </div>
       <div>
         <label htmlFor="email" className="mb-2 block text-sm font-medium">
-          Email pengguna *
+          Alamat email *
         </label>
         <input
           className="field"
@@ -157,7 +164,7 @@ export function InviteUserForm({ organizations }) {
       </div>
       <div>
         <label htmlFor="role" className="mb-2 block text-sm font-medium">
-          Peran pengguna *
+          Peran akses *
         </label>
         <select
           className="field"
@@ -180,14 +187,14 @@ export function InviteUserForm({ organizations }) {
             htmlFor="organization_id"
             className="mb-2 block text-sm font-medium"
           >
-            Organisasi *
+            Organisasi penanggung jawab *
           </label>
           <select
             className="field"
             id="organization_id"
             name="organization_id"
             required
-            defaultValue=""
+            defaultValue={organizations.length === 1 ? organizations[0].id : ""}
             aria-describedby="organization_id-help"
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(

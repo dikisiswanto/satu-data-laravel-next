@@ -84,7 +84,7 @@ paths:
         - name: q
           in: query
           required: false
-          description: Search title, code, slug, and description.
+          description: Search intent and relevance across title, description, category, keywords, provenance/source, geographic scope, organization, and current Satu Data metadata; common Indonesian topic synonyms are expanded. Results are ranked by weighted metadata matches; this is not Elasticsearch API compatibility.
           schema:
             type: string
         - name: page
@@ -1308,6 +1308,20 @@ paths:
             (maksimum 100 karakter).
           schema:
             type: string
+        - name: category
+          in: query
+          required: false
+          description: Filter kategori dataset secara persis.
+          schema:
+            type: string
+            maxLength: 120
+        - name: include_categories
+          in: query
+          required: false
+          description: Jika true, sertakan kategori unik sesuai ruang akses pengguna sebagai saran dan filter tanpa request terpisah.
+          schema:
+            type: boolean
+            default: false
         - name: status
           in: query
           required: false
@@ -1925,7 +1939,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/JsonObject"
+              $ref: "#/components/schemas/MembershipCreateRequest"
   /api/v1/portal/memberships/{id}:
     patch:
       summary: Update membership role or status.
@@ -2982,10 +2996,10 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: wajo_portal_token
+      name: portal_session_token
       description:
-        HttpOnly token cookie set by the Next.js login action for same-origin
-        portal requests.
+        Configurable HttpOnly session cookie set by the Next.js login action for same-origin
+        portal requests. The previous Wajo cookie name remains accepted during migration.
     bearerAuth:
       type: http
       scheme: bearer
@@ -3069,6 +3083,46 @@ components:
           type: string
           minLength: 12
           maxLength: 128
+    MembershipCreateRequest:
+      type: object
+      description: Tambahkan akses untuk akun aktif yang sudah terdaftar. UI memakai user_email; user_id tetap didukung untuk klien lama. Isi salah satu identitas saja.
+      required:
+        - organization_id
+        - role
+      oneOf:
+        - required:
+            - user_email
+        - required:
+            - user_id
+      properties:
+        user_email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Email akun aktif yang sudah terdaftar.
+        user_id:
+          type: string
+          format: uuid
+          description: ID pengguna untuk klien API lama.
+        organization_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        role:
+          type: string
+          enum:
+            - super_admin
+            - data_admin
+            - admin_opd
+            - reviewer
+            - editor
+            - viewer
+            - auditor
+        is_active:
+          type: boolean
+          default: true
+      additionalProperties: false
     DatasetMetadataPatchRequest:
       type: object
       description: Save draft metadata incrementally. Title is required for each save; publication-critical fields are checked when submitting for review.
@@ -3176,6 +3230,12 @@ components:
         organization_id:
           type: string
           format: uuid
+        category:
+          type:
+            - string
+            - "null"
+          maxLength: 120
+          description: Kategori pengelompokan dataset; boleh kosong saat draf.
         source_name:
           type:
             - string

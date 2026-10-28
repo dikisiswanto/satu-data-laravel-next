@@ -8,16 +8,15 @@ import { MembershipForm } from "@/components/admin/membership-form";
 const ACCESS_MODES = [
   {
     key: "invite",
-    shortTitle: "Pengguna baru",
+    shortTitle: "Undang akun baru",
     description:
-      "Gunakan jika orang tersebut belum memiliki akun. Anda akan mengisi identitas, peran, dan organisasi dalam satu langkah.",
+      "Masukkan nama dan email, lalu pilih peran serta organisasi. Petunjuk aktivasi dikirim melalui email.",
     icon: UserPlus,
   },
   {
     key: "membership",
-    shortTitle: "Akun sudah ada",
-    description:
-      "Gunakan untuk memberi akun yang sudah ada peran tambahan atau akses ke organisasi lain.",
+    shortTitle: "Akun terdaftar",
+    description: "Masukkan email akun aktif, lalu pilih peran dan organisasi.",
     icon: ShieldCheck,
   },
 ];
@@ -29,21 +28,14 @@ export function UserAccessWorkspace({ organizations }) {
     if (nextMode === activeMode) return;
     const panel = document.getElementById(`user-access-panel-${activeMode}`);
     const form = panel?.querySelector("form");
-    if (form) {
-      const hasUnsavedInput = [...new FormData(form).entries()].some(
-        ([name, value]) =>
-          !["role", "is_active"].includes(name) &&
-          typeof value === "string" &&
-          value.trim() !== "",
-      );
-      if (
-        hasUnsavedInput &&
-        !window.confirm(
-          "Formulir ini berisi isian yang belum disimpan. Ganti alur dan buang isian tersebut?",
-        )
-      ) {
-        return;
-      }
+    const hasUnsavedInput = form?.dataset.userModified === "true";
+    if (
+      hasUnsavedInput &&
+      !window.confirm(
+        "Ada perubahan yang belum disimpan. Ganti alur dan buang perubahan ini?",
+      )
+    ) {
+      return;
     }
     setActiveMode(nextMode);
   }
@@ -58,11 +50,11 @@ export function UserAccessWorkspace({ organizations }) {
           id="user-access-actions-title"
           className="text-base font-semibold text-ink"
         >
-          Tambahkan pengguna atau akses
+          Tambah pengguna
         </h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Pilih berdasarkan kondisi akun. Pengguna baru cukup diundang sekali;
-          akun yang sudah ada dapat diberi akses tambahan.
+          Undang akun baru, atau tambahkan peran untuk akun yang sudah
+          terdaftar.
         </p>
       </div>
       <div

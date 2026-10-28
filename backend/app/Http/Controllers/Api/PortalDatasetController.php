@@ -29,6 +29,8 @@ class PortalDatasetController extends Controller
     {
         $request->validate([
             'q' => ['sometimes', 'string', 'max:100'],
+            'category' => ['sometimes', 'string', 'max:120'],
+            'include_categories' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'in:draft,review,published,archived'],
             'statuses' => ['sometimes', 'string', 'max:100'],
             'organization_id' => ['sometimes', 'uuid'],
@@ -48,6 +50,22 @@ class PortalDatasetController extends Controller
         $query = Dataset::query()->with(['organization:id,name,slug,code,is_active,official_email,official_url,created_at,updated_at', 'resources' => fn ($q) => $q->select('id', 'dataset_id', 'dataset_version', 'original_filename', 'format', 'size_bytes', 'row_count', 'column_schema', 'preview_enabled', 'is_source', 'is_public', 'conversion_status', 'created_at')]);
         $this->scopeDatasets($query, $user);
 
+        // Category suggestions are opt-in so ordinary navigation does not pay
+        // for the extra DISTINCT query. The list is scoped to datasets the user
+        // is allowed to read.
+        $categoryOptions = null;
+        if ($request->boolean('include_categories')) {
+            $categoryQuery = Dataset::query();
+            $this->scopeDatasets($categoryQuery, $user);
+            $categoryOptions = $categoryQuery
+                ->whereNotNull('category')
+                ->where('category', '<>', '')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category')
+                ->all();
+        }
+
         $allowedStatuses = ['draft', 'review', 'published', 'archived'];
         $statusesRaw = $request->query('statuses');
         $statuses = is_string($statusesRaw)
@@ -59,6 +77,9 @@ class PortalDatasetController extends Controller
             $query->where('status', $request->query('status'));
         }
 
+        if ($request->filled('category')) {
+            $query->where('category', trim($request->string('category')->toString()));
+        }
         if ($request->filled('organization_id')) {
             $query->where('organization_id', $request->string('organization_id')->toString());
         }
@@ -158,7 +179,12 @@ class PortalDatasetController extends Controller
             unset($row);
         }
 
-        return response()->json(['data' => $data, 'meta' => ['total' => $total, 'limit' => $limit, 'offset' => $offset]], 200, ['Cache-Control' => 'private, no-store']);
+        $meta = ['total' => $total, 'limit' => $limit, 'offset' => $offset];
+        if ($categoryOptions !== null) {
+            $meta['categories'] = $categoryOptions;
+        }
+
+        return response()->json(['data' => $data, 'meta' => $meta], 200, ['Cache-Control' => 'private, no-store']);
     }
 
     public function show(Request $request, string $id): JsonResponse
@@ -172,7 +198,12 @@ class PortalDatasetController extends Controller
         }
         $data = $this->datasetArray($dataset);
         $data['versions'] = $dataset->versions->map(fn ($version) => ['id' => $version->id, 'version' => $version->version, 'version_status' => $version->version_status, 'change_summary' => $version->change_summary, 'source_resource_id' => $version->source_resource_id, 'created_at' => $version->created_at, 'metadata_snapshot' => $version->metadata_snapshot])->all();
-        if ($dataset->status === 'published' && $dataset->draft_version) {
+        // The active replacement snapshot is the source of truth while a new
+        // version is being drafted or reviewed. Keep returning the previous
+        // public version separately through current_version, but render the
+        // candidate metadata throughout the review workflow so reviewers do
+        // not accidentally inspect stale published metadata.
+        if ($dataset->draft_version && in_array($dataset->status, ['published', 'review'], true)) {
             $draftSnapshot = $dataset->versions->firstWhere('version', (int) $dataset->draft_version)?->metadata_snapshot;
             if (is_array($draftSnapshot)) {
                 foreach (['title', 'description', 'category', 'keywords', 'reference_period_start', 'reference_period_end', 'geographic_scope', 'update_frequency', 'source_name', 'source_url', 'methodology', 'unit', 'license_text', 'contact'] as $field) {
@@ -183,6 +214,25 @@ class PortalDatasetController extends Controller
                 $data['draft_metadata_snapshot'] = $draftSnapshot;
             }
         }
+        $activeVersion = (int) ($dataset->draft_version ?: $dataset->current_version);
+        $activeSourceId = DB::table('dataset_versions')
+            ->where('dataset_id', $dataset->id)
+            ->where('version', $activeVersion)
+            ->value('source_resource_id');
+        $activeSourceChecksum = $activeSourceId
+            ? DB::table('dataset_resources')->where('id', $activeSourceId)->value('checksum_sha256')
+            : null;
+        $validationQuery = DB::table('dataset_validation_runs')
+            ->where('dataset_id', $dataset->id)
+            ->where('dataset_version', $activeVersion);
+        if (is_string($activeSourceChecksum) && $activeSourceChecksum !== '') {
+            $validationQuery->where('source_checksum_sha256', $activeSourceChecksum);
+        } else {
+            $validationQuery->whereRaw('1 = 0');
+        }
+        $data['validation_run'] = $validationQuery
+            ->orderByDesc('created_at')
+            ->first(['id', 'status', 'checks', 'created_at', 'converter_version', 'source_checksum_sha256']);
         $data['conversion_jobs'] = ConversionJob::query()->where('dataset_id', $dataset->id)->orderByDesc('created_at')->limit(20)->get(['id', 'dataset_version', 'source_resource_id', 'status', 'attempts', 'max_attempts', 'safe_error_message', 'created_at', 'started_at', 'finished_at', 'updated_at', 'lease_expires_at']);
         $data['sdi_metadata'] = DatasetSdiMetadata::query()->where('dataset_id', $dataset->id)->where('dataset_version', $dataset->draft_version ?: $dataset->current_version)->first();
         // Compatibility relation used by existing edit and integration pages:
@@ -202,6 +252,7 @@ class PortalDatasetController extends Controller
             // dilengkapi kemudian dan divalidasi saat submit_for_review.
             'description' => ['nullable', 'string', 'min:20', 'max:5000'],
             'organization_id' => ['required', 'uuid', 'exists:organizations,id'],
+            'category' => ['nullable', 'string', 'max:120'],
             'source_name' => ['nullable', 'string', 'min:2', 'max:240'],
             'geographic_scope' => ['nullable', 'string', 'min:2', 'max:240'],
             'license_text' => ['nullable', 'string', 'min:2', 'max:240'],

@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
 import { getRetryAfterMs } from "../../src/lib/api/client-response.js";
 import {
   assertPortalSessionVerification,
@@ -65,5 +69,21 @@ describe("session resilience during API throttling", () => {
     });
 
     expect(getRetryAfterMs(response)).toBe(60_000);
+  });
+});
+
+describe("configurable session cookie migration", () => {
+  it("uses the generic cookie name and retains a legacy-cookie fallback", () => {
+    const helper = read("src/lib/auth/session-cookie.js");
+    const backendHelper = read("backend/app/Support/FrontendTokenCookie.php");
+    const appConfig = read("backend/config/app.php");
+    expect(helper).toContain('"portal_session_token"');
+    expect(helper).toContain('"wajo_portal_token"');
+    expect(helper).toContain("getFrontendToken");
+    expect(backendHelper).toContain("LEGACY_COOKIE_NAME");
+    expect(backendHelper).toContain("config('app.frontend_token_cookie'");
+    expect(appConfig).toContain(
+      "env('FRONTEND_TOKEN_COOKIE', 'portal_session_token')",
+    );
   });
 });

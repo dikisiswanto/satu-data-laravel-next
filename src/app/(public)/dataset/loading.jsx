@@ -17,7 +17,7 @@ export default function DatasetCatalogLoading() {
           <PageHeading
             eyebrow="Jelajahi data publik"
             title="Katalog dataset"
-            description="Temukan data berdasarkan topik, perangkat daerah, sumber, dan periode. Pencarian juga membantu menemukan hasil saat ada salah ketik ringan."
+            description="Jelajahi data berdasarkan maksud pencarian, topik terkait, metadata, kata kunci, sumber, dan perangkat daerah—bukan hanya kecocokan judul."
           />
           <div className="catalog-search-panel relative flex min-w-0 flex-col items-stretch gap-3 rounded-2xl border border-[#d5e0e8] bg-white p-3 shadow-[0_8px_28px_rgb(20_55_60_/_0.07)] sm:flex-row sm:items-end sm:p-4">
             <div className="min-w-0 flex-1">

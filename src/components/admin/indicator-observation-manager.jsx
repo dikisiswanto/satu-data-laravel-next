@@ -409,7 +409,17 @@ export function IndicatorObservationManager({
                       {observation.status === "draft" && canPublish ? (
                         <button
                           type="button"
-                          disabled={busy || indicator.status !== "published"}
+                          disabled={
+                            busy ||
+                            indicator.status !== "published" ||
+                            !indicator.published_at
+                          }
+                          title={
+                            indicator.status !== "published" ||
+                            !indicator.published_at
+                              ? "Terbitkan definisi indikator terlebih dahulu."
+                              : "Terbitkan nilai ini ke tren statistik publik."
+                          }
                           onClick={() => publish(observation.id)}
                           className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                         >
@@ -441,7 +451,7 @@ export function IndicatorObservationManager({
           </p>
         )}
       </section>
-      {indicator.status !== "published" ? (
+      {indicator.status !== "published" || !indicator.published_at ? (
         <p className="flex items-start gap-2 text-sm leading-6 text-muted">
           <Clock3 size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
           Definisi indikator belum diterbitkan. Anda dapat menyiapkan nilainya

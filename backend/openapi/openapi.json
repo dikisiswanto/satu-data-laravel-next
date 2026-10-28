@@ -52,7 +52,9 @@
     "/api/health": {
       "get": {
         "summary": "Readiness API, database, and private storage.",
-        "tags": ["Operations"],
+        "tags": [
+          "Operations"
+        ],
         "operationId": "get_api_health",
         "responses": {
           "200": {
@@ -91,7 +93,9 @@
     "/api/v1/datasets": {
       "get": {
         "summary": "List and search published datasets.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_datasets",
         "responses": {
           "200": {
@@ -130,7 +134,7 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "Search title, code, slug, and description.",
+            "description": "Search intent and relevance across title, description, category, keywords, provenance/source, geographic scope, organization, and current Satu Data metadata; common Indonesian topic synonyms are expanded. Results are ranked by weighted metadata matches; this is not Elasticsearch API compatibility.",
             "schema": {
               "type": "string"
             }
@@ -194,7 +198,9 @@
     "/api/v1/datasets/{slug}": {
       "get": {
         "summary": "Read a published dataset and its public resources.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_datasets_slug",
         "responses": {
           "200": {
@@ -244,7 +250,9 @@
     "/api/v1/datasets/{slug}/resources/{resourceId}/rows": {
       "get": {
         "summary": "Read rows from a published tabular resource.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_datasets_slug_resources_resourceId_rows",
         "responses": {
           "200": {
@@ -359,7 +367,9 @@
     "/api/v1/datasets/{slug}/resources/{resourceId}/download": {
       "get": {
         "summary": "Download a resource that belongs to the published dataset version.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_datasets_slug_resources_resourceId_download",
         "responses": {
           "200": {
@@ -419,7 +429,9 @@
     "/api/v1/indicators": {
       "get": {
         "summary": "List published statistics indicators.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_indicators",
         "responses": {
           "200": {
@@ -504,7 +516,9 @@
     "/api/v1/indicators/{slug}": {
       "get": {
         "summary": "Read a published indicator.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_indicators_slug",
         "responses": {
           "200": {
@@ -564,7 +578,9 @@
     "/api/v1/indicators/{slug}/observations": {
       "get": {
         "summary": "List current published observations for a public indicator.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_indicators_slug_observations",
         "responses": {
           "200": {
@@ -648,7 +664,9 @@
     "/api/v1/indicators/by-id/{id}/observations": {
       "get": {
         "summary": "List published observations by indicator UUID.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_indicators_by_id_id_observations",
         "responses": {
           "200": {
@@ -721,7 +739,9 @@
     "/api/v1/organizations": {
       "get": {
         "summary": "List active organizations with counts of published datasets.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_organizations",
         "responses": {
           "200": {
@@ -808,7 +828,9 @@
     "/api/v1/public/facets": {
       "get": {
         "summary": "Read category and organization facets for the catalog.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_public_facets",
         "responses": {
           "200": {
@@ -847,7 +869,9 @@
     "/api/v1/public/revision": {
       "get": {
         "summary": "Read public catalog revision for cache invalidation.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_public_revision",
         "responses": {
           "200": {
@@ -886,7 +910,9 @@
     "/api/v1/public/stats": {
       "get": {
         "summary": "Read public portal summary statistics.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_public_stats",
         "responses": {
           "200": {
@@ -925,7 +951,9 @@
     "/api/v1/public/organizations": {
       "get": {
         "summary": "List public organizations.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_public_organizations",
         "responses": {
           "200": {
@@ -964,7 +992,9 @@
     "/api/v1/sdi/catalog": {
       "get": {
         "summary": "Read the DCAT/JSON-LD interoperable catalog.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_catalog",
         "responses": {
           "200": {
@@ -1003,7 +1033,9 @@
     "/api/v1/sdi/data.json": {
       "get": {
         "summary": "Read the flattened SDI dataset feed.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_data_json",
         "responses": {
           "200": {
@@ -1042,7 +1074,9 @@
     "/api/v1/sdi/geoportal-manifest": {
       "get": {
         "summary": "Read the GeoPortal resource manifest.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_geoportal_manifest",
         "responses": {
           "200": {
@@ -1081,7 +1115,9 @@
     "/api/v1/sdi/profile": {
       "get": {
         "summary": "Read the interoperability profile.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_profile",
         "responses": {
           "200": {
@@ -1120,7 +1156,9 @@
     "/api/v1/sdi/reference-codes": {
       "get": {
         "summary": "List verified reference code systems and entries.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_reference_codes",
         "responses": {
           "200": {
@@ -1159,7 +1197,9 @@
     "/api/v1/sdi/standards": {
       "get": {
         "summary": "List verified SDI standards.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_sdi_standards",
         "responses": {
           "200": {
@@ -1198,7 +1238,9 @@
     "/api/v1/auth/login": {
       "post": {
         "summary": "Authenticate a portal user and issue a short-lived bearer token.",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "post_api_v1_auth_login",
         "responses": {
           "200": {
@@ -1247,7 +1289,9 @@
     "/api/v1/auth/forgot-password": {
       "post": {
         "summary": "Request a password reset without disclosing account existence.",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "post_api_v1_auth_forgot_password",
         "responses": {
           "202": {
@@ -1296,7 +1340,9 @@
     "/api/v1/auth/reset-password": {
       "post": {
         "summary": "Reset a password with a valid reset token.",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "post_api_v1_auth_reset_password",
         "responses": {
           "200": {
@@ -1345,7 +1391,9 @@
     "/api/v1/auth/me": {
       "get": {
         "summary": "Read the authenticated portal user and role memberships.",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "get_api_v1_auth_me",
         "responses": {
           "200": {
@@ -1392,7 +1440,9 @@
     "/api/v1/auth/logout": {
       "post": {
         "summary": "Revoke the current portal token.",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "operationId": "post_api_v1_auth_logout",
         "responses": {
           "200": {
@@ -1449,7 +1499,9 @@
     "/api/v1/portal/dashboard": {
       "get": {
         "summary": "Read portal dashboard summary.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_dashboard",
         "responses": {
           "200": {
@@ -1496,7 +1548,9 @@
     "/api/v1/portal/shell": {
       "get": {
         "summary": "Read portal navigation and current membership context.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_shell",
         "responses": {
           "200": {
@@ -1543,7 +1597,9 @@
     "/api/v1/portal/profile": {
       "get": {
         "summary": "Read the current user profile.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_profile",
         "responses": {
           "200": {
@@ -1588,7 +1644,9 @@
       },
       "patch": {
         "summary": "Update the current user profile.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "patch_api_v1_portal_profile",
         "responses": {
           "200": {
@@ -1645,7 +1703,9 @@
     "/api/v1/portal/profile/password": {
       "patch": {
         "summary": "Change the current user password.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "patch_api_v1_portal_profile_password",
         "responses": {
           "200": {
@@ -1702,7 +1762,9 @@
     "/api/v1/portal/onboarding": {
       "post": {
         "summary": "Mark the current user onboarding as completed.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "post_api_v1_portal_onboarding",
         "responses": {
           "200": {
@@ -1759,7 +1821,9 @@
     "/api/v1/portal/riwayat": {
       "get": {
         "summary": "List permitted audit log entries.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "legacy_get_api_v1_portal_riwayat",
         "responses": {
           "200": {
@@ -1832,7 +1896,9 @@
     "/api/v1/portal/profiles": {
       "get": {
         "summary": "Read user profiles for portal administration.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_profiles",
         "responses": {
           "200": {
@@ -1890,7 +1956,9 @@
     "/api/v1/portal/sdi/runs": {
       "get": {
         "summary": "List SDI preflight and harvest runs.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "legacy_get_api_v1_portal_sdi_runs",
         "responses": {
           "200": {
@@ -1938,7 +2006,9 @@
     "/api/v1/portal/sdi-registry/catalog": {
       "get": {
         "summary": "Read the SDI standards and reference-code registry.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "legacy_get_api_v1_portal_sdi_registry_catalog",
         "responses": {
           "200": {
@@ -1986,7 +2056,9 @@
     "/api/v1/portal/datasets": {
       "get": {
         "summary": "List datasets visible to the current user.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "get_api_v1_portal_datasets",
         "responses": {
           "200": {
@@ -2039,13 +2111,38 @@
             }
           },
           {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filter kategori dataset secara persis.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "include_categories",
+            "in": "query",
+            "required": false,
+            "description": "Jika true, sertakan kategori unik sesuai ruang akses pengguna sebagai saran dan filter tanpa request terpisah.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
             "name": "status",
             "in": "query",
             "required": false,
             "description": "Filter satu status dataset.",
             "schema": {
               "type": "string",
-              "enum": ["draft", "review", "published", "archived"]
+              "enum": [
+                "draft",
+                "review",
+                "published",
+                "archived"
+              ]
             }
           },
           {
@@ -2176,11 +2273,13 @@
             }
           }
         ],
-        "description": "Mengembalikan dataset dalam ruang akses pengguna dengan filter dan paginasi server-side. Respons berisi data serta meta.total, meta.limit, dan meta.offset."
+        "description": "Mengembalikan dataset dalam ruang akses pengguna dengan filter dan paginasi server-side. `include_categories=true` menambahkan daftar kategori unik ke meta tanpa memerlukan request terpisah."
       },
       "post": {
         "summary": "Create a draft dataset.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "post_api_v1_portal_datasets",
         "responses": {
           "201": {
@@ -2237,7 +2336,9 @@
     "/api/v1/portal/datasets/{id}": {
       "get": {
         "summary": "Read a dataset including versions, resources, jobs, and SDI metadata.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "get_api_v1_portal_datasets_id",
         "responses": {
           "200": {
@@ -2293,7 +2394,9 @@
       },
       "patch": {
         "summary": "Update draft dataset metadata.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "patch_api_v1_portal_datasets_id",
         "responses": {
           "200": {
@@ -2361,7 +2464,9 @@
     "/api/v1/portal/datasets/{id}/workflow": {
       "post": {
         "summary": "Execute a dataset workflow transition.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "post_api_v1_portal_datasets_id_workflow",
         "responses": {
           "200": {
@@ -2429,7 +2534,9 @@
     "/api/v1/portal/datasets/{id}/sdi-metadata": {
       "patch": {
         "summary": "Save SDI metadata for the active draft version.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "patch_api_v1_portal_datasets_id_sdi_metadata",
         "responses": {
           "200": {
@@ -2497,7 +2604,9 @@
     "/api/v1/portal/datasets/{id}/uploads": {
       "post": {
         "summary": "Prepare, complete, or clean up a source upload session.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "post_api_v1_portal_datasets_id_uploads",
         "responses": {
           "200": {
@@ -2565,7 +2674,9 @@
     "/api/v1/portal/datasets/{id}/uploads/content": {
       "post": {
         "summary": "Receive upload bytes using a short-lived upload capability.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "post_api_v1_portal_datasets_id_uploads_content",
         "responses": {
           "200": {
@@ -2632,7 +2743,9 @@
     "/api/v1/portal/datasets/{id}/conversion-status": {
       "get": {
         "summary": "Read the latest conversion status for a dataset version.",
-        "tags": ["Datasets"],
+        "tags": [
+          "Datasets"
+        ],
         "operationId": "get_api_v1_portal_datasets_id_conversion_status",
         "responses": {
           "200": {
@@ -2700,7 +2813,9 @@
     "/api/v1/portal/organizations": {
       "get": {
         "summary": "List organizations visible to the current user.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "get_api_v1_portal_organizations",
         "responses": {
           "200": {
@@ -2745,7 +2860,9 @@
       },
       "post": {
         "summary": "Create an organization.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "post_api_v1_portal_organizations",
         "responses": {
           "201": {
@@ -2802,7 +2919,9 @@
     "/api/v1/portal/organizations/{id}": {
       "get": {
         "summary": "Read organization details.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "get_api_v1_portal_organizations_id",
         "responses": {
           "200": {
@@ -2858,7 +2977,9 @@
       },
       "patch": {
         "summary": "Update an organization.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "patch_api_v1_portal_organizations_id",
         "responses": {
           "200": {
@@ -2926,7 +3047,9 @@
     "/api/v1/portal/memberships": {
       "get": {
         "summary": "List user organization memberships.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "get_api_v1_portal_memberships",
         "responses": {
           "200": {
@@ -2971,7 +3094,9 @@
       },
       "post": {
         "summary": "Create a membership.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "post_api_v1_portal_memberships",
         "responses": {
           "201": {
@@ -3018,7 +3143,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JsonObject"
+                "$ref": "#/components/schemas/MembershipCreateRequest"
               }
             }
           }
@@ -3028,7 +3153,9 @@
     "/api/v1/portal/memberships/{id}": {
       "patch": {
         "summary": "Update membership role or status.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "patch_api_v1_portal_memberships_id",
         "responses": {
           "200": {
@@ -3096,7 +3223,9 @@
     "/api/v1/portal/users/invite": {
       "post": {
         "summary": "Invite a user to the portal.",
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "operationId": "post_api_v1_portal_users_invite",
         "responses": {
           "201": {
@@ -3153,7 +3282,9 @@
     "/api/v1/portal/indicators": {
       "get": {
         "summary": "List indicators visible to the current user.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "get_api_v1_portal_indicators",
         "responses": {
           "200": {
@@ -3213,7 +3344,12 @@
             "description": "Filter satu status indikator.",
             "schema": {
               "type": "string",
-              "enum": ["draft", "review", "published", "archived"]
+              "enum": [
+                "draft",
+                "review",
+                "published",
+                "archived"
+              ]
             }
           },
           {
@@ -3288,7 +3424,9 @@
       },
       "post": {
         "summary": "Create or update an indicator.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "post_api_v1_portal_indicators",
         "responses": {
           "201": {
@@ -3345,7 +3483,9 @@
     "/api/v1/portal/indicators/{id}": {
       "post": {
         "summary": "Execute an indicator workflow action.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "legacy_post_api_v1_portal_indicators_id",
         "responses": {
           "200": {
@@ -3414,7 +3554,9 @@
       "get": {
         "summary": "Get one portal indicator by ID.",
         "description": "Mengembalikan detail indikator dalam ruang akses pengguna. Lookup berdasarkan ID dilakukan di database, bukan dengan memfilter daftar paginasi.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "get_api_v1_portal_indicators_id",
         "parameters": [
           {
@@ -3483,7 +3625,9 @@
     "/api/v1/portal/indicators/{id}/observations": {
       "get": {
         "summary": "List indicator observations.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "get_api_v1_portal_indicators_id_observations",
         "responses": {
           "200": {
@@ -3539,7 +3683,9 @@
       },
       "post": {
         "summary": "Create or update an indicator observation.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "post_api_v1_portal_indicators_id_observations",
         "responses": {
           "201": {
@@ -3605,7 +3751,9 @@
       },
       "patch": {
         "summary": "Publish an indicator observation.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "legacy_patch_api_v1_portal_indicators_id_observations",
         "responses": {
           "200": {
@@ -3675,7 +3823,9 @@
     "/api/v1/portal/sdi-registry": {
       "post": {
         "summary": "Create an SDI standard, reference system, or reference-code entry.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "legacy_post_api_v1_portal_sdi_registry",
         "responses": {
           "201": {
@@ -3731,7 +3881,9 @@
       },
       "patch": {
         "summary": "Verify or deprecate an SDI registry item.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "legacy_patch_api_v1_portal_sdi_registry",
         "responses": {
           "200": {
@@ -3789,7 +3941,9 @@
     "/api/v1/portal/kualitas/summary": {
       "get": {
         "summary": "Read SDI quality metrics for authorized organizations.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "legacy_get_api_v1_portal_kualitas_summary",
         "responses": {
           "200": {
@@ -3837,7 +3991,9 @@
     "/api/v1/portal/integrasi/preflight": {
       "post": {
         "summary": "Check whether published datasets are ready for an interoperability target.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "legacy_post_api_v1_portal_integrasi_preflight",
         "responses": {
           "201": {
@@ -3895,7 +4051,9 @@
     "/api/v1/portal/standar": {
       "get": {
         "summary": "List standards available to the portal.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "legacy_get_api_v1_portal_standar",
         "responses": {
           "200": {
@@ -3943,7 +4101,9 @@
     "/api/v1/datasets/{slug}/resources/{resourceId}": {
       "get": {
         "summary": "Download a resource that belongs to the published dataset version.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "legacy_get_api_v1_datasets_slug_resources_resourceId",
         "responses": {
           "200": {
@@ -4004,7 +4164,9 @@
     "/api/v1/portal/audit-logs": {
       "get": {
         "summary": "List permitted audit log entries.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_riwayat",
         "responses": {
           "200": {
@@ -4076,7 +4238,9 @@
     "/api/v1/portal/sdi/harvest-runs": {
       "get": {
         "summary": "List SDI preflight and harvest runs.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_sdi_runs",
         "responses": {
           "200": {
@@ -4123,7 +4287,9 @@
     "/api/v1/portal/sdi/registry": {
       "get": {
         "summary": "Read the SDI standards and reference-code registry.",
-        "tags": ["Portal"],
+        "tags": [
+          "Portal"
+        ],
         "operationId": "get_api_v1_portal_sdi_registry_catalog",
         "responses": {
           "200": {
@@ -4170,7 +4336,9 @@
     "/api/v1/portal/sdi/registry/entries": {
       "post": {
         "summary": "Create an SDI standard, reference system, or reference-code entry.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "post_api_v1_portal_sdi_registry",
         "responses": {
           "201": {
@@ -4227,7 +4395,9 @@
     "/api/v1/portal/sdi/registry/reviews": {
       "patch": {
         "summary": "Verify or deprecate an SDI registry item.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "patch_api_v1_portal_sdi_registry",
         "responses": {
           "200": {
@@ -4284,7 +4454,9 @@
     "/api/v1/portal/data-quality/summary": {
       "get": {
         "summary": "Read SDI quality metrics for authorized organizations.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_portal_kualitas_summary",
         "responses": {
           "200": {
@@ -4331,7 +4503,9 @@
     "/api/v1/portal/integrations/preflight": {
       "post": {
         "summary": "Check whether published datasets are ready for an interoperability target.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "post_api_v1_portal_integrasi_preflight",
         "responses": {
           "201": {
@@ -4388,7 +4562,9 @@
     "/api/v1/portal/sdi/standards": {
       "get": {
         "summary": "List standards available to the portal.",
-        "tags": ["SDI"],
+        "tags": [
+          "SDI"
+        ],
         "operationId": "get_api_v1_portal_standar",
         "responses": {
           "200": {
@@ -4435,7 +4611,9 @@
     "/api/v1/portal/indicators/{id}/workflow": {
       "post": {
         "summary": "Execute an indicator workflow action.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "post_api_v1_portal_indicators_id_workflow",
         "responses": {
           "200": {
@@ -4504,7 +4682,9 @@
     "/api/v1/portal/indicators/{id}/observations/{observationId}": {
       "patch": {
         "summary": "Publish a specific indicator observation.",
-        "tags": ["Indicators"],
+        "tags": [
+          "Indicators"
+        ],
         "operationId": "patch_api_v1_portal_indicators_id_observations_observationId",
         "responses": {
           "200": {
@@ -4585,7 +4765,9 @@
       "get": {
         "summary": "Read an active public organization by slug.",
         "description": "Returns public organization profile and published dataset count. Inactive or unknown organizations are not exposed.",
-        "tags": ["Catalog"],
+        "tags": [
+          "Catalog"
+        ],
         "operationId": "get_api_v1_organizations_slug",
         "parameters": [
           {
@@ -4634,7 +4816,9 @@
     },
     "/api/openapi.json": {
       "get": {
-        "tags": ["Documentation"],
+        "tags": [
+          "Documentation"
+        ],
         "summary": "Download OpenAPI specification (application/json)",
         "operationId": "get_api_openapi_json",
         "description": "OpenAPI 3.1 specification in JSON format.",
@@ -4654,7 +4838,9 @@
     },
     "/api/openapi.yaml": {
       "get": {
-        "tags": ["Documentation"],
+        "tags": [
+          "Documentation"
+        ],
         "summary": "Download OpenAPI specification (application/yaml)",
         "operationId": "get_api_openapi_yaml",
         "description": "OpenAPI 3.1 specification in YAML format.",
@@ -4674,7 +4860,9 @@
     },
     "/api/openapi": {
       "get": {
-        "tags": ["Documentation"],
+        "tags": [
+          "Documentation"
+        ],
         "summary": "Get OpenAPI specification in JSON format",
         "operationId": "get_api_openapi",
         "description": "Compatibility URL for the JSON document. Prefer /api/openapi.json; YAML is available at /api/openapi.yaml.",
@@ -4698,8 +4886,8 @@
       "cookieAuth": {
         "type": "apiKey",
         "in": "cookie",
-        "name": "wajo_portal_token",
-        "description": "HttpOnly token cookie set by the Next.js login action for same-origin portal requests."
+        "name": "portal_session_token",
+        "description": "Configurable HttpOnly session cookie set by the Next.js login action for same-origin portal requests. The previous Wajo cookie name remains accepted during migration."
       },
       "bearerAuth": {
         "type": "http",
@@ -4754,7 +4942,10 @@
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -4769,7 +4960,9 @@
       },
       "ForgotPasswordRequest": {
         "type": "object",
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -4780,7 +4973,12 @@
       },
       "ResetPasswordRequest": {
         "type": "object",
-        "required": ["token", "email", "password", "password_confirmation"],
+        "required": [
+          "token",
+          "email",
+          "password",
+          "password_confirmation"
+        ],
         "properties": {
           "token": {
             "type": "string"
@@ -5048,7 +5246,10 @@
       },
       "DatasetDraftCreateRequest": {
         "type": "object",
-        "required": ["title", "organization_id"],
+        "required": [
+          "title",
+          "organization_id"
+        ],
         "properties": {
           "title": {
             "type": "string",
@@ -5056,7 +5257,10 @@
             "maxLength": 180
           },
           "description": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "minLength": 20,
             "maxLength": 5000
           },
@@ -5065,22 +5269,34 @@
             "format": "uuid"
           },
           "source_name": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "minLength": 2,
             "maxLength": 240
           },
           "geographic_scope": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "minLength": 2,
             "maxLength": 240
           },
           "license_text": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "minLength": 2,
             "maxLength": 240
           },
           "update_frequency": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "enum": [
               "daily",
               "weekly",
@@ -5093,7 +5309,10 @@
             ]
           },
           "category": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "maxLength": 120
           },
           "keywords": {
@@ -5107,6 +5326,63 @@
         },
         "additionalProperties": true,
         "description": "Create a lightweight, traceable draft. Complete publication-critical metadata before submitting for review; SDI registry metadata is optional."
+      },
+      "MembershipCreateRequest": {
+        "type": "object",
+        "description": "Tambahkan akses untuk akun aktif yang sudah terdaftar. UI memakai user_email; user_id tetap didukung untuk klien lama. Isi salah satu identitas saja.",
+        "required": [
+          "organization_id",
+          "role"
+        ],
+        "oneOf": [
+          {
+            "required": [
+              "user_email"
+            ]
+          },
+          {
+            "required": [
+              "user_id"
+            ]
+          }
+        ],
+        "properties": {
+          "user_email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Email akun aktif yang sudah terdaftar."
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID pengguna untuk klien API lama."
+          },
+          "organization_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "super_admin",
+              "data_admin",
+              "admin_opd",
+              "reviewer",
+              "editor",
+              "viewer",
+              "auditor"
+            ]
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

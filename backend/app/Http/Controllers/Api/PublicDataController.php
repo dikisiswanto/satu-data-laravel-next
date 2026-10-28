@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Dataset;
 use App\Models\Indicator;
+use App\Services\PublicDatasetSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -23,7 +24,7 @@ class PublicDataController extends Controller
             ->whereHas('resources', fn (Builder $query) => $query->whereColumn('dataset_resources.dataset_version', 'datasets.current_version')->where('is_source', false)->where('is_public', true)->where('conversion_status', 'succeeded'));
     }
 
-    public function datasets(Request $request)
+    public function datasets(Request $request, PublicDatasetSearch $datasetSearch)
     {
         $request->validate([
             'q' => ['sometimes', 'string', 'max:100'],
@@ -56,10 +57,7 @@ class PublicDataController extends Controller
                 ->select('dataset_resources.id', 'dataset_resources.dataset_id', 'dataset_resources.dataset_version', 'dataset_resources.original_filename', 'dataset_resources.format', 'dataset_resources.size_bytes', 'dataset_resources.row_count', 'dataset_resources.column_schema', 'dataset_resources.preview_enabled', 'dataset_resources.is_source', 'dataset_resources.is_public', 'dataset_resources.conversion_status', 'dataset_resources.created_at'),
         ]);
         if ($query !== '') {
-            $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], mb_substr($query, 0, 100)).'%';
-            $builder->where(function (Builder $where) use ($term): void {
-                $where->whereRaw('LOWER(title) LIKE LOWER(?)', [$term])->orWhereRaw('LOWER(description) LIKE LOWER(?)', [$term])->orWhereRaw('LOWER(code) LIKE LOWER(?)', [$term])->orWhereRaw('LOWER(slug) LIKE LOWER(?)', [$term]);
-            });
+            $datasetSearch->apply($builder, mb_substr($query, 0, 100), $sort === 'relevance');
         }
         if ($category !== '') {
             $builder->where('category', $category);
@@ -95,7 +93,7 @@ class PublicDataController extends Controller
         }
         match ($sort) {
             'title', 'title_asc' => $builder->orderBy('title'),
-            'relevance' => $query !== '' ? $builder->orderByRaw('CASE WHEN lower(title) = lower(?) THEN 0 WHEN lower(title) LIKE lower(?) THEN 1 ELSE 2 END', [$query, $query.'%'])->orderByDesc('published_at') : $builder->orderByDesc('updated_at'),
+            'relevance' => $query !== '' ? $builder : $builder->orderByDesc('updated_at'),
             'updated_asc' => $builder->orderBy('updated_at'),
             default => $builder->orderByDesc('updated_at'),
         };

@@ -10,6 +10,12 @@ class FrontendCookieAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['app.frontend_token_cookie' => 'portal_session_token']);
+    }
+
     public function test_repeated_session_verification_is_not_limited_by_login_attempt_throttle(): void
     {
         $user = User::query()->create([
@@ -20,9 +26,12 @@ class FrontendCookieAuthenticationTest extends TestCase
         ]);
         $token = $user->createToken('browser-session', ['*'], now()->addMinutes(10))->plainTextToken;
 
+        // Laravel's JSON testing client omits cookies unless withCredentials() is enabled.
+        // This mirrors the same-origin browser request that carries the HttpOnly session cookie.
         for ($attempt = 0; $attempt < 12; $attempt++) {
             $this->withHeaders(['Accept' => 'application/json'])
-                ->withUnencryptedCookie('wajo_portal_token', $token)
+                ->withUnencryptedCookie('portal_session_token', $token)
+                ->withCredentials()
                 ->getJson('/api/v1/auth/me')
                 ->assertOk()
                 ->assertJsonPath('data.email', 'session-check@example.gov.id');
@@ -42,7 +51,8 @@ class FrontendCookieAuthenticationTest extends TestCase
         $this->withHeaders([
             'Accept' => 'application/json',
             'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
-        ])->withUnencryptedCookie('wajo_portal_token', $token)
+        ])->withUnencryptedCookie('portal_session_token', $token)
+            ->withCredentials()
             ->patchJson('/api/v1/portal/profile', [
                 'display_name' => 'Cookie Auth Updated',
             ])

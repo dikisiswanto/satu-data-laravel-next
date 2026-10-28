@@ -157,7 +157,7 @@ export default async function DatasetCatalogPage({ searchParams }) {
           <PageHeading
             eyebrow="Jelajahi data publik"
             title="Katalog dataset"
-            description="Temukan data berdasarkan topik, perangkat daerah, sumber, dan periode. Pencarian juga membantu menemukan hasil saat ada salah ketik ringan."
+            description="Jelajahi data berdasarkan maksud pencarian, topik terkait, metadata, kata kunci, sumber, dan perangkat daerah—bukan hanya kecocokan judul."
           />
           <form action="/dataset" method="get" role="search" className="mt-8">
             <div className="catalog-search-panel relative flex min-w-0 flex-col items-stretch gap-3 rounded-2xl border border-[#d5e0e8] bg-white p-3 shadow-[0_8px_28px_rgb(20_55_60_/_0.07)] sm:flex-row sm:items-end sm:p-4">
@@ -179,10 +179,15 @@ export default async function DatasetCatalogPage({ searchParams }) {
                     name="q"
                     type="search"
                     defaultValue={query}
-                    placeholder="Cari judul, topik, sumber data…"
+                    placeholder="Misalnya: sekolah, pendidikan, jumlah penduduk…"
                     className="h-12 pl-10"
                   />
                 </div>
+                <p className="mt-2 text-xs leading-5 text-muted">
+                  Contoh: “pendidikan dan sekolah” atau “jumlah sekolah menurut
+                  kecamatan”. Hasil juga dicocokkan dengan kata kunci,
+                  deskripsi, sumber, metadata, dan organisasi.
+                </p>
               </div>
               <Button
                 type="submit"

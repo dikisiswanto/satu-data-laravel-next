@@ -7,12 +7,15 @@ use App\Http\Middleware\RequireSameOriginForMutations;
 use App\Http\Middleware\TrustConfiguredProxies;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -25,10 +28,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Run before route middleware priority sorting so the raw token cookie is
-        // promoted before either backend-api/portal-user throttles or auth:sanctum.
-        // The middleware itself is narrowly scoped to supported portal API paths.
+        // Run before the router dispatches route middleware. The middleware itself
+        // strictly limits cookie promotion to session/portal endpoints, so public APIs
+        // never receive browser-session credentials. A route-group middleware is too
+        // late for some middleware ordering combinations (Sanctum/throttle).
         $middleware->prepend(AttachFrontendToken::class);
+        $middleware->prependToPriorityList(
+            before: [
+                ThrottleRequests::class,
+                Authenticate::class,
+                AuthenticatesRequests::class,
+            ],
+            prepend: AttachFrontendToken::class,
+        );
         $middleware->append(AddApiSecurityHeaders::class);
         $middleware->alias([
             'same.origin' => RequireSameOriginForMutations::class,

@@ -198,11 +198,23 @@ class DatasetWorkflowService
                             'metadata' => ['Lengkapi sebelum pemeriksaan: '.implode(', ', $missing).'.'],
                         ]);
                     }
-                    $source = $locked->resources()->where('dataset_version', $version)->where('is_source', true)->latest('created_at')->first();
+                    $sourceQuery = $locked->resources()->where('dataset_version', $version)->where('is_source', true);
+                    if ($versionRow->source_resource_id) {
+                        $sourceQuery->where('id', $versionRow->source_resource_id);
+                    }
+                    $source = $sourceQuery->latest('created_at')->first();
                     if (! $source || $source->conversion_status !== 'succeeded') {
                         throw ValidationException::withMessages(['resource' => ['source_not_processed']]);
                     }
-                    if (! DB::table('dataset_validation_runs')->where('dataset_id', $locked->id)->where('dataset_version', $version)->where('status', 'passed')->exists()) {
+                    // A previous successful validation must never authorize a
+                    // different uploaded file. Match the exact checksum of the
+                    // source associated with the version being submitted.
+                    if (! DB::table('dataset_validation_runs')
+                        ->where('dataset_id', $locked->id)
+                        ->where('dataset_version', $version)
+                        ->where('source_checksum_sha256', $source->checksum_sha256)
+                        ->where('status', 'passed')
+                        ->exists()) {
                         throw ValidationException::withMessages(['validation' => ['validation_required_before_review']]);
                     }
                     if ($versionRow) {
@@ -216,7 +228,17 @@ class DatasetWorkflowService
                         throw ValidationException::withMessages(['status' => ['dataset_not_in_review']]);
                     }
                     $version = (int) ($locked->draft_version ?: $locked->current_version);
-                    if (! DB::table('dataset_validation_runs')->where('dataset_id', $locked->id)->where('dataset_version', $version)->where('status', 'passed')->exists()) {
+                    $sourceQuery = $locked->resources()->where('dataset_version', $version)->where('is_source', true);
+                    if ($versionRow?->source_resource_id) {
+                        $sourceQuery->where('id', $versionRow->source_resource_id);
+                    }
+                    $source = $sourceQuery->where('conversion_status', 'succeeded')->latest('created_at')->first();
+                    if (! $source || ! DB::table('dataset_validation_runs')
+                        ->where('dataset_id', $locked->id)
+                        ->where('dataset_version', $version)
+                        ->where('source_checksum_sha256', $source->checksum_sha256)
+                        ->where('status', 'passed')
+                        ->exists()) {
                         throw ValidationException::withMessages(['validation' => ['validation_required_before_publish']]);
                     }
                     if (! $locked->resources()->where('dataset_version', $version)->where('is_source', false)->where('conversion_status', 'succeeded')->exists()) {

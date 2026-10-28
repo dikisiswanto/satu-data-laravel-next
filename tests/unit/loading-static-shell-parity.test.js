@@ -81,7 +81,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
     const page = read("src/app/(public)/dataset/page.jsx");
     const loading = read("src/app/(public)/dataset/loading.jsx");
     const description =
-      "Temukan data berdasarkan topik, perangkat daerah, sumber, dan periode. Pencarian juga membantu menemukan hasil saat ada salah ketik ringan.";
+      "Jelajahi data berdasarkan maksud pencarian, topik terkait, metadata, kata kunci, sumber, dan perangkat daerah—bukan hanya kecocokan judul.";
     for (const source of [page, loading]) {
       expect(source).toContain(description);
       expect(source).toContain("Kata kunci");
@@ -145,6 +145,15 @@ describe("loading shells preserve static UI copy and route structure", () => {
       expect(loading, `indicator fallback missing: ${text}`).toContain(text);
     }
     expect(loading).toContain('aria-busy="true"');
+  });
+
+  it("keeps the new dataset category visible during form loading", () => {
+    const form = read("src/components/admin/dataset-create-form.jsx");
+    const loading = read("src/app/portal/(workspace)/dataset/new/loading.jsx");
+    expect(form).toContain("DatasetCategoryField");
+    expect(loading).toContain(
+      'label="Kategori dataset (opsional)" name="category"',
+    );
   });
 
   it("keeps page-heading copy aligned in core admin listings and forms", () => {
@@ -352,9 +361,11 @@ describe("loading shells preserve static UI copy and route structure", () => {
         "src/app/portal/(workspace)/dataset/[id]/loading.jsx",
         [
           "Kembali ke daftar",
-          "Informasi dataset",
+          "Tentang dataset",
           "Riwayat versi dataset",
-          "Berkas dan hasil pengolahan",
+          "Sumber data",
+          "Berkas hasil pengolahan",
+          "Bagian pengelolaan dataset",
           "Langkah berikutnya",
           "Kelengkapan sebelum pemeriksaan",
           "Validasi otomatis",
@@ -365,8 +376,9 @@ describe("loading shells preserve static UI copy and route structure", () => {
         [
           "Kembali ke dataset",
           "1. Informasi utama",
-          "2. Klasifikasi, sumber, dan periode",
-          "3. Metode dan kepatuhan SDI",
+          "2. Kategori dan kata kunci",
+          "3. Sumber, cakupan, dan periode",
+          "4. Definisi, metode, dan standar SDI",
           "Metadata standar dan pertukaran SDI (lanjutan)",
           "Simpan perubahan",
         ],

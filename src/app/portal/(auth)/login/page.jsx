@@ -8,6 +8,7 @@ import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import { cookies } from "next/headers";
 import { portalBrand } from "@/lib/portal-brand";
+import { hasFrontendToken } from "@/lib/auth/session-cookie";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -21,7 +22,7 @@ export default async function LoginPage({ searchParams }) {
   let sessionCheckError = false;
   let authUnavailable = false;
   const cookieStore = await cookies();
-  const hasSessionCookie = Boolean(cookieStore.get("wajo_portal_token")?.value);
+  const hasSessionCookie = hasFrontendToken(cookieStore);
   try {
     const result = await getRequestVerifiedUser();
     user = result?.data?.user || null;

@@ -52,8 +52,8 @@ const wajoStarterReferences = [
 
 // These links are authoritative examples for the Wajo deployment only. Do not
 // present them as sources for a different district or institution.
-export const datasetStarterReferences = /^kabupaten wajo$/i.test(
-  siteConfig.regionName,
-)
-  ? wajoStarterReferences
-  : [];
+export const datasetStarterReferences =
+  siteConfig.brandProfile === "wajo" &&
+  /^kabupaten wajo$/i.test(siteConfig.regionName)
+    ? wajoStarterReferences
+    : [];

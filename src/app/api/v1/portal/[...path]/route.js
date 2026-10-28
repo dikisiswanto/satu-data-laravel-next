@@ -2,8 +2,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { backendBaseUrl } from "@/lib/backend/server";
 import { invalidatePrivateReadCache } from "@/lib/backend/private-read-cache";
+import { getFrontendToken } from "@/lib/auth/session-cookie";
 
-const TOKEN_COOKIE = "wajo_portal_token";
 const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const REQUEST_HEADERS = [
   "accept",
@@ -61,7 +61,7 @@ async function proxyPortalApi(request) {
   if (!headers.has("accept")) headers.set("Accept", "application/json");
 
   const cookieStore = await cookies();
-  const token = cookieStore.get(TOKEN_COOKIE)?.value;
+  const token = getFrontendToken(cookieStore);
   if (typeof token === "string" && token.length >= 20 && token.length <= 512) {
     headers.set("Authorization", `Bearer ${token}`);
   }

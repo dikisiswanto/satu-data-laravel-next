@@ -3,14 +3,12 @@ test("beranda publik memiliki landmark, judul, dan navigasi", async ({
   page,
 }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/Portal Satu Data Kabupaten Wajo/);
+  await expect(page).toHaveTitle(/Portal Satu Data/);
   await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Temukan Data",
   );
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Pahami Wajo",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Pahami");
   await expect(page.getByRole("search")).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "Navigasi utama" }),
@@ -34,7 +32,7 @@ test("rate limit sementara tidak menghapus sesi atau mengalihkan ke login", asyn
 }) => {
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-rate-limited-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -53,7 +51,7 @@ test("rate limit sementara tidak menghapus sesi atau mengalihkan ke login", asyn
 
   const cookieBeforeRetry = await context.cookies();
   expect(
-    cookieBeforeRetry.some((cookie) => cookie.name === "wajo_portal_token"),
+    cookieBeforeRetry.some((cookie) => cookie.name === "portal_session_token"),
   ).toBe(true);
 
   const retryButton = page.getByRole("button", { name: "Coba periksa lagi" });
@@ -66,7 +64,7 @@ test("rate limit sementara tidak menghapus sesi atau mengalihkan ke login", asyn
   ).toHaveCount(0);
   expect(
     (await context.cookies()).some(
-      (cookie) => cookie.name === "wajo_portal_token",
+      (cookie) => cookie.name === "portal_session_token",
     ),
   ).toBe(true);
 });
@@ -77,7 +75,7 @@ test("sesi yang benar-benar tidak valid mengarahkan pengguna ke login", async ({
 }) => {
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-invalid-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -99,7 +97,7 @@ test("perpindahan cepat antar menu portal tata kelola tidak merusak sesi", async
   await page.setViewportSize({ width: 1440, height: 900 });
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-valid-navigation-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -137,7 +135,7 @@ test("riwayat aktivitas membuka detail perubahan dalam dialog", async ({
 }) => {
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-audit-detail-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -177,7 +175,7 @@ test("halaman integrasi SDI menjaga kontrol dan teks di viewport ponsel", async 
   await page.setViewportSize({ width: 375, height: 812 });
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-sdi-mobile-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -208,7 +206,7 @@ test("form tambah organisasi menyimpan lewat API portal dan kembali ke daftar", 
 }) => {
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-organization-create-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,
@@ -218,10 +216,8 @@ test("form tambah organisasi menyimpan lewat API portal dan kembali ke daftar", 
 
   await page.goto("/portal/organisasi/baru");
   await page.getByLabel("Kode organisasi").fill("E2E-ORG");
-  await page
-    .getByLabel("Bagian alamat halaman organisasi")
-    .fill("dinas-e2e-wajo");
-  await page.getByLabel("Nama resmi organisasi").fill("Dinas Uji Wajo");
+  await page.getByLabel("Bagian alamat halaman organisasi").fill("dinas-e2e");
+  await page.getByLabel("Nama resmi organisasi").fill("Dinas Uji");
   const createResponsePromise = page.waitForResponse((response) => {
     const url = new URL(response.url());
     return (
@@ -255,7 +251,7 @@ test("form tambah organisasi menyimpan lewat API portal dan kembali ke daftar", 
   await expect(
     page.getByRole("heading", { name: "Daftar organisasi" }),
   ).toBeVisible();
-  await expect(page.getByText("Dinas Uji Wajo")).toBeVisible();
+  await expect(page.getByText("Dinas Uji")).toBeVisible();
   await expect(page.getByText("Kode: E2E-ORG")).toBeVisible();
 });
 
@@ -265,7 +261,7 @@ test("tabel akses pengguna menampilkan identitas dan lingkup yang mudah dibaca",
 }) => {
   await context.addCookies([
     {
-      name: "wajo_portal_token",
+      name: "portal_session_token",
       value: "e2e-user-list-session",
       url: "http://127.0.0.1:3100",
       httpOnly: true,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import { DatePicker } from "@/components/admin/date-picker";
@@ -19,6 +20,7 @@ import {
 } from "@/components/admin/form-field-guidance";
 import { UPDATE_FREQUENCY_OPTIONS } from "@/lib/dataset-options";
 import { SdiMetadataFields } from "@/components/admin/sdi-metadata-fields";
+import { DatasetCategoryField } from "@/components/admin/dataset-category-field";
 import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
 import { siteConfig } from "@/lib/site-config";
 
@@ -28,9 +30,10 @@ const FIELDS = {
   category: "Nama kategori terlalu panjang. Gunakan nama yang lebih ringkas.",
   keywords:
     "Gunakan maksimal 30 kata kunci; pisahkan dengan koma dan batasi tiap kata kunci hingga 80 karakter.",
-  source_name: "Jika diisi, nama sumber harus memiliki 2–240 karakter.",
+  source_name:
+    "Jika diisi, nama sumber atau penerbit data harus memiliki 2–240 karakter.",
   source_url:
-    "Gunakan URL sumber lengkap dengan protokol https:// atau http://, atau kosongkan bila tidak tersedia.",
+    "Gunakan URL rujukan sumber lengkap dengan protokol https:// atau http://, atau kosongkan bila tidak tersedia.",
   geographic_scope: `Isi cakupan wilayah, misalnya ${siteConfig.regionName}.`,
   license_text:
     "Jika diisi, lisensi atau ketentuan penggunaan harus memiliki 2–240 karakter.",
@@ -135,7 +138,7 @@ export function DatasetMetadataForm({
     const payload = {
       title: raw.title,
       description: raw.description,
-      category: raw.category || "",
+      category: raw.category?.trim() || "",
       keywords,
       source_name: raw.source_name,
       source_url: raw.source_url || "",
@@ -244,6 +247,25 @@ export function DatasetMetadataForm({
         lisensi, dan deskripsi dapat dilengkapi selama draf; semuanya wajib
         lengkap sebelum dataset diajukan untuk pemeriksaan.
       </div>
+      <nav
+        aria-label="Bagian metadata dataset"
+        className="flex flex-wrap gap-2 rounded-xl border border-line bg-white p-3"
+      >
+        {[
+          ["#metadata-primary-title", "Identitas"],
+          ["#metadata-discovery-title", "Kategori dan kata kunci"],
+          ["#metadata-source-title", "Sumber dan periode"],
+          ["#metadata-method-title", "Standar SDI"],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="inline-flex min-h-9 items-center rounded-control border border-line px-3 py-2 text-xs font-semibold text-ink hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
       {error ? (
         <div
           role="alert"
@@ -344,27 +366,24 @@ export function DatasetMetadataForm({
       </section>
       <section
         className="space-y-4 rounded-xl border border-[#e1e8ed] p-4 sm:p-5"
-        aria-labelledby="metadata-source-title"
+        aria-labelledby="metadata-discovery-title"
       >
         <div>
           <h2
-            id="metadata-source-title"
+            id="metadata-discovery-title"
             className="text-sm font-semibold text-ink"
           >
-            2. Klasifikasi, sumber, dan periode
+            2. Kategori dan kata kunci
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">
-            Lengkapi yang sudah diketahui sekarang. Nilai yang belum
-            terverifikasi boleh dibiarkan kosong pada draf dan akan diperiksa
-            sebelum pengajuan.
+            Gunakan kategori yang sudah ada bila sesuai, lalu tambahkan kata
+            kunci yang membantu pencarian. Kategori mengelompokkan dataset; kata
+            kunci menjelaskan topik yang lebih spesifik.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Kategori"
-            name="category"
+          <DatasetCategoryField
             value={initial.category || ""}
-            maxLength={120}
             error={fieldErrors.category}
             onChange={() => clearFieldError("category")}
           />
@@ -376,8 +395,32 @@ export function DatasetMetadataForm({
             error={fieldErrors.keywords}
             onChange={() => clearFieldError("keywords")}
           />
+        </div>
+      </section>
+      <section
+        className="space-y-4 rounded-xl border border-[#e1e8ed] p-4 sm:p-5"
+        aria-labelledby="metadata-source-title"
+      >
+        <div>
+          <h2
+            id="metadata-source-title"
+            className="text-sm font-semibold text-ink"
+          >
+            3. Sumber, cakupan, dan periode
+          </h2>
+          <p className="text-xs leading-5 text-muted">
+            Bagian ini mencatat asal dan konteks data. Berkas yang diunggah
+            dikelola terpisah pada halaman detail dataset.
+          </p>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Catat siapa yang menghasilkan data, cakupan yang dijelaskan, cara
+            penggunaan, serta periode dan jadwal pembaruannya. Kolom bertanda
+            wajib sebelum pemeriksaan boleh kosong selama draf.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="Nama sumber data (wajib sebelum pemeriksaan)"
+            label="Sumber / penerbit data (wajib sebelum pemeriksaan)"
             name="source_name"
             value={initial.source_name || ""}
             maxLength={240}
@@ -385,7 +428,7 @@ export function DatasetMetadataForm({
             onChange={() => clearFieldError("source_name")}
           />
           <Field
-            label="URL sumber"
+            label="URL rujukan sumber"
             name="source_url"
             value={initial.source_url || ""}
             maxLength={2048}
@@ -488,11 +531,13 @@ export function DatasetMetadataForm({
             id="metadata-method-title"
             className="text-sm font-semibold text-ink"
           >
-            3. Metode dan kepatuhan SDI
+            4. Definisi, metode, dan standar SDI
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted">
-            Dokumentasikan metode jika sudah tersedia. Metadata standar lanjutan
-            tetap opsional sampai rujukan resmi ditemukan.
+            Jelaskan cara data dihasilkan dan isi standar hanya ketika ada
+            rujukan resmi. Bagian ini membantu memeriksa konsep, definisi,
+            klasifikasi, ukuran, satuan, dan interoperabilitas tanpa menebak
+            kode standar.
           </p>
         </div>
         <div>
@@ -541,6 +586,13 @@ export function DatasetMetadataForm({
         />
       </section>
       <div className="flex flex-wrap items-center gap-3 border-t pt-5">
+        <Link
+          href={`/portal/dataset/${id}`}
+          prefetch={false}
+          className="inline-flex min-h-11 items-center rounded-control border border-line px-4 py-3 text-sm font-semibold text-ink hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
+        >
+          Batal dan kembali
+        </Link>
         <PendingActionButton
           type="submit"
           pending={busy}

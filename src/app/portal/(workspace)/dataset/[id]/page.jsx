@@ -11,6 +11,7 @@ import {
   submitForReviewAction,
   publishAfterValidationAction,
   startDatasetVersionAction,
+  returnDatasetForChangesAction,
 } from "./actions";
 import { SourceUploadForm } from "@/components/source-upload-form";
 import { ConversionJobStatus } from "@/components/admin/conversion-job-status";
@@ -22,6 +23,7 @@ import {
   DatasetLifecycleGuide,
   DATASET_REVIEW_METADATA,
 } from "@/components/admin/dataset-lifecycle-guide";
+import { FilePenLine, Upload, Layers3 } from "lucide-react";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Detail dataset",
@@ -52,7 +54,13 @@ const datasetActionErrorMessages = {
   version_summary_invalid:
     "Ringkasan perubahan wajib diisi antara 5 dan 500 karakter.",
   version_not_ready:
-    "Versi draf belum siap diajukan. Periksa apakah berkas sumber sudah selesai diproses.",
+    "Versi draf belum siap diajukan. Pastikan berkas sumber selesai diproses dan hasil validasinya lulus.",
+  validation_required:
+    "Validasi otomatis belum lulus. Periksa status pemrosesan berkas sumber sebelum mengajukan pemeriksaan.",
+  review_reason_invalid:
+    "Catatan perbaikan wajib diisi antara 5 dan 1.000 karakter.",
+  review_returned:
+    "Dataset dikembalikan untuk perbaikan. Periksa catatan pemeriksaan, ubah draf, lalu ajukan kembali.",
   version_not_abandonable:
     "Versi ini tidak dapat dibatalkan pada statusnya saat ini.",
   version_not_in_progress:
@@ -89,14 +97,32 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
   const canPublish =
     memberships?.some((item) => item.role === "admin_opd") ||
     global?.some((item) => ["super_admin", "data_admin"].includes(item.role));
+  const canReview =
+    memberships?.some((item) =>
+      ["admin_opd", "reviewer"].includes(item.role),
+    ) ||
+    global?.some((item) => ["super_admin", "data_admin"].includes(item.role));
   const versionHistory = data.versions || [];
   const workVersion = data.draft_version ?? data.current_version;
   const activeWorkSnapshot = (versionHistory || []).find(
     (version) => version.version === workVersion,
   );
   const isNewVersionInProgress =
-    data.status === "published" && data.draft_version !== null;
+    data.draft_version !== null &&
+    data.draft_version !== undefined &&
+    Number(data.current_version || 0) > 0;
   const resources = data.resources || data.dataset_resources || [];
+  const sourceResources = resources.filter((resource) =>
+    Boolean(resource.is_source),
+  );
+  const distributionResources = resources.filter(
+    (resource) => !resource.is_source,
+  );
+  const mayEditMetadata =
+    canSubmit &&
+    (data.status === "draft" ||
+      (isNewVersionInProgress &&
+        activeWorkSnapshot?.version_status === "draft"));
   const workSourceReady = resources.some(
     (resource) =>
       resource.dataset_version === workVersion &&
@@ -136,6 +162,20 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
   const missingReviewMetadata = reviewMetadata.filter(
     (field) => !field.complete,
   );
+  const validationRun = data.validation_run || null;
+  const validationPassed = validationRun?.status === "passed";
+  const sourceChecklistLabel = workSourceReady
+    ? "Berkas sumber selesai diproses"
+    : workSourceProcessing
+      ? "Berkas sumber sedang diproses"
+      : workSourceFailed
+        ? "Pemrosesan berkas gagal; unggah ulang sumber"
+        : "Berkas sumber belum diunggah";
+  const validationChecklistLabel = validationPassed
+    ? "Validasi otomatis lulus"
+    : validationRun?.status === "failed"
+      ? "Validasi gagal; periksa berkas sumber"
+      : "Menunggu validasi otomatis";
   const isInReview =
     data.status === "review" || activeWorkSnapshot?.version_status === "review";
   const isFullyPublished = data.status === "published" && !data.draft_version;
@@ -164,14 +204,15 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
     (data.status === "draft" ||
       (isNewVersionInProgress &&
         activeWorkSnapshot?.version_status === "draft"));
-  const maySubmitForReview =
+  const hasEditableWorkDraft =
     canSubmit &&
-    workSourceReady &&
-    missingReviewMetadata.length === 0 &&
     ((data.status === "draft" &&
       activeWorkSnapshot?.version_status !== "review") ||
       (isNewVersionInProgress &&
         activeWorkSnapshot?.version_status === "draft"));
+  const reviewRequirementsComplete =
+    workSourceReady && validationPassed && missingReviewMetadata.length === 0;
+  const maySubmitForReview = hasEditableWorkDraft && reviewRequirementsComplete;
   const mayPublishVersion =
     canPublish &&
     (data.status === "review" ||
@@ -251,7 +292,12 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 : "neutral"
           }
         >
-          {data.status}
+          {{
+            draft: "Draf",
+            review: "Menunggu pemeriksaan",
+            published: "Terbit",
+            archived: "Diarsipkan",
+          }[data.status] || data.status}
         </Badge>
       </PageHeading>
       <PortalContextGuide />
@@ -262,11 +308,9 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
             completedThrough={lifecycleCompletedThrough}
             links={{
               source: mayUploadSource ? `#dataset-source-upload` : undefined,
-              metadata:
-                (data.status === "draft" || isNewVersionInProgress) &&
-                workSourceReady
-                  ? `/portal/dataset/${data.id}/edit`
-                  : undefined,
+              metadata: mayEditMetadata
+                ? `/portal/dataset/${data.id}/edit`
+                : undefined,
             }}
             heading={
               isNewVersionInProgress
@@ -282,244 +326,491 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
         </div>
       ) : null}
 
+      <section
+        aria-label="Tindakan utama dataset"
+        className="mb-5 grid gap-3 md:grid-cols-3"
+      >
+        {mayEditMetadata ? (
+          <Link
+            href={`/portal/dataset/${data.id}/edit`}
+            prefetch={false}
+            className="group flex min-h-24 items-start gap-3 rounded-card border border-line bg-white p-4 transition-colors hover:border-primary/40 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
+              <FilePenLine size={19} aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold">Edit metadata</span>
+              <span className="mt-1 block text-sm leading-5 text-muted">
+                Judul, kategori, kata kunci, sumber, lisensi, dan standar.
+              </span>
+            </span>
+          </Link>
+        ) : null}
+        {mayUploadSource ? (
+          <a
+            href="#dataset-source-upload"
+            className="group flex min-h-24 items-start gap-3 rounded-card border border-line bg-white p-4 transition-colors hover:border-primary/40 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
+              <Upload size={19} aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold">Unggah berkas sumber</span>
+              <span className="mt-1 block text-sm leading-5 text-muted">
+                Pilih file asli untuk divalidasi dan diproses.
+              </span>
+            </span>
+          </a>
+        ) : null}
+        {canSubmit && data.status === "published" && !isNewVersionInProgress ? (
+          <a
+            href="#dataset-review"
+            className="group flex min-h-24 items-start gap-3 rounded-card border border-line bg-white p-4 transition-colors hover:border-primary/40 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-800">
+              <Layers3 size={19} aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold">Buat versi baru</span>
+              <span className="mt-1 block text-sm leading-5 text-muted">
+                Perbarui data tanpa mengubah metadata dan berkas yang sedang
+                terbit.
+              </span>
+            </span>
+          </a>
+        ) : null}
+        <a
+          href="#dataset-distributions"
+          className="group flex min-h-24 items-start gap-3 rounded-card border border-line bg-white p-4 transition-colors hover:border-primary/40 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-800">
+            <Layers3 size={19} aria-hidden="true" />
+          </span>
+          <span className="min-w-0">
+            <span className="block font-semibold">Distribusi unduhan</span>
+            <span className="mt-1 block text-sm leading-5 text-muted">
+              Lihat file hasil pemrosesan yang tersedia untuk pengguna.
+            </span>
+          </span>
+        </a>
+      </section>
+
+      <nav
+        aria-label="Bagian pengelolaan dataset"
+        className="mb-5 flex flex-wrap gap-2 rounded-card border border-line bg-white p-3"
+      >
+        {[
+          ["#dataset-metadata", "Metadata"],
+          ["#dataset-source-workspace", "Data & berkas"],
+          ["#dataset-distributions", "Distribusi"],
+          ["#dataset-versions", "Riwayat versi"],
+          ["#dataset-review", "Pemeriksaan dan publikasi"],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="inline-flex min-h-10 items-center rounded-control border border-line px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="rounded-card border bg-white p-5 sm:p-7">
-          <h2 className="text-lg font-semibold">Informasi dataset</h2>
-          <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-            {[
-              ["Kode", data.code],
-              ["Organisasi", data.organizations?.name],
-              ["Sumber", data.source_name],
-              ["Cakupan", data.geographic_scope],
-              ["Lisensi", data.license_text],
-              ["Frekuensi", getUpdateFrequencyLabel(data.update_frequency)],
-              [
-                data.status === "published" ? "Versi publik" : "Versi kerja",
-                data.current_version,
-              ],
-              ...(data.draft_version
-                ? [["Draf versi", data.draft_version]]
-                : []),
-              ["Diperbarui", formatDate(data.updated_at)],
-            ].map(([k, v]) => (
-              <div key={k} className="border-b pb-3">
-                <dt className="text-sm text-muted">{k}</dt>
-                <dd className="mt-1 break-words text-sm font-medium">
-                  {v || "Belum tersedia"}
-                </dd>
+        <div className="space-y-6">
+          <section
+            id="dataset-metadata"
+            className="scroll-mt-24 rounded-card border bg-white p-5 sm:p-7"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                  Metadata dataset
+                </p>
+                <h2 className="mt-1 text-lg font-semibold">Tentang dataset</h2>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+                  Informasi untuk membantu pengguna menemukan, memahami,
+                  menggunakan, dan mengutip data ini.
+                </p>
               </div>
-            ))}
-          </dl>
-          {isNewVersionInProgress ? (
-            <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
-              <p className="font-semibold">
-                Versi {data.draft_version} sedang disiapkan
-              </p>
-              <p className="mt-1">
-                Versi publik saat ini tetap versi {data.current_version}. Versi
-                baru baru akan menggantikannya setelah konversi, pemeriksaan,
-                dan publikasi berhasil.
-              </p>
-            </div>
-          ) : null}
-          <h2 className="mt-8 text-lg font-semibold">Riwayat versi dataset</h2>
-          <p className="mt-1 text-sm leading-6 text-muted">
-            Setiap versi menyimpan ringkasan perubahan, sumber, waktu pembuatan,
-            dan status rilis. Versi terdahulu tetap tersimpan sebagai riwayat.
-          </p>
-          <div className="mt-4">
-            <PortalDataTable
-              caption="Riwayat versi dataset"
-              rows={versionRows}
-              searchPlaceholder="Cari versi, ringkasan perubahan, sumber, atau status…"
-              dateFilterLabel="Tanggal dibuat"
-              alwaysShowFilters={["version_status"]}
-              filterLabelOverrides={{ version_status: "Status versi" }}
-              columns={[
-                {
-                  key: "version",
-                  label: "Versi",
-                  render: (version) => (
-                    <span className="font-semibold">v{version.version}</span>
-                  ),
-                },
-                {
-                  key: "version_status",
-                  label: "Status versi",
-                  render: (version) => (
-                    <Badge
-                      variant={
-                        versionStatusVariants[version.version_status] ||
-                        "neutral"
-                      }
-                    >
-                      {versionStatusLabels[version.version_status] ||
-                        version.version_status}
-                    </Badge>
-                  ),
-                },
-                {
-                  key: "change_summary",
-                  label: "Ringkasan perubahan",
-                  render: (version) => version.change_summary || "—",
-                },
-                {
-                  key: "source_filename",
-                  label: "Sumber",
-                  render: (version) => version.source_filename,
-                },
-                {
-                  key: "created_at",
-                  label: "Dibuat",
-                  render: (version) => formatDate(version.created_at),
-                },
-              ]}
-              emptyTitle="Riwayat versi belum tersedia"
-              emptyDescription="Versi akan tercatat saat sumber dataset pertama kali didaftarkan atau saat Anda membuat versi baru."
-            />
-          </div>
-          <h2 className="mt-8 text-lg font-semibold">
-            Berkas dan hasil pengolahan
-          </h2>
-          {conversionJobError ? (
-            <div
-              role="status"
-              className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
-            >
-              <p className="font-semibold">
-                Status pemrosesan belum dapat diverifikasi
-              </p>
-              <p className="mt-1">
-                Informasi berkas tetap ditampilkan, tetapi riwayat pemrosesan
-                sedang tidak tersedia. Muat ulang halaman untuk memeriksa status
-                terbaru.
-              </p>
-            </div>
-          ) : null}
-          {retryingConversionJob && !activeConversionJob ? (
-            <div
-              role="status"
-              className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
-            >
-              <p className="font-semibold">
-                Pemrosesan mengalami kendala sementara
-              </p>
-              <p className="mt-1">{latestCurrentJob.safe_error_message}</p>
-              <p className="mt-2">
-                Kami akan mencoba kembali setelah kendala sementara teratasi.
-                Periksa status ini sebelum mengunggah berkas yang sama lagi.
-              </p>
-            </div>
-          ) : null}
-          {activeConversionJob ? (
-            <ConversionJobStatus
-              key={`${activeConversionJob.id}:${workVersion}`}
-              datasetId={data.id}
-              version={workVersion}
-              initialJob={activeConversionJob}
-            />
-          ) : null}
-          {failedConversionJob ? (
-            <div
-              role="alert"
-              className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900"
-            >
-              <p className="font-semibold">Berkas belum berhasil diproses</p>
-              <p className="mt-1">
-                {failedConversionJob.safe_error_message ||
-                  "Berkas belum dapat diproses. Periksa format dan isi sumber, lalu unggah ulang."}
-              </p>
-              {mayUploadSource ? (
-                <p className="mt-2">
-                  Periksa berkas sumber, lalu unggah kembali pada formulir di
-                  bawah.
-                </p>
-              ) : (
-                <p className="mt-2">
-                  Hubungi administrator portal untuk meninjau berkas sumber.
-                </p>
-              )}
-            </div>
-          ) : null}
-          <PortalDataTable
-            caption="Berkas dan status pengolahan dataset"
-            rows={resources}
-            alwaysShowFilters={["format", "conversion_status"]}
-            filterLabelOverrides={{
-              format: "Format",
-              conversion_status: "Status konversi",
-            }}
-            columns={[
-              {
-                key: "original_filename",
-                label: "Berkas",
-                render: (resource) => (
-                  <div className="portal-dataset-title-cell">
-                    <span className="portal-table-primary-link">
-                      {resource.original_filename}
-                    </span>
-                    <span className="portal-table-subtext">
-                      Versi {resource.dataset_version}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                key: "format",
-                label: "Format",
-                render: (resource) => resource.format || "Belum tersedia",
-              },
-              {
-                key: "source",
-                label: "Jenis",
-                render: (resource) =>
-                  resource.is_source ? "Sumber asli" : "Hasil konversi",
-              },
-              {
-                key: "conversion_status",
-                label: "Status",
-                render: (resource) => (
-                  <Badge
-                    variant={
-                      resource.conversion_status === "succeeded"
-                        ? "success"
-                        : resource.conversion_status === "failed"
-                          ? "danger"
-                          : "neutral"
-                    }
-                  >
-                    {resource.conversion_status === "succeeded"
-                      ? "Selesai"
-                      : resource.conversion_status === "failed"
-                        ? "Gagal"
-                        : "Diproses"}
-                  </Badge>
-                ),
-              },
-            ]}
-            emptyTitle="Belum ada berkas terkait"
-            emptyDescription="Unggah berkas sumber untuk memulai pemeriksaan dan pemrosesan dataset."
-          />
-          {mayUploadSource ? (
-            <>
-              {data.status === "draft" ? (
+              {mayEditMetadata ? (
                 <Link
                   href={`/portal/dataset/${data.id}/edit`}
-                  className="mt-5 inline-flex rounded-control border px-4 py-2.5 text-sm font-semibold hover:bg-slate-50"
                   prefetch={false}
+                  className="inline-flex min-h-10 items-center rounded-control border border-line px-3 py-2 text-sm font-semibold hover:bg-surface-secondary"
                 >
-                  Ubah informasi
+                  Ubah metadata
                 </Link>
               ) : null}
-              <SourceUploadForm
+            </div>
+            <dl className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              {[
+                ["Kode", data.code],
+                ["Organisasi pengampu", data.organizations?.name],
+                ["Kategori", data.category],
+                [
+                  "Kata kunci",
+                  Array.isArray(data.keywords)
+                    ? data.keywords.join(", ")
+                    : data.keywords,
+                ],
+                ["Sumber / penerbit data", data.source_name],
+                ["URL rujukan sumber", data.source_url],
+                ["Cakupan wilayah", data.geographic_scope],
+                ["Lisensi / ketentuan penggunaan", data.license_text],
+                [
+                  "Frekuensi pembaruan",
+                  getUpdateFrequencyLabel(data.update_frequency),
+                ],
+                ["Satuan", data.unit],
+                [
+                  "Periode data",
+                  [data.reference_period_start, data.reference_period_end]
+                    .filter(Boolean)
+                    .map(formatDate)
+                    .join(" – "),
+                ],
+                [
+                  data.status === "published" ? "Versi publik" : "Versi kerja",
+                  data.current_version,
+                ],
+                ...(data.draft_version
+                  ? [["Draf versi", data.draft_version]]
+                  : []),
+                ["Terakhir diperbarui", formatDate(data.updated_at)],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="min-w-0 border-b border-line/70 pb-3 last:border-b-0"
+                >
+                  <dt className="text-sm text-muted">{label}</dt>
+                  <dd className="mt-1 break-words text-sm font-medium">
+                    {value || "Belum diisi"}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {isNewVersionInProgress ? (
+              <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
+                <p className="font-semibold">
+                  Draf versi {data.draft_version} sedang disiapkan
+                </p>
+                <p className="mt-1">
+                  Versi publik saat ini tetap versi {data.current_version}.
+                  Metadata dan sumber versi baru tidak mengubah versi publik
+                  sampai pemeriksaan dan publikasi berhasil.
+                </p>
+              </div>
+            ) : null}
+          </section>
+
+          <section
+            id="dataset-source-workspace"
+            className="scroll-mt-24 rounded-card border bg-white p-5 sm:p-7"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                  Data & berkas
+                </p>
+                <h2 className="mt-1 text-lg font-semibold">Sumber data</h2>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+                  Unggah berkas asli untuk versi ini. Berkas sumber menjadi
+                  input validasi dan konversi; distribusi hasil pengolahan
+                  ditata terpisah agar format unduhan tidak tercampur dengan
+                  sumber asli.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-line bg-surface-secondary px-3 py-1.5 text-xs font-semibold">
+                {sourceResources.length} berkas sumber
+              </span>
+            </div>
+            {conversionJobError ? (
+              <div
+                role="status"
+                className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
+              >
+                <p className="font-semibold">
+                  Status pemrosesan belum dapat diverifikasi
+                </p>
+                <p className="mt-1">
+                  Informasi berkas tetap ditampilkan, tetapi riwayat pemrosesan
+                  sedang tidak tersedia. Muat ulang halaman untuk memeriksa
+                  status terbaru.
+                </p>
+              </div>
+            ) : null}
+            {retryingConversionJob && !activeConversionJob ? (
+              <div
+                role="status"
+                className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
+              >
+                <p className="font-semibold">
+                  Pemrosesan mengalami kendala sementara
+                </p>
+                <p className="mt-1">{latestCurrentJob.safe_error_message}</p>
+                <p className="mt-2">
+                  Kami akan mencoba kembali setelah kendala sementara teratasi.
+                  Periksa status ini sebelum mengunggah berkas yang sama lagi.
+                </p>
+              </div>
+            ) : null}
+            {activeConversionJob ? (
+              <ConversionJobStatus
+                key={`${activeConversionJob.id}:${workVersion}`}
                 datasetId={data.id}
-                versionNumber={workVersion}
-                isNewVersion={isNewVersionInProgress}
+                version={workVersion}
+                initialJob={activeConversionJob}
               />
-            </>
-          ) : null}
-        </section>
-        <aside className="h-fit rounded-card border bg-white p-5">
+            ) : null}
+            {failedConversionJob ? (
+              <div
+                role="alert"
+                className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900"
+              >
+                <p className="font-semibold">Berkas belum berhasil diproses</p>
+                <p className="mt-1">
+                  {failedConversionJob.safe_error_message ||
+                    "Berkas belum dapat diproses. Periksa format dan isi sumber, lalu unggah ulang."}
+                </p>
+                <p className="mt-2">
+                  {mayUploadSource
+                    ? "Periksa berkas sumber, lalu unggah kembali pada bagian di bawah."
+                    : "Hubungi administrator portal untuk meninjau berkas sumber."}
+                </p>
+              </div>
+            ) : null}
+            {mayUploadSource ? (
+              <div
+                id="dataset-source-upload"
+                className="mt-5 scroll-mt-24 rounded-xl border border-dashed border-[#a9bdcc] bg-[#f7fafc] p-4 sm:p-5"
+                aria-label="Unggah berkas sumber"
+              >
+                <SourceUploadForm
+                  datasetId={data.id}
+                  versionNumber={workVersion}
+                  isNewVersion={isNewVersionInProgress}
+                />
+              </div>
+            ) : null}
+            <div className="mt-5">
+              <PortalDataTable
+                caption="Berkas sumber dataset"
+                rows={sourceResources}
+                alwaysShowFilters={["format", "conversion_status"]}
+                filterLabelOverrides={{
+                  format: "Format",
+                  conversion_status: "Status pemrosesan",
+                }}
+                columns={[
+                  {
+                    key: "original_filename",
+                    label: "Nama berkas",
+                    render: (resource) => (
+                      <div className="portal-dataset-title-cell">
+                        <span className="portal-table-primary-link">
+                          {resource.original_filename}
+                        </span>
+                        <span className="portal-table-subtext">
+                          Versi {resource.dataset_version}
+                        </span>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "format",
+                    label: "Format",
+                    render: (resource) => resource.format || "Belum diketahui",
+                  },
+                  {
+                    key: "conversion_status",
+                    label: "Status",
+                    render: (resource) => (
+                      <Badge
+                        variant={
+                          resource.conversion_status === "succeeded"
+                            ? "success"
+                            : resource.conversion_status === "failed"
+                              ? "danger"
+                              : "neutral"
+                        }
+                      >
+                        {resource.conversion_status === "succeeded"
+                          ? "Siap"
+                          : resource.conversion_status === "failed"
+                            ? "Gagal"
+                            : "Diproses"}
+                      </Badge>
+                    ),
+                  },
+                ]}
+                emptyTitle="Berkas sumber belum diunggah"
+                emptyDescription="Unggah berkas asli untuk memulai pemeriksaan struktur dan menyiapkan distribusi dataset."
+              />
+            </div>
+            {!mayUploadSource && workSourceReady ? (
+              <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">
+                Berkas sumber versi ini sudah berhasil diproses. Langkah
+                berikutnya adalah melengkapi metadata yang masih kurang atau
+                mengajukan dataset untuk pemeriksaan.
+              </p>
+            ) : null}
+          </section>
+
+          <section
+            id="dataset-distributions"
+            className="scroll-mt-24 rounded-card border bg-white p-5 sm:p-7"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                  Distribusi dataset
+                </p>
+                <h2 className="mt-1 text-lg font-semibold">
+                  Berkas hasil pengolahan
+                </h2>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+                  File hasil konversi atau format siap pakai yang dibuat dari
+                  sumber. Status pemrosesan menunjukkan apakah distribusi siap
+                  digunakan.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-line bg-surface-secondary px-3 py-1.5 text-xs font-semibold">
+                {distributionResources.length} distribusi
+              </span>
+            </div>
+            <div className="mt-4">
+              <PortalDataTable
+                caption="Distribusi hasil pengolahan dataset"
+                rows={distributionResources}
+                alwaysShowFilters={["format", "conversion_status"]}
+                filterLabelOverrides={{
+                  format: "Format",
+                  conversion_status: "Status",
+                }}
+                columns={[
+                  {
+                    key: "original_filename",
+                    label: "Nama distribusi",
+                    render: (resource) => (
+                      <div className="portal-dataset-title-cell">
+                        <span className="portal-table-primary-link">
+                          {resource.name ||
+                            resource.original_filename ||
+                            "Distribusi data"}
+                        </span>
+                        <span className="portal-table-subtext">
+                          Dari sumber versi {resource.dataset_version}
+                        </span>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "format",
+                    label: "Format",
+                    render: (resource) => resource.format || "Belum diketahui",
+                  },
+                  {
+                    key: "conversion_status",
+                    label: "Status",
+                    render: (resource) => (
+                      <Badge
+                        variant={
+                          resource.conversion_status === "succeeded"
+                            ? "success"
+                            : resource.conversion_status === "failed"
+                              ? "danger"
+                              : "neutral"
+                        }
+                      >
+                        {resource.conversion_status === "succeeded"
+                          ? "Siap digunakan"
+                          : resource.conversion_status === "failed"
+                            ? "Gagal"
+                            : "Diproses"}
+                      </Badge>
+                    ),
+                  },
+                ]}
+                emptyTitle="Belum ada distribusi siap pakai"
+                emptyDescription="Distribusi akan muncul di sini setelah berkas sumber selesai diproses. Sumber asli tetap tercatat di bagian sebelumnya."
+              />
+            </div>
+          </section>
+
+          <section
+            id="dataset-versions"
+            className="scroll-mt-24 rounded-card border bg-white p-5 sm:p-7"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              Riwayat versi
+            </p>
+            <h2 className="mt-1 text-lg font-semibold">
+              Riwayat versi dataset
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Setiap versi menyimpan ringkasan perubahan, sumber, waktu
+              pembuatan, dan status rilis. Versi terdahulu tetap tersedia
+              sebagai jejak audit.
+            </p>
+            <div className="mt-4">
+              <PortalDataTable
+                caption="Riwayat versi dataset"
+                rows={versionRows}
+                searchPlaceholder="Cari versi, ringkasan perubahan, sumber, atau status…"
+                dateFilterLabel="Tanggal dibuat"
+                alwaysShowFilters={["version_status"]}
+                filterLabelOverrides={{ version_status: "Status versi" }}
+                columns={[
+                  {
+                    key: "version",
+                    label: "Versi",
+                    render: (version) => (
+                      <span className="font-semibold">v{version.version}</span>
+                    ),
+                  },
+                  {
+                    key: "version_status",
+                    label: "Status versi",
+                    render: (version) => (
+                      <Badge
+                        variant={
+                          versionStatusVariants[version.version_status] ||
+                          "neutral"
+                        }
+                      >
+                        {versionStatusLabels[version.version_status] ||
+                          version.version_status}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: "change_summary",
+                    label: "Ringkasan perubahan",
+                    render: (version) => version.change_summary || "—",
+                  },
+                  {
+                    key: "source_filename",
+                    label: "Sumber",
+                    render: (version) => version.source_filename,
+                  },
+                  {
+                    key: "created_at",
+                    label: "Dibuat",
+                    render: (version) => formatDate(version.created_at),
+                  },
+                ]}
+                emptyTitle="Riwayat versi belum tersedia"
+                emptyDescription="Versi akan tercatat saat sumber pertama kali didaftarkan atau versi baru dibuat."
+              />
+            </div>
+          </section>
+        </div>
+        <aside
+          id="dataset-review"
+          className="h-fit scroll-mt-24 rounded-card border bg-white p-5"
+        >
           {query?.action_error ? (
             <p
               role="alert"
@@ -544,7 +835,9 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                     ? `Draf versi ${data.draft_version ?? query.version ?? "baru"} dibuat. Unggah sumber versi tersebut untuk melanjutkan.`
                     : query.action_success === "version_abandoned"
                       ? "Draf versi dibatalkan. Versi publik sebelumnya tetap aktif."
-                      : "Dataset berhasil dipublikasikan."}
+                      : query.action_success === "review_returned"
+                        ? "Dataset dikembalikan untuk perbaikan. Catatan pemeriksaan dan versi yang sedang dikerjakan tetap tersimpan."
+                        : "Dataset berhasil dipublikasikan."}
             </p>
           ) : null}
           {(data.status === "draft" || isNewVersionInProgress) &&
@@ -563,14 +856,15 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                   </h3>
                   <p className="mt-1 text-xs leading-5 text-muted">
                     {reviewMetadata.length - missingReviewMetadata.length} dari{" "}
-                    {reviewMetadata.length} informasi wajib sudah terisi.
-                    Metadata SDI lanjutan hanya diisi berdasarkan rujukan resmi.
+                    {reviewMetadata.length} metadata wajib sudah terisi. Berkas
+                    sumber dan validasi otomatis juga harus siap. Metadata SDI
+                    lanjutan hanya diisi berdasarkan rujukan resmi.
                   </p>
                 </div>
                 <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${missingReviewMetadata.length ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${reviewRequirementsComplete ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}
                 >
-                  {missingReviewMetadata.length ? "Belum lengkap" : "Lengkap"}
+                  {reviewRequirementsComplete ? "Siap diajukan" : "Belum siap"}
                 </span>
               </div>
               <ul className="mt-3 space-y-2 text-sm">
@@ -592,6 +886,38 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                   </li>
                 ))}
               </ul>
+              <ul className="mt-3 space-y-2 border-t border-[#d8e4eb] pt-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] ${workSourceReady ? "bg-emerald-700 text-white" : "bg-white text-[#748796] ring-1 ring-[#d4dfe6]"}`}
+                  >
+                    {workSourceReady ? "✓" : "•"}
+                  </span>
+                  <span
+                    className={
+                      workSourceReady ? "text-[#285943]" : "text-muted"
+                    }
+                  >
+                    {sourceChecklistLabel}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] ${validationPassed ? "bg-emerald-700 text-white" : "bg-white text-[#748796] ring-1 ring-[#d4dfe6]"}`}
+                  >
+                    {validationPassed ? "✓" : "•"}
+                  </span>
+                  <span
+                    className={
+                      validationPassed ? "text-[#285943]" : "text-muted"
+                    }
+                  >
+                    {validationChecklistLabel}
+                  </span>
+                </li>
+              </ul>
               {(data.status === "draft" || isNewVersionInProgress) &&
               missingReviewMetadata.length ? (
                 <Link
@@ -607,6 +933,40 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 validasi sebelum pengajuan dapat diproses.
               </p>
             </section>
+          ) : null}
+          {isInReview && canReview ? (
+            <form
+              action={returnDatasetForChangesAction}
+              className="mt-5 border-t pt-4"
+            >
+              <input type="hidden" name="dataset_id" value={data.id} />
+              <label
+                htmlFor="dataset-return-reason"
+                className="block text-sm font-medium"
+              >
+                Catatan perbaikan
+              </label>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Jelaskan apa yang perlu diperbaiki. Dataset akan kembali ke draf
+                agar pengelola dapat memperbaruinya.
+              </p>
+              <textarea
+                id="dataset-return-reason"
+                name="reason"
+                required
+                minLength={5}
+                maxLength={1000}
+                rows={3}
+                className="mt-2 w-full rounded-control border border-line bg-white px-3 py-2.5 text-sm leading-6"
+                placeholder="Contoh: Perjelas sumber data dan sesuaikan periode dengan publikasi resmi."
+              />
+              <FormSubmitButton
+                className="mt-3 w-full rounded-control border px-4 py-3 text-sm font-semibold hover:bg-slate-50"
+                pendingText="Mengembalikan untuk perbaikan…"
+              >
+                Kembalikan untuk perbaikan
+              </FormSubmitButton>
+            </form>
           ) : null}
           {canSubmit && data.status === "published" && !data.draft_version ? (
             <form
@@ -646,17 +1006,30 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
               </FormSubmitButton>
             </form>
           ) : null}
-          {maySubmitForReview ? (
+          {hasEditableWorkDraft ? (
             <form action={submitForReviewAction} className="mt-5 border-t pt-4">
               <input type="hidden" name="dataset_id" value={data.id} />
               <FormSubmitButton
+                disabled={!maySubmitForReview}
+                title={
+                  !maySubmitForReview
+                    ? "Lengkapi metadata wajib, pastikan sumber selesai diproses, dan validasi otomatis lulus terlebih dahulu."
+                    : undefined
+                }
                 className="w-full rounded-control border px-4 py-3 text-sm font-semibold hover:bg-slate-50"
                 pendingText="Mengirim untuk pemeriksaan…"
               >
                 {isNewVersionInProgress
                   ? "Ajukan versi baru untuk pemeriksaan"
-                  : "Kirim untuk pemeriksaan"}
+                  : "Ajukan pemeriksaan"}
               </FormSubmitButton>
+              {!maySubmitForReview ? (
+                <p className="mt-2 text-xs leading-5 text-muted">
+                  Tombol aktif setelah seluruh metadata wajib lengkap, berkas
+                  sumber selesai diproses, dan validasi otomatis berstatus
+                  lulus.
+                </p>
+              ) : null}
             </form>
           ) : null}
           {mayPublishVersion ? (
@@ -681,7 +1054,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
           ) : null}
           {global?.some((item) =>
             ["super_admin", "data_admin"].includes(item.role),
-          ) ? (
+          ) && ["draft", "published"].includes(data.status) ? (
             <DatasetArchiveAction id={data.id} status={data.status} />
           ) : null}
         </aside>

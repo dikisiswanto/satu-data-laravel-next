@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getFrontendToken } from "@/lib/auth/session-cookie";
 
 const AUTH_PAGES = new Set([
   "/portal/login",
@@ -12,7 +13,7 @@ export function proxy(request) {
   if (!pathname.startsWith("/portal/") && pathname !== "/portal")
     return NextResponse.next();
   if (AUTH_PAGES.has(pathname)) return NextResponse.next();
-  const token = request.cookies.get("wajo_portal_token")?.value;
+  const token = getFrontendToken(request.cookies);
   if (token) return NextResponse.next();
   const loginUrl = new URL("/portal/login", request.url);
   loginUrl.searchParams.set("next", `${pathname}${search}`);

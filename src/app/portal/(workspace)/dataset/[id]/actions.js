@@ -46,9 +46,11 @@ export async function submitForReviewAction(formData) {
       redirect("/portal/login");
     }
     const message = String(error.message || "").toLowerCase();
-    const code =
-      message.includes("version_not_ready") ||
-      message.includes("validated_source_required")
+    const code = message.includes("validation_required_before_review")
+      ? "validation_required"
+      : message.includes("source_not_processed") ||
+          message.includes("version_not_ready") ||
+          message.includes("validated_source_required")
         ? "version_not_ready"
         : classifyBackendError(error);
     console.error("dataset_submit_review_failed", error.code || "unknown");
@@ -56,6 +58,33 @@ export async function submitForReviewAction(formData) {
   }
   redirect(`/portal/dataset/${id}?action_success=review`);
 }
+export async function returnDatasetForChangesAction(formData) {
+  const id = formData.get("dataset_id");
+  const reason = String(formData.get("reason") || "").trim();
+  if (!idSchema.safeParse(id).success) redirect("/portal/dataset");
+  if (reason.length < 5 || reason.length > 1000) {
+    redirect(`/portal/dataset/${id}?action_error=review_reason_invalid`);
+  }
+  await verifyActionSession(id);
+  try {
+    await portalApi(`datasets/${id}/workflow`, {
+      method: "POST",
+      body: JSON.stringify({ action: "return_for_changes", reason }),
+    });
+  } catch (error) {
+    if (Number(error.status) === 401 || isMissingAuthSession(error)) {
+      redirect("/portal/login");
+    }
+    const message = String(error.message || "").toLowerCase();
+    const code = message.includes("review_reason_invalid")
+      ? "review_reason_invalid"
+      : classifyBackendError(error);
+    console.error("dataset_return_for_changes_failed", error.code || "unknown");
+    redirect(`/portal/dataset/${id}?action_error=${code}`);
+  }
+  redirect(`/portal/dataset/${id}?action_success=review_returned`);
+}
+
 export async function startDatasetVersionAction(formData) {
   const id = formData.get("dataset_id");
   const changeSummary = String(formData.get("change_summary") || "").trim();

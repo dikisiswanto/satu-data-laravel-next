@@ -18,12 +18,10 @@ export default function AdminUsersLoading() {
         className="w-full rounded-card border bg-white p-4 sm:p-5"
         aria-busy="true"
       >
-        <h2 className="text-base font-semibold text-ink">
-          Tambahkan pengguna atau akses
-        </h2>
+        <h2 className="text-base font-semibold text-ink">Tambah pengguna</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Pilih berdasarkan kondisi akun. Pengguna baru cukup diundang sekali;
-          akun yang sudah ada dapat diberi akses tambahan.
+          Undang akun baru, atau tambahkan peran untuk akun yang sudah
+          terdaftar.
         </p>
         <div className="mt-4 grid grid-cols-2 gap-2" aria-hidden="true">
           <div className="h-11 rounded-lg border border-[#cbdce7] bg-[#f6f9fb]" />
@@ -59,9 +57,9 @@ export default function AdminUsersLoading() {
         />
       </section>
       <p className="mt-4 text-xs leading-5 text-muted">
-        Untuk pengguna yang sudah memiliki akun, pilih ID akun lengkap lalu
-        tetapkan peran dan lingkup organisasinya. Untuk mencabut akses,
-        nonaktifkan aksesnya agar riwayat aktivitas tetap dapat ditelusuri.
+        Untuk akun yang sudah terdaftar, gunakan email akun lalu tetapkan peran
+        dan lingkup organisasinya. Untuk mencabut akses, nonaktifkan aksesnya
+        agar riwayat aktivitas tetap dapat ditelusuri.
       </p>
     </AdminPageLoading>
   );
