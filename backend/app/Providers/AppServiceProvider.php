@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
                 ?: $request->cookie((string) config('app.frontend_token_cookie', 'wajo_portal_token'));
             $hasSessionToken = is_string($token) && strlen($token) >= 20 && strlen($token) <= 512;
             $limit = $hasSessionToken
-                ? (int) config('satu_data.rate_limit_per_minute', 600)
+                ? (int) config('satu_data.rate_limit_per_minute', 1200)
                 : (int) config('satu_data.anonymous_rate_limit_per_minute', 120);
             $key = $hasSessionToken
                 ? 'token:'.hash('sha256', $token)
@@ -41,8 +41,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('portal-user', function (Request $request) {
             $userId = $request->user()?->id;
 
-            return Limit::perMinute(300)
-                ->by($userId ? 'user:'.$userId : 'portal-anonymous:'.(string) $request->ip())
+            $limit = (int) config('satu_data.portal_user_rate_limit_per_minute', 1200);
+            $key = $userId
+                ? 'user:'.$userId
+                : 'portal-anonymous:'.(string) $request->ip();
+
+            return Limit::perMinute($limit)
+                ->by($key)
                 ->response(fn (Request $request, array $headers) => response()->json(
                     ['error' => 'user_rate_limited', 'message' => 'Batas request akun tercapai.'],
                     429,

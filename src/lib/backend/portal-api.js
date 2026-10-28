@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { backendData, backendFetch } from "@/lib/backend/server";
+import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 
 const PORTAL_API_PREFIX = "/api/v1/portal";
 
@@ -39,4 +40,15 @@ async function withInvalidSessionRedirect(request) {
   }
 }
 
-export const getPortalShell = cache(() => portalData("shell"));
+export const getPortalShell = cache(async () => {
+  const verification = await getRequestVerifiedUser();
+  const user = verification?.data?.user;
+
+  if (verification?.error || !user) redirect("/portal/login");
+
+  return {
+    roles: Array.isArray(user.roles) ? user.roles : [],
+    memberships: Array.isArray(user.memberships) ? user.memberships : [],
+    onboarding_completed_at: user.onboarding_completed_at || null,
+  };
+});

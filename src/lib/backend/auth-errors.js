@@ -21,6 +21,20 @@ export function isMissingAuthSession(error) {
   );
 }
 
+/** Only a revoked/absent credential should send the portal back to login. */
+export function isInvalidPortalSession(error) {
+  return Number(error?.status) === 401 || isMissingAuthSession(error);
+}
+
+/** Preserve transient and authorization failures instead of turning them into anonymous state. */
+export function assertPortalSessionVerification(result) {
+  if (result?.error && !isInvalidPortalSession(result.error)) {
+    throw result.error;
+  }
+
+  return result;
+}
+
 /** Decide whether a backend authentication error looks like a transient service/transport failure. */
 export function isTransientAuthFailure(error) {
   if (!error || isMissingAuthSession(error)) return false;

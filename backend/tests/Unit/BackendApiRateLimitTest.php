@@ -19,7 +19,7 @@ class BackendApiRateLimitTest extends TestCase
 
         $limit = $this->backendApiLimit($request);
 
-        $this->assertSame(600, $limit->maxAttempts);
+        $this->assertSame(1200, $limit->maxAttempts);
         $this->assertSame('token:'.hash('sha256', $token), $limit->key);
         $this->assertStringNotContainsString($token, $limit->key);
     }
@@ -34,6 +34,19 @@ class BackendApiRateLimitTest extends TestCase
 
         $this->assertSame(120, $limit->maxAttempts);
         $this->assertSame('ip:192.0.2.11', $limit->key);
+    }
+
+    public function test_authenticated_portal_budget_allows_normal_admin_navigation_bursts(): void
+    {
+        $request = Request::create('https://portal.test/api/v1/portal/shell', 'GET');
+        $request->setUserResolver(fn () => (object) ['id' => 'admin-user-id']);
+
+        $limiter = RateLimiter::limiter('portal-user');
+        $limit = $limiter($request);
+
+        $this->assertInstanceOf(Limit::class, $limit);
+        $this->assertSame(1200, $limit->maxAttempts);
+        $this->assertSame('user:admin-user-id', $limit->key);
     }
 
     private function backendApiLimit(Request $request): Limit

@@ -1,4 +1,7 @@
-import { isTransientAuthFailure } from "@/lib/backend/auth-errors";
+import {
+  assertPortalSessionVerification,
+  isTransientAuthFailure,
+} from "@/lib/backend/auth-errors";
 import { cache } from "react";
 import { backendFetch } from "@/lib/backend/server";
 
@@ -33,5 +36,5 @@ const verifyRequestUser = cache(async () => {
 });
 
 export function getRequestVerifiedUser() {
-  return verifyRequestUser();
+  return verifyRequestUser().then(assertPortalSessionVerification);
 }
