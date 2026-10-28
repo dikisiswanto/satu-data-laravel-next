@@ -22,7 +22,7 @@ class FrontendCookieAuthenticationTest extends TestCase
 
         for ($attempt = 0; $attempt < 12; $attempt++) {
             $this->withHeaders(['Accept' => 'application/json'])
-                ->withCookie('wajo_portal_token', $token)
+                ->withUnencryptedCookie('wajo_portal_token', $token)
                 ->getJson('/api/v1/auth/me')
                 ->assertOk()
                 ->assertJsonPath('data.email', 'session-check@example.gov.id');
@@ -42,7 +42,7 @@ class FrontendCookieAuthenticationTest extends TestCase
         $this->withHeaders([
             'Accept' => 'application/json',
             'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
-        ])->withCookie('wajo_portal_token', $token)
+        ])->withUnencryptedCookie('wajo_portal_token', $token)
             ->patchJson('/api/v1/portal/profile', [
                 'display_name' => 'Cookie Auth Updated',
             ])

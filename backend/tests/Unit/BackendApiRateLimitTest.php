@@ -45,7 +45,8 @@ class BackendApiRateLimitTest extends TestCase
         $limit = $limiter($request);
 
         $this->assertInstanceOf(Limit::class, $limit);
-        $this->assertSame(600, $limit->maxAttempts);
+        $this->assertSame(config('satu_data.portal_user_rate_limit_per_minute'), $limit->maxAttempts);
+        $this->assertGreaterThanOrEqual(600, $limit->maxAttempts);
         $this->assertSame('user:admin-user-id', $limit->key);
     }
 

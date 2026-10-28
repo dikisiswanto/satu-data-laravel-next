@@ -114,16 +114,23 @@ describe("consistent admin design system", () => {
 
     expect(formButton).toContain('data-stateful-button="true"');
     expect(pendingButton).toContain('data-stateful-button="true"');
-    expect(formButton).toContain("button-state-stack");
-    expect(pendingButton).toContain("button-state-stack");
-    expect(buttonStyles).toContain('button[data-stateful-button="true"]');
-    expect(buttonStyles).toContain("padding-block: 0.625rem");
-    expect(buttonStyles).toContain(
+    for (const source of [formButton, pendingButton]) {
+      expect(source).toContain("button-state-stack");
+      expect(source).toContain("button-state-normal");
+      expect(source).toContain("button-state-pending");
+      expect(source).toContain('data-pending={pending ? "true" : "false"}');
+    }
+    const normalizedButtonStyles = buttonStyles.replace(/\s+/g, " ");
+    expect(normalizedButtonStyles).toContain(
+      'button[data-stateful-button="true"]',
+    );
+    expect(normalizedButtonStyles).toContain("padding-block: 0.625rem");
+    expect(normalizedButtonStyles).toContain(
       "transition-property: background-color, border-color, color, box-shadow, opacity",
     );
     expect(compactShell).toContain("w-12 shrink-0 items-center justify-center");
-    expect(compactShell).toContain(
-      'className="sr-only sm:hidden">Sedang keluar</span>',
+    expect(compactShell).toMatch(
+      /className="sr-only sm:hidden"\s*>\s*Sedang keluar\s*<\/span>/,
     );
   });
 });

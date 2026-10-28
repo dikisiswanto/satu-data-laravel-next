@@ -577,7 +577,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
         "src/app/portal/(workspace)/dataset/new/loading.jsx",
         [
           "Cari lalu pilih organisasi…",
-          "Contoh: Kabupaten Wajo",
+          "Contoh: ${siteConfig.regionName}",
           "Contoh: lisensi atau ketentuan penggunaan yang telah disetujui",
           "Pilih frekuensi",
         ],
