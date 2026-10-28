@@ -13,7 +13,15 @@ const nextConfig = {
     const backend = (
       process.env.BACKEND_API_URL || "http://127.0.0.1:8000"
     ).replace(/\/$/, "");
-    return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
+    // Authenticated portal API routes must run through the Next route handler
+    // first so it can turn the HttpOnly session cookie into a Bearer token.
+    // Only requests that do not match a local API route should fall back to
+    // the Laravel origin (public API, OpenAPI, health, and legacy endpoints).
+    return {
+      fallback: [
+        { source: "/api/:path*", destination: `${backend}/api/:path*` },
+      ],
+    };
   },
   async redirects() {
     return [

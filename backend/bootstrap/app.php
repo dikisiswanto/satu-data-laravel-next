@@ -25,16 +25,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // This global adapter runs after the framework's core request preparation
-        // but before route-level throttles and authentication.
-        $middleware->append(AttachFrontendToken::class);
+        // Cookie-to-Bearer conversion belongs at the start of the API middleware
+        // group. This guarantees it runs before route-level throttles and
+        // auth:sanctum, including requests issued by Laravel's feature test client.
+        $middleware->prependToGroup('api', AttachFrontendToken::class);
         $middleware->append(AddApiSecurityHeaders::class);
         $middleware->alias([
             'same.origin' => RequireSameOriginForMutations::class,
             'active.user' => EnsureActiveUser::class,
         ]);
-        // The global adapter runs before route-level throttles and Sanctum
-        // authentication, not merely before one middleware in the route priority list.
         // Baca konfigurasi proxy saat request diproses, bukan ketika container
         // belum mendaftarkan layanan config. Ini membuat `artisan migrate` dapat
         // berjalan pada bootstrap CLI maupun saat konfigurasi di-cache.
