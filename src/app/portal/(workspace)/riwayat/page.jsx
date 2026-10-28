@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
@@ -68,58 +68,12 @@ function actionLabel(value) {
 }
 
 export default async function AuditHistoryPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-
-  const { data: logs, error } = await supabase
-    .from("audit_logs")
-    .select(
-      "id,actor_user_id,action,entity_type,entity_id,outcome,summary,created_at,organization_id,request_id",
-    )
-    .order("created_at", { ascending: false })
-    .limit(500);
-
-  const actorIds = [
-    ...new Set((logs || []).map((log) => log.actor_user_id).filter(Boolean)),
-  ];
-  const organizationIds = [
-    ...new Set((logs || []).map((log) => log.organization_id).filter(Boolean)),
-  ];
-  const [profileResult, organizationResult] = await Promise.all([
-    actorIds.length
-      ? supabase
-          .from("profiles")
-          .select("user_id,display_name")
-          .in("user_id", actorIds)
-      : Promise.resolve({ data: [], error: null }),
-    organizationIds.length
-      ? supabase
-          .from("organizations")
-          .select("id,name")
-          .in("id", organizationIds)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-  const profilesById = new Map(
-    (profileResult.data || []).map((profile) => [profile.user_id, profile]),
-  );
-  const organizationsById = new Map(
-    (organizationResult.data || []).map((organization) => [
-      organization.id,
-      organization,
-    ]),
-  );
-  const rows = (logs || []).map((log) => ({
-    ...log,
-    actor_display_name: profilesById.get(log.actor_user_id)?.display_name || "",
-    organization_name:
-      organizationsById.get(log.organization_id)?.name ||
-      (log.organization_id
-        ? "Organisasi belum tercatat"
-        : "Cakupan seluruh portal"),
-  }));
+  const rows = await portalData("audit-logs?limit=500");
+  const error = null;
 
   return (
     <>

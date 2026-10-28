@@ -1,15 +1,14 @@
 import { safeHttpUrl } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Plus, Building2 } from "lucide-react";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Organisasi",
@@ -17,38 +16,25 @@ export const metadata = {
 };
 export default async function OrganizationsPage({ searchParams }) {
   const params = await searchParams;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select(
-      "role,organization_id,organizations(id,name,code,slug,is_active,official_email,official_url,created_at,updated_at)",
-    )
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_organizations_memberships");
+  const { memberships = [] } = await getPortalShell();
   const global = (memberships || []).some((m) =>
     ["super_admin", "data_admin", "auditor"].includes(m.role),
   );
   const canManage = (memberships || []).some((m) =>
     ["super_admin", "data_admin"].includes(m.role),
   );
-  const { data, error } = global
-    ? await supabase
-        .from("organizations")
-        .select(
-          "id,name,code,slug,is_active,official_email,official_url,created_at,updated_at",
-        )
-        .order("name")
-        .limit(500)
-    : {
-        data: (memberships || []).map((m) => m.organizations).filter(Boolean),
-        error: null,
-      };
-  const unique = [...new Map((data || []).map((o) => [o.id, o])).values()];
+  const organizations = global
+    ? await portalData("organizations")
+    : memberships.map((membership) => membership.organizations).filter(Boolean);
+  const unique = [
+    ...new Map(
+      organizations.map((organization) => [organization.id, organization]),
+    ).values(),
+  ];
   return (
     <>
       <PageHeading

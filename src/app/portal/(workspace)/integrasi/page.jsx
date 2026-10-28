@@ -10,9 +10,8 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { getSdiExportResources, getSdiMetadataGaps } from "@/lib/sdi/metadata";
 import { SdiPreflightButton } from "@/components/admin/sdi-preflight-button";
 
@@ -22,24 +21,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const RESOURCE_FIELDS =
-  "id,dataset_version,is_source,is_public,conversion_status,format,size_bytes";
-const SDI_FIELDS =
-  "dataset_version,ddp_id,ddp_name,source_reference,available_year,sds_code,sds_type,sds_version,standard_concept,standard_definition,measurement,presentation_classification,reference_code,reference_code_version,method_description,sds_registry_id,reference_system_id,sdi_standard_registry!dataset_sdi_metadata_sds_registry_id_fkey(id,standard_code,title,definition,version_label,status,valid_from,valid_until),reference_code_systems!dataset_sdi_metadata_reference_system_id_fkey(id,system_code,title,version_label,status,valid_from,valid_until)";
-
 export default async function SdiIntegrationPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("role,organization_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_sdi_readiness_memberships");
+  const { memberships = [] } = await getPortalShell();
   const allowedRoles = [
     "super_admin",
     "data_admin",
@@ -55,18 +42,9 @@ export default async function SdiIntegrationPage() {
   )
     redirect("/portal");
 
-  const { data, error } = await supabase
-    .from("datasets")
-    .select(
-      `id,code,slug,title,status,current_version,draft_version,published_at,updated_at,source_url,methodology,unit,organizations!inner(name,code,is_active),dataset_sdi_metadata(${SDI_FIELDS}),dataset_resources(${RESOURCE_FIELDS})`,
-    )
-    .eq("status", "published")
-    .eq("organizations.is_active", true)
-    .not("published_at", "is", null)
-    .lte("published_at", new Date().toISOString())
-    .order("title", { ascending: true })
-    .limit(1000);
-  assertBackendQuery(error, "portal_sdi_readiness_datasets");
+  const data = await portalData(
+    "datasets?status=published&organization_active=1&published_at_not_null=1&limit=500&sort=title_asc&include_sdi_metadata=1",
+  );
 
   const datasets = (data || []).map((dataset) => {
     const metadata =
@@ -74,7 +52,7 @@ export default async function SdiIntegrationPage() {
         (item) => item.dataset_version === dataset.current_version,
       ) || {};
     const resources = getSdiExportResources(
-      dataset.dataset_resources || [],
+      dataset.dataset_resources || dataset.resources || [],
       dataset.current_version,
     );
     const missing = getSdiMetadataGaps(dataset, metadata, resources, {
@@ -97,15 +75,9 @@ export default async function SdiIntegrationPage() {
   const canRunPreflight = (memberships || []).some((membership) =>
     ["super_admin", "data_admin"].includes(membership.role),
   );
-  const { data: recentRuns, error: recentRunsError } = canRunPreflight
-    ? await supabase
-        .from("sdi_harvest_runs")
-        .select("id,target,status,finished_at,summary")
-        .order("created_at", { ascending: false })
-        .limit(5)
-    : { data: [], error: null };
-  if (canRunPreflight)
-    assertBackendQuery(recentRunsError, "portal_sdi_preflight_history");
+  const recentRuns = canRunPreflight
+    ? await portalData("sdi/harvest-runs?limit=5")
+    : [];
 
   return (
     <>

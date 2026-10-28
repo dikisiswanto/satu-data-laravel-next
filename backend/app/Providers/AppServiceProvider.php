@@ -15,12 +15,22 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // The outer middleware runs before auth:sanctum, so this limit must
-        // intentionally be IP based. Authenticated routes add a second per-user
-        // limit after identity has been resolved.
+        // This runs before auth:sanctum, so identify a presented session token
+        // without storing the credential itself in the rate-limit key. Anonymous
+        // public traffic keeps a separate per-IP budget.
         RateLimiter::for('backend-api', function (Request $request) {
-            return Limit::perMinute((int) config('satu_data.rate_limit_per_minute', 120))
-                ->by('ip:'.(string) $request->ip())
+            $token = $request->bearerToken()
+                ?: $request->cookie((string) config('app.frontend_token_cookie', 'wajo_portal_token'));
+            $hasSessionToken = is_string($token) && strlen($token) >= 20 && strlen($token) <= 512;
+            $limit = $hasSessionToken
+                ? (int) config('satu_data.rate_limit_per_minute', 600)
+                : (int) config('satu_data.anonymous_rate_limit_per_minute', 120);
+            $key = $hasSessionToken
+                ? 'token:'.hash('sha256', $token)
+                : 'ip:'.(string) $request->ip();
+
+            return Limit::perMinute($limit)
+                ->by($key)
                 ->response(fn (Request $request, array $headers) => response()->json(
                     ['error' => 'rate_limited', 'message' => 'Too many requests.'],
                     429,

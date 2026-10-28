@@ -51,6 +51,15 @@ export async function backendFetch(path, options = {}) {
     error.status = response.status;
     error.code = payload?.error || payload?.code || `http_${response.status}`;
     error.errors = payload?.errors || null;
+    const retryAfter = response.headers.get("Retry-After");
+    const retryAfterSeconds = retryAfter === null ? NaN : Number(retryAfter);
+    const retryAfterDate = retryAfter === null ? NaN : Date.parse(retryAfter);
+    const retryDelay = Number.isFinite(retryAfterSeconds)
+      ? retryAfterSeconds * 1000
+      : retryAfterDate - Date.now();
+    error.retryAfterMs = Number.isFinite(retryDelay)
+      ? Math.min(60_000, Math.max(0, retryDelay))
+      : null;
     throw error;
   }
   return payload;

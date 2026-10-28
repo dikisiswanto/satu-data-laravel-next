@@ -9,9 +9,8 @@ import {
   Layers3,
   MapPinned,
 } from "lucide-react";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 
 export const dynamic = "force-dynamic";
@@ -21,17 +20,11 @@ export const metadata = {
 };
 
 export default async function DataQualityPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipError } = await supabase
-    .from("organization_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipError, "portal_quality_memberships");
+  const { memberships = [] } = await getPortalShell();
   if (
     !(memberships || []).some((item) =>
       [
@@ -45,22 +38,14 @@ export default async function DataQualityPage() {
     )
   )
     redirect("/portal");
-  const [summaryResult, runsResult] = await Promise.all([
-    supabase.rpc("get_sdi_quality_summary"),
-    supabase
-      .from("sdi_harvest_runs")
-      .select(
-        "id,target,status,started_at,finished_at,requested_by,summary,sample_issues",
-      )
-      .order("created_at", { ascending: false })
-      .limit(8),
+  const canViewRuns = memberships.some((item) =>
+    ["super_admin", "data_admin", "auditor"].includes(item.role),
+  );
+  const [metrics, runs] = await Promise.all([
+    portalData("data-quality/summary"),
+    canViewRuns ? portalData("sdi/harvest-runs?limit=8") : Promise.resolve([]),
   ]);
-  assertBackendQuery(summaryResult.error, "portal_quality_summary");
-  // RLS intentionally returns no run history to users without global administration/audit scope.
-  const summary = Array.isArray(summaryResult.data)
-    ? summaryResult.data[0]
-    : summaryResult.data;
-  const metrics = summary || {};
+  const runsError = null;
   return (
     <>
       <PageHeading
@@ -201,15 +186,15 @@ export default async function DataQualityPage() {
             Buka integrasi <ArrowRight size={15} aria-hidden="true" />
           </Link>
         </div>
-        {runsResult.error ? (
+        {runsError ? (
           <p className="p-4 text-sm text-muted">
             Kami belum dapat memuat riwayat pemeriksaan. Coba lagi beberapa saat
             lagi. Jika masalah tetap muncul setelah pembaruan sistem, hubungi
             administrator portal.
           </p>
-        ) : (runsResult.data || []).length ? (
+        ) : (runs || []).length ? (
           <div className="divide-y divide-line">
-            {runsResult.data.map((run) => (
+            {runs.map((run) => (
               <div
                 key={run.id}
                 className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"

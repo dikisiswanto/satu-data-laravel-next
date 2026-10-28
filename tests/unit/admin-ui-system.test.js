@@ -12,6 +12,7 @@ describe("consistent admin design system", () => {
   const breadcrumbs = read("src/components/portal-breadcrumbs.jsx");
   const styles = read("src/app/styles/admin-design-system.css");
   const globals = read("src/app/globals.css");
+  const normalizedStyles = styles.replace(/\s+/g, " ");
 
   it("uses a dedicated page-heading component on authenticated pages", () => {
     expect(heading).toContain("portal-page-heading");
@@ -58,7 +59,7 @@ describe("consistent admin design system", () => {
       "table:not(.portal-data-table) th",
       "table:not(.portal-data-table) td",
     ])
-      expect(styles).toContain(selector);
+      expect(normalizedStyles).toContain(selector);
     expect(nav).toContain("portal-mobile-navigation-panel grid gap-3 border-t");
     expect(styles).toContain("@media (max-width: 639px)");
     expect(styles).toContain("prefers-reduced-motion: reduce");

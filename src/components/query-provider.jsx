@@ -19,11 +19,15 @@ export function QueryProvider({ children }) {
             refetchOnReconnect: true,
             retry: (failureCount, error) => {
               const status = Number(error?.status || 0);
-              if ([400, 401, 403, 404, 409, 413, 422, 429].includes(status)) {
+              if ([400, 401, 403, 404, 409, 413, 422].includes(status)) {
                 return false;
               }
               return failureCount < 2;
             },
+            retryDelay: (failureCount, error) =>
+              Number(error?.status) === 429 && error.retryAfterMs != null
+                ? error.retryAfterMs
+                : Math.min(1_000 * 2 ** failureCount, 10_000),
           },
           mutations: { retry: false },
         },

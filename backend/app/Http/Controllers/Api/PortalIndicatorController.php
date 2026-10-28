@@ -94,6 +94,11 @@ class PortalIndicatorController extends Controller
 
     public function save(Request $request): JsonResponse
     {
+        // Keep uniqueness checks aligned with the canonical values stored below.
+        $request->merge([
+            'code' => is_string($request->input('code')) ? trim($request->input('code')) : $request->input('code'),
+            'slug' => is_string($request->input('slug')) ? strtolower(trim($request->input('slug'))) : $request->input('slug'),
+        ]);
         $candidateId = $request->input('id');
         $ignoreId = is_string($candidateId) && Str::isUuid($candidateId) ? $candidateId : null;
         $data = $request->validate([

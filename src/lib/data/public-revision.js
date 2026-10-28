@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { createPublicBackendClient } from "@/lib/backend/compat-server";
+import { backendFetch } from "@/lib/backend/server";
 
 /**
  * Read the tiny revision row outside Next's persistent data cache. React cache
@@ -8,15 +8,12 @@ import { createPublicBackendClient } from "@/lib/backend/compat-server";
  * see the database's current revision.
  */
 export const getPublicCatalogRevision = cache(async function getRevision() {
-  const supabase = createPublicBackendClient();
-  const { data, error } = await supabase
-    .from("public_catalog_revision")
-    .select("revision")
-    .eq("singleton", true)
-    .maybeSingle();
-  if (error) throw error;
-  if (data?.revision === null || data?.revision === undefined) {
+  const payload = await backendFetch("/api/v1/public/revision", {
+    auth: false,
+  });
+  const revision = payload?.data?.revision;
+  if (revision === null || revision === undefined) {
     throw new Error("public_catalog_revision_unavailable");
   }
-  return String(data.revision);
+  return String(revision);
 });

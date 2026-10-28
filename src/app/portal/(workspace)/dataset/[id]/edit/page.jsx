@@ -1,11 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { DatasetMetadataForm } from "@/components/admin/dataset-metadata-form";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 import { getVerifiedSdiRegistryOptions } from "@/lib/sdi/registry-options";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -28,36 +27,21 @@ const datasetEditErrorMessages = {
 export default async function EditDatasetPage({ params, searchParams }) {
   const { id } = await params;
   const query = await searchParams;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data, error } = await supabase
-    .from("datasets")
-    .select(
-      "id,title,description,organization_id,category,source_name,source_url,geographic_scope,license_text,update_frequency,reference_period_start,reference_period_end,unit,keywords,methodology,status,current_version",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  assertBackendQuery(error, "portal_dataset_edit_detail");
+  let data;
+  try {
+    data = await portalData(`datasets/${encodeURIComponent(id)}`);
+  } catch (error) {
+    if (Number(error?.status) === 404) notFound();
+    throw error;
+  }
   if (!data) notFound();
-  const { data: sdiMetadata, error: sdiMetadataError } = await supabase
-    .from("dataset_sdi_metadata")
-    .select(
-      "ddp_id,ddp_name,source_reference,available_year,sds_code,sds_type,sds_version,standard_concept,standard_definition,measurement,presentation_classification,reference_code,reference_code_version,method_description,sds_registry_id,reference_system_id",
-    )
-    .eq("dataset_id", id)
-    .eq("dataset_version", data.current_version)
-    .maybeSingle();
-  assertBackendQuery(sdiMetadataError, "portal_dataset_edit_sdi_metadata");
+  const sdiMetadata = data.sdi_metadata;
   const initial = { ...data, sdi_metadata: sdiMetadata || {} };
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("role,organization_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_dataset_edit_memberships");
+  const { memberships = [] } = await getPortalShell();
   const mayManageGlobally = memberships?.some((m) =>
     ["super_admin", "data_admin"].includes(m.role),
   );
@@ -68,8 +52,7 @@ export default async function EditDatasetPage({ params, searchParams }) {
   );
   if (!mayManageGlobally && !mayManageOrganization) notFound();
   if (data.status !== "draft") redirect(`/portal/dataset/${id}`);
-  const { standards, referenceSystems } =
-    await getVerifiedSdiRegistryOptions(supabase);
+  const { standards, referenceSystems } = await getVerifiedSdiRegistryOptions();
   return (
     <>
       <Link

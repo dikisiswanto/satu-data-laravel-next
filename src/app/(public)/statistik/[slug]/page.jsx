@@ -597,9 +597,9 @@ export default async function PublicIndicatorDetailPage({
           </section>
         </section>
         <p className="text-xs leading-5 text-muted">
-          Data yang tampil mengikuti status publikasi dan kebijakan akses
-          sumber. Riwayat draf atau revisi yang tidak lagi aktif tidak diekspos
-          melalui halaman ini.
+          {
+            "Data yang tampil mengikuti status publikasi dan kebijakan akses sumber. Riwayat draf atau revisi yang tidak lagi aktif tidak diekspos melalui halaman ini."
+          }
         </p>
       </main>
     </>

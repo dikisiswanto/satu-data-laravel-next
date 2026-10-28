@@ -28,6 +28,70 @@ test("Portal Admin meminta pengguna masuk", async ({ page }) => {
   await expect(page).toHaveURL(/portal\/login/);
 });
 
+test("rate limit sementara tidak menghapus sesi atau mengalihkan ke login", async ({
+  page,
+  context,
+}) => {
+  await context.addCookies([
+    {
+      name: "wajo_portal_token",
+      value: "e2e-rate-limited-session",
+      url: "http://127.0.0.1:3100",
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  await page.goto("/portal");
+  await expect(
+    page.getByRole("heading", { name: "Portal belum dapat dibuka" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/portal(?:\?|$)/);
+  await expect(
+    page.getByRole("button", { name: /Coba lagi dalam 1 detik/ }),
+  ).toBeVisible();
+
+  const cookieBeforeRetry = await context.cookies();
+  expect(
+    cookieBeforeRetry.some((cookie) => cookie.name === "wajo_portal_token"),
+  ).toBe(true);
+
+  const retryButton = page.getByRole("button", { name: "Coba periksa lagi" });
+  await expect(retryButton).toBeEnabled({ timeout: 3_000 });
+  await retryButton.click();
+  await expect(page).toHaveURL(/\/portal(?:\?|$)/);
+  await expect(page.getByRole("main")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Portal belum dapat dibuka" }),
+  ).toHaveCount(0);
+  expect(
+    (await context.cookies()).some(
+      (cookie) => cookie.name === "wajo_portal_token",
+    ),
+  ).toBe(true);
+});
+
+test("sesi yang benar-benar tidak valid mengarahkan pengguna ke login", async ({
+  page,
+  context,
+}) => {
+  await context.addCookies([
+    {
+      name: "wajo_portal_token",
+      value: "e2e-invalid-session",
+      url: "http://127.0.0.1:3100",
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  await page.goto("/portal");
+  await expect(page).toHaveURL(/\/portal\/login/);
+  await expect(
+    page.getByRole("heading", { name: "Masuk ke Portal Admin" }),
+  ).toBeVisible();
+});
+
 test("katalog publik membuka popover filter dengan panel yang tidak terpotong di desktop", async ({
   page,
 }) => {

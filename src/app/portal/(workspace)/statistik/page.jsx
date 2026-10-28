@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalApi } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { IndicatorActions } from "@/components/admin/indicator-actions";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
 import { Plus, ChartNoAxesCombined } from "lucide-react";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Indikator statistik",
@@ -17,39 +16,20 @@ export const metadata = {
 };
 export default async function IndicatorsAdminPage({ searchParams }) {
   const params = await searchParams;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("organization_id,role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_indicator_memberships");
-  const global = (memberships || []).some((m) =>
-    ["super_admin", "data_admin", "auditor"].includes(m.role),
-  );
+  const { memberships = [] } = await getPortalShell();
   const globalManager = (memberships || []).some((m) =>
     ["super_admin", "data_admin"].includes(m.role),
   );
   const canCreate = (memberships || []).some((m) =>
     ["super_admin", "data_admin", "admin_opd", "editor"].includes(m.role),
   );
-  const ids = (memberships || []).map((m) => m.organization_id).filter(Boolean);
-  let query = supabase
-    .from("indicators")
-    .select(
-      "id,code,slug,title,definition,unit,source_name,period_label,status,organization_id,updated_at,organizations(name)",
-    )
-    .order("updated_at", { ascending: false })
-    .limit(500);
-  if (!global) {
-    if (!ids.length) query = null;
-    else query = query.in("organization_id", ids);
-  }
-  const { data, error } = query ? await query : { data: [], error: null };
+  const list = await portalApi("indicators?limit=500&sort=updated_desc");
+  const data = list?.data || [];
+  const error = null;
   return (
     <>
       <PageHeading

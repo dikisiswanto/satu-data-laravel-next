@@ -135,6 +135,12 @@ class PortalAdminController extends Controller
     public function saveOrganization(Request $request, ?string $id = null): JsonResponse
     {
         $this->access->requireAnyRole($request->user(), ['super_admin', 'data_admin']);
+        // Validate the same canonical values that will be persisted. Otherwise a
+        // trailing space or lowercase code can pass `unique` and fail at insert.
+        $request->merge([
+            'code' => is_string($request->input('code')) ? strtoupper(trim($request->input('code'))) : $request->input('code'),
+            'slug' => is_string($request->input('slug')) ? strtolower(trim($request->input('slug'))) : $request->input('slug'),
+        ]);
         $candidateId = $id ?: $request->input('id');
         $ignoreId = is_string($candidateId) && Str::isUuid($candidateId) ? $candidateId : null;
         $data = $request->validate([

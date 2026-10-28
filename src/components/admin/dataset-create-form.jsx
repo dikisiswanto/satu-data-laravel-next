@@ -24,13 +24,15 @@ import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
 
 const FIELD_MESSAGES = {
   title: "Judul wajib diisi dan harus memiliki 5–180 karakter.",
-  description: "Deskripsi wajib diisi dan harus memiliki 20–5.000 karakter.",
+  description: "Deskripsi harus memiliki 20–5.000 karakter jika diisi.",
   organization_id:
     "Pilih organisasi pengampu yang aktif dan menjadi tanggung jawab Anda.",
-  source_name: "Nama sumber data wajib diisi (2–240 karakter).",
-  geographic_scope: "Isi cakupan wilayah, misalnya Kabupaten Wajo.",
-  license_text: "Isi lisensi atau ketentuan penggunaan data.",
-  update_frequency: "Pilih frekuensi pembaruan data.",
+  source_name: "Nama sumber data harus memiliki 2–240 karakter jika diisi.",
+  geographic_scope: "Cakupan wilayah harus memiliki 2–240 karakter jika diisi.",
+  license_text:
+    "Lisensi atau ketentuan penggunaan harus memiliki 2–240 karakter jika diisi.",
+  update_frequency:
+    "Pilih frekuensi pembaruan yang tersedia jika sudah diketahui.",
   reference_period_start: "Pilih tanggal mulai periode data yang benar.",
   reference_period_end:
     "Tanggal akhir harus sama dengan atau setelah tanggal mulai.",

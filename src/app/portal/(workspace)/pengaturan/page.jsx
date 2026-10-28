@@ -1,28 +1,21 @@
 import { redirect } from "next/navigation";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { ProfileForm } from "@/components/admin/profile-form";
 import { PasswordForm } from "@/components/admin/password-form";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Pengaturan akun",
   robots: { index: false, follow: false },
 };
 export default async function SettingsPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("display_name,is_active,created_at")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  assertBackendQuery(profileError, "portal_settings_profile");
+  const profile = await portalData("profile");
   return (
     <>
       <PageHeading

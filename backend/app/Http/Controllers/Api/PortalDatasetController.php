@@ -171,7 +171,7 @@ class PortalDatasetController extends Controller
             return response()->json(['error' => 'forbidden'], 403);
         }
         $data = $this->datasetArray($dataset);
-        $data['versions'] = $dataset->versions->map(fn ($version) => ['id' => $version->id, 'version' => $version->version, 'version_status' => $version->version_status, 'change_summary' => $version->change_summary, 'created_at' => $version->created_at, 'metadata_snapshot' => $version->metadata_snapshot])->all();
+        $data['versions'] = $dataset->versions->map(fn ($version) => ['id' => $version->id, 'version' => $version->version, 'version_status' => $version->version_status, 'change_summary' => $version->change_summary, 'source_resource_id' => $version->source_resource_id, 'created_at' => $version->created_at, 'metadata_snapshot' => $version->metadata_snapshot])->all();
         if ($dataset->status === 'published' && $dataset->draft_version) {
             $draftSnapshot = $dataset->versions->firstWhere('version', (int) $dataset->draft_version)?->metadata_snapshot;
             if (is_array($draftSnapshot)) {
@@ -380,7 +380,11 @@ class PortalDatasetController extends Controller
             return response()->json(['error' => 'checksum_invalid'], 422, ['Cache-Control' => 'no-store']);
         }
 
-        $result = DB::transaction(function () use ($session, $dataset, $user, $checksum, $version): array {
+        $databaseQueueConnection = config('queue.connections.database.connection') ?: DB::getDefaultConnection();
+        $dispatchInsideTransaction = config('queue.default') === 'database'
+            && $databaseQueueConnection === DB::getDefaultConnection();
+        $dispatchedAtomically = false;
+        $result = DB::transaction(function () use ($session, $dataset, $user, $checksum, $version, $dispatchInsideTransaction, &$dispatchedAtomically): array {
             $sessionLock = DB::table('dataset_upload_sessions')->where('id', $session->id)->lockForUpdate()->first();
             if (! $sessionLock) {
                 throw ValidationException::withMessages(['path' => ['upload_path_invalid']]);
@@ -417,9 +421,20 @@ class PortalDatasetController extends Controller
             DB::table('dataset_upload_sessions')->where('id', $session->id)->delete();
             $this->audit->record($user->id, 'dataset.source_upload', 'dataset', $dataset->id, $dataset->organization_id, 'success', ['resource_id' => $resource->id, 'version' => $version, 'size' => $resource->size_bytes, 'format' => $resource->format]);
 
+            // With Laravel's database queue on the same connection, insert the
+            // queue row in this transaction. This prevents a committed upload
+            // from being left queued forever if the API process stops before a
+            // post-commit dispatch can run.
+            if ($dispatchInsideTransaction) {
+                ProcessDatasetConversion::dispatch($job->id)->beforeCommit();
+                $dispatchedAtomically = true;
+            }
+
             return ['resource' => $resource, 'job' => $job];
         });
-        ProcessDatasetConversion::dispatch($result['job']->id)->afterCommit();
+        if (! $dispatchedAtomically) {
+            ProcessDatasetConversion::dispatch($result['job']->id)->afterCommit();
+        }
 
         return response()->json(['status' => 'queued', 'resourceId' => $result['resource']->id, 'data' => ['resource' => $result['resource'], 'job' => ['id' => $result['job']->id, 'status' => $result['job']->status]]], 201, ['Cache-Control' => 'no-store']);
     }

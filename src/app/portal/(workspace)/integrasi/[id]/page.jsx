@@ -3,9 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { SdiMetadataEditor } from "@/components/admin/sdi-metadata-editor";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { getVerifiedSdiRegistryOptions } from "@/lib/sdi/registry-options";
 
 export const dynamic = "force-dynamic";
@@ -16,30 +15,22 @@ export const metadata = {
 
 export default async function EditSdiMetadataPage({ params }) {
   const { id } = await params;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-
-  const { data: dataset, error } = await supabase
-    .from("datasets")
-    .select(
-      "id,title,organization_id,status,current_version,draft_version,organizations(name)",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  assertBackendQuery(error, "portal_sdi_dataset_detail");
+  let dataset;
+  try {
+    dataset = await portalData(`datasets/${encodeURIComponent(id)}`);
+  } catch (error) {
+    if ([403, 404].includes(error.status)) notFound();
+    throw error;
+  }
   if (!dataset) notFound();
   if (!["draft", "published"].includes(dataset.status))
     redirect(`/portal/dataset/${id}`);
 
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("role,organization_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_sdi_memberships");
+  const { memberships = [] } = await getPortalShell();
   const globalManager = (memberships || []).some((item) =>
     ["super_admin", "data_admin"].includes(item.role),
   );
@@ -51,18 +42,12 @@ export default async function EditSdiMetadataPage({ params }) {
   if (!globalManager && !organizationManager) notFound();
 
   const version = dataset.draft_version ?? dataset.current_version;
-  const { data: sdiMetadata, error: metadataError } = await supabase
-    .from("dataset_sdi_metadata")
-    .select(
-      "ddp_id,ddp_name,source_reference,available_year,sds_code,sds_type,sds_version,standard_concept,standard_definition,measurement,presentation_classification,reference_code,reference_code_version,method_description,sds_registry_id,reference_system_id",
-    )
-    .eq("dataset_id", id)
-    .eq("dataset_version", version)
-    .maybeSingle();
-  assertBackendQuery(metadataError, "portal_sdi_metadata_detail");
+  const sdiMetadata =
+    (dataset.dataset_sdi_metadata || []).find(
+      (item) => item.dataset_version === version,
+    ) || null;
 
-  const { standards, referenceSystems } =
-    await getVerifiedSdiRegistryOptions(supabase);
+  const { standards, referenceSystems } = await getVerifiedSdiRegistryOptions();
 
   const versionLabel = dataset.draft_version
     ? `draf versi ${dataset.draft_version}`

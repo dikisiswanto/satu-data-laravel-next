@@ -12,7 +12,6 @@ import {
   UserRoundCog,
 } from "lucide-react";
 import { backendData } from "@/lib/backend/server";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import { buildDashboardViewModel } from "@/lib/admin/dashboard-view-model";
 import { PortalContextGuide } from "@/components/portal-context-guide";
@@ -80,10 +79,9 @@ function DashboardMetric({
 }
 
 export default async function PortalHomePage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
 
   // One authenticated API response supplies the profile, memberships, and

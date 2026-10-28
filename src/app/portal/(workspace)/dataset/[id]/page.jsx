@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { Badge } from "@/components/ui/badge";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
@@ -18,7 +18,6 @@ import { DatasetArchiveAction } from "@/components/admin/dataset-archive-action"
 import { DatasetVersionAbandonAction } from "@/components/admin/dataset-version-abandon-action";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Detail dataset",
@@ -58,58 +57,43 @@ const datasetActionErrorMessages = {
 export default async function DatasetAdminDetailPage({ params, searchParams }) {
   const { id } = await params;
   const query = await searchParams;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data, error } = await supabase
-    .from("datasets")
-    .select(
-      "*,organizations(name),dataset_resources(id,original_filename,format,size_bytes,is_source,is_public,conversion_status,dataset_version,created_at)",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  assertBackendQuery(error, "portal_dataset_detail");
+  let data;
+  try {
+    data = await portalData(`datasets/${encodeURIComponent(id)}`);
+  } catch (error) {
+    if (error.status === 404 || error.status === 403) notFound();
+    throw error;
+  }
   if (!data) notFound();
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("id,role")
-    .eq("user_id", user.id)
-    .eq("organization_id", data.organization_id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_dataset_memberships");
-  const { data: global, error: globalError } = await supabase
-    .from("organization_memberships")
-    .select("id,role")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .is("organization_id", null)
-    .in("role", ["super_admin", "data_admin", "auditor"])
-    .limit(3);
-  assertBackendQuery(globalError, "portal_dataset_global_access");
-  if (!memberships?.length && !global?.length) notFound();
+  const { memberships: allMemberships = [] } = await getPortalShell();
+  const memberships = allMemberships.filter(
+    (item) => item.organization_id === data.organization_id,
+  );
+  const global = allMemberships.filter(
+    (item) =>
+      !item.organization_id &&
+      ["super_admin", "data_admin", "auditor"].includes(item.role),
+  );
+  if (!memberships.length && !global.length) notFound();
   const canSubmit =
     memberships?.some((item) => ["admin_opd", "editor"].includes(item.role)) ||
     global?.some((item) => ["super_admin", "data_admin"].includes(item.role));
   const canPublish =
     memberships?.some((item) => item.role === "admin_opd") ||
     global?.some((item) => ["super_admin", "data_admin"].includes(item.role));
-  const { data: versionHistory, error: versionHistoryError } = await supabase
-    .from("dataset_versions")
-    .select(
-      "id,version,version_status,created_at,change_summary,source_resource_id",
-    )
-    .eq("dataset_id", data.id)
-    .order("version", { ascending: false });
-  assertBackendQuery(versionHistoryError, "portal_dataset_version_history");
+  const versionHistory = data.versions || [];
   const workVersion = data.draft_version ?? data.current_version;
   const activeWorkSnapshot = (versionHistory || []).find(
     (version) => version.version === workVersion,
   );
   const isNewVersionInProgress =
     data.status === "published" && data.draft_version !== null;
-  const workSourceReady = (data.dataset_resources || []).some(
+  const resources = data.resources || data.dataset_resources || [];
+  const workSourceReady = resources.some(
     (resource) =>
       resource.dataset_version === workVersion &&
       resource.is_source &&
@@ -137,9 +121,8 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
   const versionRows = (versionHistory || []).map((version) => ({
     ...version,
     source_filename:
-      (data.dataset_resources || []).find(
-        (resource) => resource.id === version.source_resource_id,
-      )?.original_filename || "Belum ada sumber",
+      resources.find((resource) => resource.id === version.source_resource_id)
+        ?.original_filename || "Belum ada sumber",
   }));
   const versionStatusLabels = {
     draft: "Draf",
@@ -157,21 +140,10 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
   };
   // Only fetch the latest job for the current work version; completed conversion
   // history can grow over time and should not inflate the detail page response.
-  const { data: latestCurrentJob, error: conversionJobError } = await supabase
-    .from("conversion_jobs")
-    .select(
-      "id,status,safe_error_message,attempts,max_attempts,created_at,started_at,finished_at,updated_at,lease_expires_at",
-    )
-    .eq("dataset_id", data.id)
-    .eq("dataset_version", workVersion)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (conversionJobError) {
-    console.error("portal_dataset_conversion_job_lookup_failed", {
-      code: conversionJobError.code || "unknown",
-    });
-  }
+  const latestCurrentJob = (data.conversion_jobs || []).find(
+    (job) => job.dataset_version === workVersion,
+  );
+  const conversionJobError = null;
   const failedConversionJob =
     !conversionJobError && latestCurrentJob?.status === "failed"
       ? latestCurrentJob
@@ -382,7 +354,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
           ) : null}
           <PortalDataTable
             caption="Berkas dan status pengolahan dataset"
-            rows={data.dataset_resources || []}
+            rows={resources}
             alwaysShowFilters={["format", "conversion_status"]}
             filterLabelOverrides={{
               format: "Format",

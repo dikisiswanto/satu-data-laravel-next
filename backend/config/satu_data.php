@@ -4,7 +4,8 @@ return [
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
     'legacy_supabase_database_url' => env('LEGACY_SUPABASE_DATABASE_URL', ''),
     'public_backend_api_url' => env('PUBLIC_BACKEND_API_URL', ''),
-    'rate_limit_per_minute' => max(60, min(600, (int) env('RATE_LIMIT_PER_MINUTE', 120))),
+    'rate_limit_per_minute' => max(60, min(600, (int) env('RATE_LIMIT_PER_MINUTE', 600))),
+    'anonymous_rate_limit_per_minute' => max(30, min(300, (int) env('ANONYMOUS_RATE_LIMIT_PER_MINUTE', 120))),
     'frontend_token_ttl_days' => max(1, min(30, (int) env('FRONTEND_TOKEN_TTL_DAYS', 14))),
     'conversion' => [
         'job_timeout' => max(120, min(900, (int) env('CONVERSION_JOB_TIMEOUT', 900))),

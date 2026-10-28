@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { portalQueryKeys } from "@/lib/api/query-keys";
+import { getRetryAfterMs } from "@/lib/api/client-response";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -130,6 +131,7 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
           payload?.error || `conversion_status_http_${response.status}`,
         );
         error.status = response.status;
+        error.retryAfterMs = getRetryAfterMs(response);
         throw error;
       }
       if (!payload || !Object.hasOwn(payload, "job")) {
@@ -155,6 +157,7 @@ export function ConversionJobStatus({ datasetId, version, initialJob }) {
       }
       return failureCount < 2;
     },
+    retryDelay: (_failureCount, error) => error.retryAfterMs ?? 1_000,
   });
 
   const job = statusQuery.data ?? null;

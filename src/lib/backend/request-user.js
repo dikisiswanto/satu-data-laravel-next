@@ -1,42 +1,37 @@
 import { isTransientAuthFailure } from "@/lib/backend/auth-errors";
 import { cache } from "react";
+import { backendFetch } from "@/lib/backend/server";
 
-/** Verify the current portal identity against Laravel Sanctum on each server request. */
-const verifyRequestUser = cache(async (backendClient) => {
+/** Verify the current portal identity through Laravel Sanctum per server request. */
+const verifyRequestUser = cache(async () => {
   let result;
   try {
-    result = await backendClient.auth.getUser();
+    const payload = await backendFetch("/api/v1/auth/me");
+    result = { data: { user: payload?.data || null }, error: null };
   } catch (error) {
-    if (!isTransientAuthFailure(error)) throw error;
-    result = { error };
+    result = { data: { user: null }, error };
   }
 
-  if (!result?.error || !isTransientAuthFailure(result.error)) return result;
+  if (
+    !result?.error ||
+    Number(result.error.status) === 429 ||
+    !isTransientAuthFailure(result.error)
+  ) {
+    return result;
+  }
 
   // A transient outage must never be interpreted as an expired session. Retry
   // once, then surface an unavailable state through the route error boundary.
   await new Promise((resolve) => setTimeout(resolve, 250));
   try {
-    const retry = await backendClient.auth.getUser();
-    if (retry?.error && isTransientAuthFailure(retry.error)) {
-      throw Object.assign(
-        new Error(
-          retry.error.message ||
-            "Session verification is temporarily unavailable",
-        ),
-        {
-          status: retry.error.status,
-          code: retry.error.code,
-        },
-      );
-    }
-    return retry;
+    const payload = await backendFetch("/api/v1/auth/me");
+    return { data: { user: payload?.data || null }, error: null };
   } catch (retryError) {
     if (isTransientAuthFailure(retryError)) throw retryError;
     return { data: { user: null }, error: retryError };
   }
 });
 
-export function getRequestVerifiedUser(backendClient) {
-  return verifyRequestUser(backendClient);
+export function getRequestVerifiedUser() {
+  return verifyRequestUser();
 }

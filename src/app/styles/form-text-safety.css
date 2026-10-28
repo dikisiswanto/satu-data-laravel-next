@@ -160,8 +160,7 @@
   resize: vertical;
 }
 
-/* Form actions keep a stable hit target and one-line label. Wrapping button
-   contents made icon+label actions grow to different heights on narrow grids. */
+/* Form actions keep a minimum hit target and may grow when text wraps. */
 .public-app-shell form button,
 .page-container form button,
 .portal-app form button,
@@ -171,14 +170,14 @@
 .portal-app .portal-table-explorer-toolbar button,
 .login-form button {
   box-sizing: border-box;
-  height: 44px;
+  height: auto;
   min-height: 44px;
-  padding-top: 0;
-  padding-bottom: 0;
-  line-height: 1.25rem;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  flex: 0 0 auto;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  flex: 0 1 auto;
   max-width: 100%;
 }
 

@@ -29,7 +29,7 @@ describe("form vertical text safety across public and admin pages", () => {
     expect(safety).toContain(".portal-app .portal-table-search input");
     expect(safety).toContain(".catalog-filter-popover-panel");
     expect(normalizedSafety).toContain(".login-form .field");
-    expect(safety).toContain(".portal-app form :is(");
+    expect(normalizedSafety).toContain(".portal-app form :is(");
   });
 
   it("also normalizes input-based submit controls and file picker controls", () => {

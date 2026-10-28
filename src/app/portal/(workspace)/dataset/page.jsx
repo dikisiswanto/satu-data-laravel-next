@@ -8,15 +8,18 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import {
+  getPortalShell,
+  portalApi,
+  portalData,
+} from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/admin/date-picker";
 
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Kelola dataset",
@@ -66,12 +69,6 @@ function safeDate(value) {
     ? value
     : "";
 }
-function nextDate(value) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day + 1))
-    .toISOString()
-    .slice(0, 10);
-}
 function dateLabel(value) {
   if (!value) return "—";
   return new Intl.DateTimeFormat("id-ID", {
@@ -92,80 +89,44 @@ export default async function ManageDatasetsPage({ searchParams }) {
     1,
     Math.min(10000, Number.parseInt(params?.page || "1", 10) || 1),
   );
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("role,organization_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_dataset_memberships");
+  const shell = await getPortalShell();
+  const memberships = shell?.memberships || [];
   const roles = [
     ...new Set((memberships || []).map((membership) => membership.role)),
   ];
-  const global = roles.some((role) =>
-    ["super_admin", "data_admin", "auditor"].includes(role),
-  );
   const canCreate = roles.some((role) =>
     ["super_admin", "data_admin", "admin_opd", "editor"].includes(role),
   );
-  const orgIds = [
-    ...new Set(
-      (memberships || [])
-        .map((membership) => membership.organization_id)
-        .filter(Boolean),
-    ),
-  ];
-  let orgQuery = supabase
-    .from("organizations")
-    .select("id,name")
-    .eq("is_active", true)
-    .order("name")
-    .limit(500);
-  if (!global) orgQuery = orgIds.length ? orgQuery.in("id", orgIds) : null;
-
-  // A validated UUID is enough to build the scoped filter without waiting for
-  // the organization query. RLS and the membership scope remain in force.
   const organizationIdIsWellFormed =
     !organizationId ||
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       organizationId,
     );
-  let query = supabase
-    .from("datasets")
-    .select("id,code,title,status,updated_at,created_at,organizations(name)", {
-      count: "exact",
-    });
-  if (!organizationIdIsWellFormed) query = null;
-  if (query && !global)
-    query = orgIds.length ? query.in("organization_id", orgIds) : null;
-  if (query && organizationId)
-    query = query.eq("organization_id", organizationId);
-  if (query && status) query = query.eq("status", status);
-  if (query && createdFrom)
-    query = query.gte("created_at", `${createdFrom}T00:00:00+08:00`);
-  if (query && createdTo)
-    query = query.lt("created_at", `${nextDate(createdTo)}T00:00:00+08:00`);
-  if (query && q)
-    query = query.or(
-      `title.ilike.%${q}%,description.ilike.%${q}%,source_name.ilike.%${q}%,code.ilike.%${q}%`,
-    );
-  if (query) {
-    const order = sort.startsWith("title") ? "title" : "updated_at";
-    query = query.order(order, { ascending: sort.endsWith("asc") });
-    query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-  }
-  const [organizationResult, datasetResult] = await Promise.all([
-    orgQuery ? orgQuery : Promise.resolve({ data: [], error: null }),
-    query ? query : Promise.resolve({ data: [], error: null, count: 0 }),
+  const offset = (page - 1) * PAGE_SIZE;
+  const search = new URLSearchParams({
+    limit: String(PAGE_SIZE),
+    offset: String(offset),
+    sort,
+  });
+  if (q) search.set("q", q);
+  if (status) search.set("status", status);
+  if (createdFrom) search.set("created_from", createdFrom);
+  if (createdTo) search.set("created_to", createdTo);
+  if (organizationIdIsWellFormed && organizationId)
+    search.set("organization_id", organizationId);
+  const [organizations, datasetResult] = await Promise.all([
+    portalData("organizations?limit=500"),
+    organizationIdIsWellFormed
+      ? portalApi(`datasets?${search.toString()}`)
+      : Promise.resolve({ data: [], meta: { total: 0 } }),
   ]);
-  const { data: organizations, error: organizationError } = organizationResult;
-  assertBackendQuery(organizationError, "portal_dataset_organizations");
-  const { data, error, count } = datasetResult;
-  const total = count || 0;
+  const data = datasetResult.data || [];
+  const total = datasetResult.meta?.total || 0;
+  const error = null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.min(page, pages);
   if (page !== currentPage)

@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, LockKeyhole, RotateCw, ShieldCheck } from "lucide-react";
 import { loginAction } from "./actions";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import { cookies } from "next/headers";
 
@@ -23,8 +22,7 @@ export default async function LoginPage({ searchParams }) {
   const cookieStore = await cookies();
   const hasSessionCookie = Boolean(cookieStore.get("wajo_portal_token")?.value);
   try {
-    const backend = await createBackendServerClient();
-    const result = await getRequestVerifiedUser(backend);
+    const result = await getRequestVerifiedUser();
     user = result?.data?.user || null;
     sessionCheckError = Boolean(result?.error);
     if (result?.error && result.error.status !== 401) authUnavailable = true;

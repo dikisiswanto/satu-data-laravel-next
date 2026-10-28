@@ -57,7 +57,8 @@ describe("administrative table exploration and audit accountability", () => {
     expect(auditPage).toContain("Waktu (WITA)");
     expect(auditPage).toContain("request_id");
     expect(auditPage).toContain("outcomeLabels");
-    expect(auditPage).toContain(".limit(500)");
+    expect(auditPage).toContain('portalData("audit-logs?limit=500")');
+    expect(auditController).toContain("limit(min(500");
   });
 
   it("enforces audit role checks and organization scope in the Laravel API", () => {

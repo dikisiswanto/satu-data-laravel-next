@@ -1,28 +1,22 @@
 import { ChartNoAxesCombined } from "lucide-react";
 import { redirect } from "next/navigation";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { IndicatorForm } from "@/components/admin/indicator-form";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Indikator baru",
   robots: { index: false, follow: false },
 };
 export default async function NewIndicatorPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("organization_id,role,organizations(id,name)")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_indicator_new_memberships");
+  const shell = await getPortalShell();
+  const memberships = shell?.memberships || [];
   if (
     !(memberships || []).some((m) =>
       ["super_admin", "data_admin", "admin_opd", "editor"].includes(m.role),
@@ -34,16 +28,7 @@ export default async function NewIndicatorPage() {
   );
   let orgs;
   if (global) {
-    const { data: organizations, error: organizationsError } = await supabase
-      .from("organizations")
-      .select("id,name")
-      .eq("is_active", true)
-      .order("name");
-    assertBackendQuery(
-      organizationsError,
-      "portal_indicator_new_organizations",
-    );
-    orgs = organizations || [];
+    orgs = await portalData("organizations");
   } else {
     orgs = (memberships || [])
       .filter((m) => ["admin_opd", "editor"].includes(m.role))

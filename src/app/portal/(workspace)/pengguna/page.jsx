@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,6 @@ import { InviteUserForm } from "@/components/admin/invite-user-form";
 import { MembershipStatusAction } from "@/components/admin/membership-status-action";
 import { MembershipForm } from "@/components/admin/membership-form";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Pengguna dan akses",
@@ -24,17 +23,11 @@ const labels = {
   auditor: "Auditor",
 };
 export default async function UserAccessPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: myMemberships, error: myMembershipsError } = await supabase
-    .from("organization_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(myMembershipsError, "portal_users_current_memberships");
+  const { memberships: myMemberships = [] } = await getPortalShell();
   const superAdmin = (myMemberships || []).some(
     (m) => m.role === "super_admin",
   );
@@ -43,23 +36,10 @@ export default async function UserAccessPage() {
   );
   if (!globalAdmin) redirect("/portal");
   // These two admin tables do not depend on each other's result.
-  const [organizationsResult, membershipsResult] = await Promise.all([
-    supabase
-      .from("organizations")
-      .select("id,name")
-      .eq("is_active", true)
-      .order("name"),
-    supabase
-      .from("organization_memberships")
-      .select(
-        "id,user_id,organization_id,role,is_active,created_at,organizations(name)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(500),
+  const [orgs, memberships] = await Promise.all([
+    portalData("organizations"),
+    portalData("memberships"),
   ]);
-  const { data: orgs, error: organizationsError } = organizationsResult;
-  const { data: memberships, error } = membershipsResult;
-  assertBackendQuery(organizationsError, "portal_users_organizations");
   return (
     <>
       <PageHeading

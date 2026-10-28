@@ -27,7 +27,7 @@ for (const required of [
   "src/app/portal/layout.jsx",
   "src/app/portal/(workspace)/layout.jsx",
   "src/lib/backend/server.js",
-  "src/lib/backend/compat-server.js",
+  "src/lib/backend/portal-api.js",
   "src/lib/backend/request-user.js",
   "src/lib/data/public.js",
   "src/components/source-upload-form.jsx",
@@ -436,16 +436,6 @@ const checks = [
     "src/components/portal-query-cache-guard.jsx",
     /removeQueries/,
     "Cache query privat harus dibersihkan saat logout atau kembali ke login",
-  ],
-  [
-    "src/lib/backend/compat-server.js",
-    /requestedLimit > 500/,
-    "Komponen server legacy tidak boleh diam-diam memotong permintaan di atas 500 baris",
-  ],
-  [
-    "src/lib/backend/compat-server.js",
-    /table === "indicators"[\s\S]{0,120}get\("id"\)[\s\S]{0,180}api\/v1\/portal\/indicators\/\$\{encodeURIComponent\(indicatorId\)\}/,
-    "Pencarian indikator berdasarkan ID harus memakai endpoint detail khusus",
   ],
   [
     "backend/app/Http/Controllers/Api/PortalIndicatorController.php",

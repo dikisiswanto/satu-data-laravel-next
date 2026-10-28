@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { BadgeCheck, BookOpenCheck, Database } from "lucide-react";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { SdiRegistryManager } from "@/components/admin/sdi-registry-manager";
 
@@ -13,18 +12,12 @@ export const metadata = {
 };
 
 export default async function SdiStandardsPage() {
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipError } = await supabase
-    .from("organization_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipError, "portal_sdi_registry_memberships");
-  const roles = (memberships || []).map((membership) => membership.role);
+  const { memberships = [] } = await getPortalShell();
+  const roles = memberships.map((membership) => membership.role);
   if (
     !roles.some((role) =>
       [
@@ -41,35 +34,10 @@ export default async function SdiStandardsPage() {
   const canManage = roles.some((role) =>
     ["super_admin", "data_admin"].includes(role),
   );
-  const [standardsResult, systemsResult, entriesResult] = await Promise.all([
-    supabase
-      .from("sdi_standard_registry")
-      .select(
-        "id,standard_code,standard_type,title,definition,authority_name,version_label,source_url,evidence_url,status,valid_from,valid_until,created_at,reviewed_at",
-      )
-      .order("updated_at", { ascending: false })
-      .limit(500),
-    supabase
-      .from("reference_code_systems")
-      .select(
-        "id,system_code,title,description,authority_name,version_label,source_url,evidence_url,status,valid_from,valid_until,created_at,reviewed_at",
-      )
-      .order("updated_at", { ascending: false })
-      .limit(500),
-    supabase
-      .from("reference_code_entries")
-      .select(
-        "id,system_id,code,label,definition,parent_code,is_active,reference_code_systems!inner(system_code,title,status,version_label)",
-      )
-      .order("code")
-      .limit(500),
-  ]);
-  assertBackendQuery(standardsResult.error, "portal_sdi_standards_registry");
-  assertBackendQuery(systemsResult.error, "portal_reference_systems_registry");
-  assertBackendQuery(entriesResult.error, "portal_reference_code_entries");
-  const standards = standardsResult.data || [];
-  const systems = systemsResult.data || [];
-  const entries = entriesResult.data || [];
+  const catalog = await portalData("sdi/registry");
+  const standards = catalog.standards || [];
+  const systems = catalog.systems || [];
+  const entries = catalog.entries || [];
   const verifiedStandards = standards.filter(
     (item) => item.status === "verified",
   ).length;

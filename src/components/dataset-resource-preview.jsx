@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { publicQueryKeys } from "@/lib/api/query-keys";
+import { getRetryAfterMs } from "@/lib/api/client-response";
 import {
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,7 @@ export function DatasetResourcePreview({ slug, resource }) {
           payload?.error || `preview_http_${response.status}`,
         );
         error.status = response.status;
+        error.retryAfterMs = getRetryAfterMs(response);
         throw error;
       }
       if (!payload || !Array.isArray(payload.data) || !payload.meta) {
@@ -52,12 +54,11 @@ export function DatasetResourcePreview({ slug, resource }) {
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
-      if (
-        [400, 401, 403, 404, 409, 422, 429].includes(Number(error?.status || 0))
-      )
+      if ([400, 401, 403, 404, 409, 422].includes(Number(error?.status || 0)))
         return false;
       return failureCount < 1;
     },
+    retryDelay: (_failureCount, error) => error.retryAfterMs ?? 1_000,
   });
   const result = previewQuery.data || null;
   const state = previewQuery.isPending

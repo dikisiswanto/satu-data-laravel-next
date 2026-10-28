@@ -1,13 +1,12 @@
 import { Database, Building2 } from "lucide-react";
 import { safeHttpUrl } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { DatasetCreateForm } from "@/components/admin/dataset-create-form";
 import { Button } from "@/components/ui/button";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
 import { datasetStarterReferences } from "@/lib/data/dataset-starter-references";
 import { DatasetPreparationAssistant } from "@/components/admin/dataset-preparation-assistant";
 import { getVerifiedSdiRegistryOptions } from "@/lib/sdi/registry-options";
@@ -34,47 +33,31 @@ const datasetCreateErrorMessages = {
 };
 export default async function NewDatasetPage({ searchParams }) {
   const params = await searchParams;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
-    .select("organization_id,role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(membershipsError, "portal_dataset_new_memberships");
+  const shell = await getPortalShell();
+  const memberships = shell?.memberships || [];
   const globalAdmin = (memberships || []).some((membership) =>
     ["super_admin", "data_admin"].includes(membership.role),
   );
   let orgs = [];
   if (globalAdmin) {
-    const { data, error } = await supabase
-      .from("organizations")
-      .select("id,name")
-      .eq("is_active", true)
-      .order("name");
-    assertBackendQuery(error, "portal_dataset_new_organizations");
-    orgs = data || [];
+    orgs = await portalData("organizations");
   } else {
     const orgIds = (memberships || [])
       .filter((membership) => ["admin_opd", "editor"].includes(membership.role))
       .map((membership) => membership.organization_id)
       .filter(Boolean);
     if (orgIds.length) {
-      const { data, error } = await supabase
-        .from("organizations")
-        .select("id,name")
-        .in("id", orgIds)
-        .eq("is_active", true)
-        .order("name");
-      assertBackendQuery(error, "portal_dataset_new_organizations");
-      orgs = data || [];
+      const accessibleIds = new Set(orgIds);
+      orgs = (await portalData("organizations")).filter((organization) =>
+        accessibleIds.has(organization.id),
+      );
     }
   }
-  const { standards, referenceSystems } =
-    await getVerifiedSdiRegistryOptions(supabase);
+  const { standards, referenceSystems } = await getVerifiedSdiRegistryOptions();
   return (
     <>
       <PageHeading

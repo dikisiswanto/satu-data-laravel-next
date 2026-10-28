@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ChartNoAxesCombined } from "lucide-react";
-import { createBackendServerClient } from "@/lib/backend/compat-server";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
-import { assertBackendQuery } from "@/lib/backend/query-guard";
+import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { IndicatorObservationManager } from "@/components/admin/indicator-observation-manager";
 
@@ -15,29 +14,23 @@ export const metadata = {
 
 export default async function IndicatorObservationsPage({ params }) {
   const { id } = await params;
-  const supabase = await createBackendServerClient();
   const {
     data: { user },
-  } = await getRequestVerifiedUser(supabase);
+  } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
-  const { data: indicator, error: indicatorError } = await supabase
-    .from("indicators")
-    .select(
-      "id,code,slug,title,definition,unit,source_name,organization_id,status,period_label,value_numeric,value_text",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  assertBackendQuery(indicatorError, "portal_indicator_observations_detail");
+  let indicator;
+  let observations;
+  try {
+    [indicator, observations] = await Promise.all([
+      portalData(`indicators/${encodeURIComponent(id)}`),
+      portalData(`indicators/${encodeURIComponent(id)}/observations`),
+    ]);
+  } catch (error) {
+    if (Number(error?.status) === 404) notFound();
+    throw error;
+  }
   if (!indicator) notFound();
-  const { data: memberships, error: membershipError } = await supabase
-    .from("organization_memberships")
-    .select("organization_id,role")
-    .eq("user_id", user.id)
-    .eq("is_active", true);
-  assertBackendQuery(
-    membershipError,
-    "portal_indicator_observations_memberships",
-  );
+  const { memberships = [] } = await getPortalShell();
   const global = (memberships || []).some((item) =>
     ["super_admin", "data_admin", "auditor"].includes(item.role),
   );
@@ -59,16 +52,6 @@ export default async function IndicatorObservationsPage({ params }) {
       (item) => item.organization_id === indicator.organization_id,
     );
   if (!canRead) notFound();
-  const { data: observations, error: observationError } = await supabase
-    .from("indicator_observations")
-    .select(
-      "id,indicator_id,period_start,period_end,period_label,geographic_code,geographic_name,dimension_key,dimensions,value_numeric,value_text,unit,source_name,source_url,revision_no,is_current,status,quality_status,published_at,created_at,updated_at",
-    )
-    .eq("indicator_id", id)
-    .order("created_at", { ascending: false })
-    .order("revision_no", { ascending: false })
-    .limit(500);
-  assertBackendQuery(observationError, "portal_indicator_observations_list");
   return (
     <>
       <Link
