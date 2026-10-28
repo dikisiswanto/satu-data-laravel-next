@@ -250,7 +250,9 @@ test("tabel akses pengguna menampilkan identitas dan lingkup yang mudah dibaca",
   await expect(page.getByText("Operator Contoh")).toBeVisible();
   await expect(page.getByText("operator@example.test")).toBeVisible();
   await expect(page.getByText("Lingkup: Seluruh portal")).toBeVisible();
-  await expect(page.getByText("Administrator data")).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "Administrator data" }),
+  ).toBeVisible();
 });
 
 test("katalog publik membuka popover filter dengan panel yang tidak terpotong di desktop", async ({
@@ -306,10 +308,11 @@ test("menu seluler membuka navigasi yang dapat diakses dan Portal Admin menuju l
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "networkidle" });
   const toggle = page.getByRole("button", { name: "Buka navigasi" });
   await expect(toggle).toBeVisible();
   await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
   await expect(
     page.getByRole("navigation", { name: "Navigasi seluler" }),
   ).toBeVisible();

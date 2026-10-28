@@ -45,6 +45,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const previousPathname = useRef(pathname);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
 
@@ -77,13 +78,12 @@ export function SiteHeader() {
     };
   }, []);
 
-  // Close the disclosure after route changes. Schedule the state update on the
-  // next frame instead of cascading synchronously from the effect.
+  // Close the disclosure only after navigation. Resetting on mount can race
+  // with the first tap and immediately hide the menu on slower devices.
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setMobileMenuOpen(false);
-    });
-    return () => window.cancelAnimationFrame(frame);
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    setMobileMenuOpen(false);
   }, [pathname]);
 
   // Escape and outside clicks dismiss the menu; Escape restores focus to its trigger.

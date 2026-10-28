@@ -1,9 +1,23 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const read = (path) =>
   readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const compact = (source) => source.replace(/\s+/g, " ").trim();
+const workspaceRoot = fileURLToPath(
+  new URL("../../src/app/portal/(workspace)", import.meta.url),
+);
+
+function findWorkspacePages(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) return findWorkspacePages(entryPath);
+    return entry.isFile() && entry.name === "page.jsx" ? [entryPath] : [];
+  });
+}
+
 const routeLoaders = [
   "src/app/portal/(workspace)/loading.jsx",
   "src/app/portal/(workspace)/dataset/loading.jsx",
@@ -32,6 +46,21 @@ const routeLoaders = [
 ];
 
 describe("loading shells preserve static UI copy and route structure", () => {
+  it("gives every admin route its own static loading shell without API requests", () => {
+    for (const pagePath of findWorkspacePages(workspaceRoot)) {
+      const loadingPath = join(dirname(pagePath), "loading.jsx");
+      const relativePath = loadingPath.replaceAll("\\", "/");
+
+      expect(
+        existsSync(loadingPath),
+        "missing loading shell: " + relativePath,
+      ).toBe(true);
+      expect(readFileSync(loadingPath, "utf8"), relativePath).not.toMatch(
+        /\b(?:fetch|portalData|portalApi|backendFetch|useQuery)\s*\(/,
+      );
+    }
+  });
+
   it("provides a route-specific loading shell for each core admin workflow", () => {
     for (const path of routeLoaders) {
       expect(
