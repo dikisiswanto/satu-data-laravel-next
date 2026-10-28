@@ -46,13 +46,23 @@ describe("public mobile layout, stable shell and portal login entry", () => {
     );
     const publicMotion = read("src/app/styles/public-pages-motion.css");
     expect(publicMotion).not.toContain("@keyframes public-route-enter");
-    expect(publicMotion).toContain("@keyframes home-hero-copy-enter");
-    expect(publicMotion).toContain("@keyframes home-hero-title-enter");
+    expect(publicMotion).toContain("@keyframes home-hero-element-enter");
+    expect(publicMotion).not.toContain("@keyframes home-hero-title-enter");
     expect(publicMotion).toContain("@keyframes home-hero-visual-enter");
-    expect(publicMotion).toContain("@keyframes home-hero-stat-enter");
+    expect(publicMotion).not.toContain("@keyframes home-hero-stat-enter");
     expect(publicMotion).toContain("@media (prefers-reduced-motion: reduce)");
     expect(publicMotion).toMatch(
-      /\.home-hero-copy > \.home-hero-kicker[\s\S]*?animation-delay: 60ms/s,
+      /\.home-hero-copy,[\s\S]*?animation: none !important;[\s\S]*?transition: none !important;/,
+    );
+    expect(publicMotion).toContain(
+      ".home-visual-caption {\n  animation: home-hero-element-enter",
+    );
+    expect(publicMotion).not.toMatch(/\.home-hero-copy > [^{]+\{\s*animation:/);
+    expect(publicMotion).not.toMatch(
+      /\.home-stats(?: > \.home-stat|\.home-stats-note)[^{]*\{\s*animation:/,
+    );
+    expect(publicMotion).toMatch(
+      /\.home-stats,[\s\S]*?animation: none !important;[\s\S]*?transition: none !important;/,
     );
     expect(publicHomeStyles).not.toContain("@keyframes public-route-enter");
     expect(publicHomeStyles).not.toContain(".public-section-reveal.is-pending");
