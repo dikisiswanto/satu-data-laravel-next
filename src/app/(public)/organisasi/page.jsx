@@ -4,18 +4,20 @@ import { PageHeading } from "@/components/page-heading";
 import { OrganizationDirectory } from "@/components/organization-directory";
 import { getPublicOrganizationsResult } from "@/lib/data/organizations";
 import { SectionReveal } from "@/components/section-reveal";
-import { getCanonicalMetadata, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getSocialMetadata,
+  siteConfig,
+} from "@/lib/site-config";
 
 export const metadata = {
   title: "Perangkat Daerah",
-  description:
-    "Cari perangkat daerah pengampu data Kabupaten Wajo dan lihat jumlah dataset yang telah dipublikasikan.",
+  description: `Cari perangkat daerah pengampu data ${siteConfig.regionName} dan lihat jumlah dataset yang telah dipublikasikan.`,
   ...getCanonicalMetadata("/organisasi"),
   ...getSocialMetadata({
     path: "/organisasi",
-    title: "Perangkat Daerah | Satu Data Wajo",
-    description:
-      "Temukan perangkat daerah pengampu data dan dataset publik Kabupaten Wajo.",
+    title: `Perangkat Daerah | ${siteConfig.shortName}`,
+    description: `Temukan perangkat daerah pengampu data dan dataset publik ${siteConfig.regionName}.`,
   }),
 };
 
@@ -31,7 +33,7 @@ export default async function OrganizationsPage() {
         className="mb-6 sm:mb-6"
         eyebrow="Pengampu data"
         title="Perangkat daerah"
-        description="Temukan perangkat daerah aktif yang mengampu data Kabupaten Wajo, termasuk organisasi yang sedang menyiapkan publikasi pertamanya."
+        description={`Temukan perangkat daerah aktif yang mengampu data ${siteConfig.regionName}, termasuk organisasi yang sedang menyiapkan publikasi pertamanya.`}
       />
       {organizations.length ? (
         <SectionReveal as="div">

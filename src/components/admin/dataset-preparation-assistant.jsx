@@ -11,8 +11,9 @@ import {
 import {
   DATASET_BLUEPRINTS,
   OPERATOR_START_STEPS,
-  WAJO_DATA_THEMES,
+  DATA_THEME_SUGGESTIONS,
 } from "@/lib/data/dataset-blueprints";
+import { siteConfig } from "@/lib/site-config";
 
 const PROFILE_ICONS = {
   "statistik-wilayah": FileSpreadsheet,
@@ -48,7 +49,7 @@ export function DatasetPreparationAssistant() {
         </span>
         <ChevronDown
           size={17}
-          className="shrink-0 text-[#62798a] transition-transform"
+          className="portal-disclosure-arrow shrink-0 text-[#62798a] transition-transform"
           aria-hidden="true"
         />
       </summary>
@@ -86,6 +87,7 @@ export function DatasetPreparationAssistant() {
             <Link
               href="/api-data#sdi-harvesting"
               className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              prefetch={false}
             >
               Pelajari cara berbagi data melalui API
             </Link>
@@ -183,7 +185,7 @@ export function DatasetPreparationAssistant() {
 
         <details className="rounded-2xl border border-[#dce5eb] bg-white p-4 sm:p-5">
           <summary className="cursor-pointer font-semibold text-ink">
-            Topik data yang dapat dikembangkan di Kabupaten Wajo
+            Topik data yang dapat dikembangkan di {siteConfig.regionName}
           </summary>
           <p className="mt-2 text-sm leading-6 text-muted">
             Daftar ini adalah saran, bukan Daftar Data atau Data Prioritas yang
@@ -191,7 +193,7 @@ export function DatasetPreparationAssistant() {
             produsen data sebelum menjadikannya rencana pengumpulan.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {WAJO_DATA_THEMES.map((theme) => (
+            {DATA_THEME_SUGGESTIONS.map((theme) => (
               <article
                 key={theme.id}
                 className="rounded-xl border border-line p-3"

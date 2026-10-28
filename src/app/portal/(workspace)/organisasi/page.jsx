@@ -175,6 +175,7 @@ export default async function OrganizationsPage({ searchParams }) {
                     <Link
                       href={`/portal/organisasi/${org.id}/edit`}
                       className="portal-table-action"
+                      prefetch={false}
                     >
                       <Pencil size={14} aria-hidden="true" />
                       Ubah

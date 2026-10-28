@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import { PortalNavigation } from "@/components/portal-navigation";
+import { portalBrand } from "@/lib/portal-brand";
 
 export function PortalShellLoading() {
   return (
@@ -14,12 +15,13 @@ export function PortalShellLoading() {
           <Link
             href="/portal"
             className="flex min-w-0 items-center gap-3.5 py-2"
-            aria-label="Portal Satu Data — ringkasan pengelola"
+            aria-label={`${portalBrand.title} — ringkasan pengelola`}
+            prefetch={false}
           >
             <span className="flex size-10 shrink-0 items-center justify-center">
               <Image
-                src="/logo-kabupaten-wajo.webp"
-                alt="Lambang Kabupaten Wajo"
+                src={portalBrand.logo}
+                alt={portalBrand.logoAlt}
                 width={48}
                 height={56}
                 className="h-10 w-auto object-contain"
@@ -28,10 +30,10 @@ export function PortalShellLoading() {
             </span>
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-bold tracking-tight text-ink sm:text-base">
-                Satu Data Wajo
+                {portalBrand.title}
               </span>
               <span className="mt-0.5 truncate text-xs text-muted">
-                Portal Admin
+                {portalBrand.subtitle}
               </span>
             </span>
           </Link>
@@ -39,6 +41,7 @@ export function PortalShellLoading() {
             <Link
               href="/"
               className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-[#f4f7f9] hover:text-primary sm:inline-flex"
+              prefetch={false}
             >
               Portal publik <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
@@ -86,8 +89,8 @@ export function PortalShellLoading() {
         </main>
       </div>
       <footer className="page-container pb-6 pt-1 text-center text-xs text-muted sm:text-left">
-        Portal Satu Data Kabupaten Wajo <span aria-hidden="true">·</span> Ruang
-        pengelola
+        {portalBrand.organization} · {portalBrand.title}{" "}
+        <span aria-hidden="true">·</span> Ruang pengelola
       </footer>
     </div>
   );

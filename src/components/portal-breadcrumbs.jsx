@@ -63,6 +63,7 @@ export function PortalBreadcrumbs() {
         href="/portal"
         className="portal-breadcrumb-home"
         aria-label="Beranda pengelola"
+        prefetch={false}
       >
         <Home size={13} aria-hidden="true" />
         <span>Portal</span>
@@ -75,7 +76,9 @@ export function PortalBreadcrumbs() {
             {current ? (
               <span aria-current="page">{item.label}</span>
             ) : (
-              <Link href={item.href}>{item.label}</Link>
+              <Link href={item.href} prefetch={false}>
+                {item.label}
+              </Link>
             )}
           </span>
         );

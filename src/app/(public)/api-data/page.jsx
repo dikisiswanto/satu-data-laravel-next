@@ -3,6 +3,7 @@ import {
   getCanonicalMetadata,
   getPublicSiteOrigin,
   getSocialMetadata,
+  siteConfig,
 } from "@/lib/site-config";
 
 const configuredOrigin = getPublicSiteOrigin();
@@ -10,14 +11,12 @@ const displayBaseUrl = configuredOrigin || "https://domain-portal-anda.example";
 
 export const metadata = {
   title: "API data terbuka",
-  description:
-    "Panduan menggunakan API publik Satu Data Kabupaten Wajo: endpoint, parameter, contoh request, format respons, dan cara menangani error.",
+  description: `Panduan menggunakan API publik ${siteConfig.name}: endpoint, parameter, contoh request, format respons, dan cara menangani error.`,
   ...getCanonicalMetadata("/api-data"),
   ...getSocialMetadata({
     path: "/api-data",
-    title: "API Data Terbuka | Satu Data Wajo",
-    description:
-      "Referensi teknis API publik Kabupaten Wajo untuk mengambil dataset, membaca pratinjau tabel, melihat organisasi, dan menggunakan indikator statistik.",
+    title: `API Data Terbuka | ${siteConfig.shortName}`,
+    description: `Referensi teknis API publik ${siteConfig.regionName} untuk mengambil dataset, membaca pratinjau tabel, melihat organisasi, dan menggunakan indikator statistik.`,
   }),
 };
 
@@ -667,12 +666,12 @@ export default function ApiDocsPage() {
         >
           <SectionTitle number="07" title="GeoPortal dan pertukaran data" />
           <p className="mt-3 text-sm leading-6 text-muted">
-            Peta tematik interaktif dapat ditampilkan melalui GeoPortal Wajo.
-            Portal Satu Data tetap menjadi rujukan untuk metadata resmi, status
-            publikasi, versi, dan URL distribusi dataset. Membuka GeoPortal
-            tidak menggantikan publikasi atau membuat layer peta secara
-            otomatis; aplikasi peta harus membaca API di bawah ini dan
-            mengonfigurasi layer yang sesuai.
+            Peta tematik interaktif dapat ditampilkan melalui{" "}
+            {`GeoPortal ${siteConfig.regionShortName}`}. Portal Satu Data tetap
+            menjadi rujukan untuk metadata resmi, status publikasi, versi, dan
+            URL distribusi dataset. Membuka GeoPortal tidak menggantikan
+            publikasi atau membuat layer peta secara otomatis; aplikasi peta
+            harus membaca API di bawah ini dan mengonfigurasi layer yang sesuai.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Fact
@@ -710,7 +709,7 @@ export default function ApiDocsPage() {
             </li>
             <li>
               Tampilkan sumber, organisasi, periode, versi dan tautan kembali ke
-              detail dataset Satu Data Wajo.
+              detail dataset {siteConfig.shortName}.
             </li>
             <li>
               Ketika dataset diarsipkan atau versinya berubah, sinkronkan status
@@ -747,7 +746,7 @@ export default function ApiDocsPage() {
               method="GET"
               path="/api/v1/sdi/data.json"
               title="Ekspor JSON untuk pengambilan otomatis (harvesting)"
-              summary="Mengembalikan array JSON dengan kolom yang dipetakan dari contoh rekaman pengambilan data otomatis SDI. Setiap dataset juga harus terhubung ke standar dan sistem kode yang sudah diverifikasi serta masih berlaku. Lulus pemeriksaan di portal Wajo belum berarti SPLP telah menerima data."
+              summary="Mengembalikan array JSON dengan kolom yang dipetakan dari contoh rekaman pengambilan data otomatis SDI. Setiap dataset juga harus terhubung ke standar dan sistem kode yang sudah diverifikasi serta masih berlaku. Lulus pemeriksaan di portal belum berarti SPLP telah menerima data."
               params="Tidak ada parameter query; satu respons berisi seluruh dataset yang lolos kesiapan lokal. Batas: 30 permintaan per menit."
               example={`curl -sS -H "Accept: application/json" "${displayBaseUrl}/api/v1/sdi/data.json"`}
             />
@@ -812,7 +811,7 @@ export default function ApiDocsPage() {
                   ["Nama Data", "Judul resmi dataset yang diterbitkan."],
                   [
                     "Kode Instansi / Nama Instansi",
-                    "Identitas dan nama organisasi produsen pada Portal Wajo.",
+                    "Identitas dan nama organisasi produsen pada portal ini.",
                   ],
                   [
                     "ID DDP / Nama DDP",
@@ -862,12 +861,12 @@ export default function ApiDocsPage() {
             merupakan pemetaan kompatibilitas lokal dari field yang teramati
             pada contoh rekaman pengambilan data otomatis SDI. Ketersediaan
             endpoint belum membuktikan SPLP telah mendaftarkan atau menerima
-            katalog Wajo. Sebelum produksi, pengelola perlu menyepakati field
-            wajib, tipe data, autentikasi, jadwal pengambilan otomatis, dan
-            perilaku ketika dataset berubah atau dicabut; kemudian menjalankan
-            uji end-to-end dengan konektor tujuan. Endpoint DCAT/JSON-LD
-            merupakan opsi pertukaran tambahan, bukan pengganti kontrak SPLP
-            yang disepakati.
+            katalog portal ini. Sebelum produksi, pengelola perlu menyepakati
+            field wajib, tipe data, autentikasi, jadwal pengambilan otomatis,
+            dan perilaku ketika dataset berubah atau dicabut; kemudian
+            menjalankan uji end-to-end dengan konektor tujuan. Endpoint
+            DCAT/JSON-LD merupakan opsi pertukaran tambahan, bukan pengganti
+            kontrak SPLP yang disepakati.
           </div>
           <p className="mt-4 text-sm leading-6 text-muted">
             Dataset yang belum lengkap dikecualikan dari ekspor dan ditampilkan

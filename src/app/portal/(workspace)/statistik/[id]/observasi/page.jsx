@@ -57,6 +57,7 @@ export default async function IndicatorObservationsPage({ params }) {
       <Link
         href="/portal/statistik"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         <ArrowLeft size={16} aria-hidden="true" />
         Kembali ke indikator

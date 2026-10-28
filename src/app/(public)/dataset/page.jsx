@@ -16,18 +16,20 @@ import {
 } from "@/lib/data/public";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getCanonicalMetadata, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getSocialMetadata,
+  siteConfig,
+} from "@/lib/site-config";
 
 export const metadata = {
   title: "Katalog Dataset",
-  description:
-    "Temukan dataset Kabupaten Wajo melalui pencarian judul, isi, metadata, sumber, dan kata kunci dengan filter organisasi serta topik.",
+  description: `Temukan dataset ${siteConfig.regionName} melalui pencarian judul, isi, metadata, sumber, dan kata kunci dengan filter organisasi serta topik.`,
   ...getCanonicalMetadata("/dataset"),
   ...getSocialMetadata({
     path: "/dataset",
-    title: "Katalog Dataset | Satu Data Wajo",
-    description:
-      "Telusuri data resmi Kabupaten Wajo berdasarkan topik, organisasi, periode, dan format berkas.",
+    title: `Katalog Dataset | ${siteConfig.shortName}`,
+    description: `Telusuri data resmi ${siteConfig.regionName} berdasarkan topik, organisasi, periode, dan format berkas.`,
   }),
 };
 

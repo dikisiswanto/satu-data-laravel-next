@@ -1,3 +1,5 @@
+import { siteConfig } from "@/lib/site-config";
+
 const FIELD_GUIDANCE = {
   title:
     "Pilih judul yang menjelaskan isi data dan cakupannya. Contoh: Jumlah Sekolah Menurut Kecamatan, 2025.",
@@ -5,12 +7,10 @@ const FIELD_GUIDANCE = {
     "Jelaskan isi data, wilayah atau kelompok yang dicakup, periode, dan kegunaannya. Hindari mengulang judul saja. Jangan sertakan data pribadi atau rahasia yang tidak diperlukan.",
   organization_id:
     "Pilih perangkat daerah yang bertanggung jawab atas data atau indikator ini menurut penugasan resmi.",
-  source_name:
-    "Sebutkan asal data yang bisa diperiksa kembali, misalnya nama instansi, sistem, survei, atau dokumen. Contoh: Dinas Pendidikan dan Kebudayaan Kabupaten Wajo.",
+  source_name: `Sebutkan asal data yang bisa diperiksa kembali, misalnya nama instansi, sistem, survei, atau dokumen. Contoh: dinas atau instansi penghasil data di ${siteConfig.regionName}.`,
   source_url:
     "Cantumkan tautan langsung ke sumber jika tersedia. Gunakan alamat lengkap, misalnya https://contoh.go.id/data.",
-  geographic_scope:
-    "Sebutkan wilayah yang dicakup data. Contoh: seluruh Kabupaten Wajo atau Kecamatan Tempe saja.",
+  geographic_scope: `Sebutkan wilayah yang dicakup data. Contoh: seluruh ${siteConfig.regionName} atau kecamatan tertentu.`,
   license_text:
     "Tuliskan lisensi atau ketentuan penggunaan yang memang berlaku. Contoh: CC BY 4.0 hanya jika lisensi tersebut sudah ditetapkan oleh pemilik data.",
   unit: "Tuliskan satuan yang dipakai secara konsisten, misalnya orang, unit, hektare, ton, atau persen. Gunakan satuan yang sesuai dengan cara nilai dihitung.",
@@ -68,8 +68,7 @@ const FIELD_VALIDATION = {
     "Pilih organisasi pengampu yang sesuai dengan data dan akses akun Anda.",
   source_name: "Isi nama sumber dengan 2–240 karakter.",
   source_url: "Masukkan URL lengkap yang diawali https:// atau http://.",
-  geographic_scope:
-    "Sebutkan cakupan wilayah, misalnya Kabupaten Wajo atau Kecamatan Tempe.",
+  geographic_scope: `Sebutkan cakupan wilayah, misalnya ${siteConfig.regionName} atau kecamatan tertentu.`,
   license_text: "Cantumkan lisensi atau ketentuan penggunaan yang berlaku.",
   update_frequency: "Pilih seberapa sering data diperbarui.",
   reference_period_start: "Pilih tanggal mulai periode data.",

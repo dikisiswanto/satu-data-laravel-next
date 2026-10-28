@@ -296,7 +296,11 @@ export default async function ManageDatasetsPage({ searchParams }) {
               <SlidersHorizontal size={15} aria-hidden="true" />
               Terapkan
             </Button>
-            <Link className="portal-reset-link" href="/portal/dataset">
+            <Link
+              className="portal-reset-link"
+              href="/portal/dataset"
+              prefetch={false}
+            >
               Reset filter
             </Link>
           </div>
@@ -340,6 +344,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
                         <Link
                           href={`/portal/dataset/${dataset.id}`}
                           className="portal-table-primary-link"
+                          prefetch={false}
                         >
                           {dataset.title}
                         </Link>
@@ -366,6 +371,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
                       <Link
                         className="portal-table-action"
                         href={`/portal/dataset/${dataset.id}`}
+                        prefetch={false}
                       >
                         Buka <ArrowRight size={14} aria-hidden="true" />
                       </Link>
@@ -419,6 +425,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
               className="portal-pagination"
             >
               <Link
+                prefetch={false}
                 aria-disabled={currentPage <= 1}
                 tabIndex={currentPage <= 1 ? -1 : undefined}
                 className={currentPage <= 1 ? "is-disabled" : ""}
@@ -435,6 +442,7 @@ export default async function ManageDatasetsPage({ searchParams }) {
                 Halaman {currentPage} dari {pages}
               </span>
               <Link
+                prefetch={false}
                 aria-disabled={currentPage >= pages}
                 tabIndex={currentPage >= pages ? -1 : undefined}
                 className={currentPage >= pages ? "is-disabled" : ""}

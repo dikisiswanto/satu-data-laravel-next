@@ -69,7 +69,7 @@ async function loadLiveSdiPackages() {
 
 const cachedLivePackagesByRevision = unstable_cache(
   async (_revision) => loadLiveSdiPackages(),
-  ["wajo-sdi-harvestable-catalog-laravel-v1"],
+  ["regional-sdi-harvestable-catalog"],
   { revalidate: 3600 },
 );
 

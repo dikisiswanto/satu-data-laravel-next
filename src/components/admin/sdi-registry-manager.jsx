@@ -149,7 +149,7 @@ export function SdiRegistryManager({
         <div className="grid gap-4 xl:grid-cols-2">
           <form
             onSubmit={(event) => submit(event, "standard")}
-            className="portal-form-card space-y-4 p-4 sm:p-5"
+            className="w-full portal-form-card space-y-4 p-4 sm:p-5"
             aria-busy={busy}
           >
             <div className="flex items-start gap-3">
@@ -267,7 +267,7 @@ export function SdiRegistryManager({
           </form>
           <form
             onSubmit={(event) => submit(event, "reference_system")}
-            className="portal-form-card space-y-4 p-4 sm:p-5"
+            className="w-full portal-form-card space-y-4 p-4 sm:p-5"
             aria-busy={busy}
           >
             <div className="flex items-start gap-3">
@@ -367,7 +367,7 @@ export function SdiRegistryManager({
           </form>
           <form
             onSubmit={(event) => submit(event, "reference_entry")}
-            className="portal-form-card space-y-4 p-4 sm:p-5 xl:col-span-2"
+            className="w-full portal-form-card space-y-4 p-4 sm:p-5 xl:col-span-2"
             aria-busy={busy}
           >
             <div className="flex items-start gap-3">

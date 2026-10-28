@@ -188,7 +188,7 @@ export function IndicatorObservationManager({
         <form
           onSubmit={save}
           aria-busy={busy}
-          className="portal-form-card max-w-4xl space-y-5 p-5 sm:p-7"
+          className="w-full portal-form-card max-w-none space-y-5 p-5 sm:p-7"
         >
           <div className="flex items-start gap-3">
             <Plus
@@ -264,7 +264,7 @@ export function IndicatorObservationManager({
             <Field
               name="geographic_name"
               label="Nama wilayah (opsional)"
-              placeholder="Kabupaten Wajo atau kecamatan terkait"
+              placeholder={`${siteConfig.regionName} atau kecamatan terkait`}
             />
             <Field
               name="value_numeric"
@@ -452,6 +452,7 @@ export function IndicatorObservationManager({
       <Link
         href="/portal/statistik"
         className="inline-flex items-center gap-2 text-sm font-semibold text-primary underline underline-offset-4"
+        prefetch={false}
       >
         Kembali ke indikator statistik
       </Link>

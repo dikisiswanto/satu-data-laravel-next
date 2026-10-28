@@ -30,7 +30,7 @@ function hintForStatus(status, message) {
     return "GitHub menolak pemicu workflow. Untuk repository private, pastikan token memiliki akses ke repository yang tepat dan Actions = Read and write. Jika pengaturan sudah benar, buat token baru, perbarui secret di Vercel, lalu deploy ulang; periksa juga kebijakan Actions repository.";
   }
   if (status === 404) {
-    return "GitHub memakai 404 untuk resource private yang tidak terlihat oleh token. Pastikan token diberi akses ke repository private dikisiswanto/satu-data-wajo, workflow ada di default branch, dan nama file persis conversion-worker.yml.";
+    return "GitHub memakai 404 untuk resource private yang tidak terlihat oleh token. Pastikan token diberi akses ke repository yang diatur pada CONVERSION_WORKER_GITHUB_REPOSITORY, workflow ada di default branch, dan nama file persis conversion-worker.yml.";
   }
   if (status === 422) {
     return "Periksa nama workflow dan CONVERSION_WORKER_GITHUB_REF; ref harus menunjuk ke branch/tag yang valid dengan workflow_dispatch.";
@@ -46,7 +46,7 @@ function githubApiHeaders(token) {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
-    "User-Agent": "satu-data-wajo-conversion-dispatch",
+    "User-Agent": "portal-satu-data-conversion-dispatch",
     "X-GitHub-Api-Version": "2026-03-10",
   };
 }

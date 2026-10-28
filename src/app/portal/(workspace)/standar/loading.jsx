@@ -36,7 +36,7 @@ export default function SdiStandardsLoading() {
       <div className="mt-6 space-y-6" aria-hidden="true">
         {/* Formulir pendaftaran hanya tersedia untuk pengelola registri. Karena hak akses baru diketahui setelah data sesi dimuat, gunakan skeleton netral agar label khusus pengelola tidak muncul lalu menghilang bagi peran lain. */}
         <div className="grid gap-4 xl:grid-cols-2">
-          <section className="portal-form-card space-y-4 p-4 sm:p-5">
+          <section className="w-full portal-form-card space-y-4 p-4 sm:p-5">
             <LoadingBlock className="h-5 w-44 max-w-full" />
             <LoadingBlock className="h-4 w-full max-w-md" />
             {Array.from({ length: 10 }, (_, i) => (
@@ -47,7 +47,7 @@ export default function SdiStandardsLoading() {
             ))}
             <LoadingBlock className="h-11 w-40 rounded-control" />
           </section>
-          <section className="portal-form-card space-y-4 p-4 sm:p-5">
+          <section className="w-full portal-form-card space-y-4 p-4 sm:p-5">
             <LoadingBlock className="h-5 w-56 max-w-full" />
             <LoadingBlock className="h-4 w-full max-w-md" />
             {Array.from({ length: 9 }, (_, i) => (
@@ -58,7 +58,7 @@ export default function SdiStandardsLoading() {
             ))}
             <LoadingBlock className="h-11 w-40 rounded-control" />
           </section>
-          <section className="portal-form-card space-y-4 p-4 sm:p-5 xl:col-span-2">
+          <section className="w-full portal-form-card space-y-4 p-4 sm:p-5 xl:col-span-2">
             <LoadingBlock className="h-5 w-48 max-w-full" />
             <LoadingBlock className="h-4 w-full max-w-lg" />
             <div className="grid gap-3 sm:grid-cols-2">

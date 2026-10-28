@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Additional v6 permission codes and integrity edges. Existing API payloads
+     * Additional permission codes and integrity edges. Existing API payloads
      * remain role-code based for compatibility, while domain actions can use the
      * normalized permission catalog as their authorization source of truth.
      */
@@ -77,7 +77,7 @@ return new class extends Migration
         }
 
         // Reviewers were accidentally granted indicators.manage by the first
-        // v6 catalog despite being review-only in the route policy. Keep the
+        // catalog despite being review-only in the route policy. Keep the
         // permission matrix aligned with the actual domain capability.
         $managePermissionId = DB::table('permissions')->where('code', 'indicators.manage')->value('id');
         $reviewerId = DB::table('roles')->where('code', 'reviewer')->value('id');

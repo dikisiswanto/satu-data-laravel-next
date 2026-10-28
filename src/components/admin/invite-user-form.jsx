@@ -96,7 +96,7 @@ export function InviteUserForm({ organizations }) {
     <form
       onSubmit={submit}
       aria-busy={busy}
-      className="space-y-4 portal-form-card p-5"
+      className="w-full space-y-4 portal-form-card p-5"
     >
       <h2 className="font-semibold">Undang pengguna</h2>
       {message ? (

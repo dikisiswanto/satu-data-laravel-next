@@ -20,6 +20,7 @@ import {
 import { UPDATE_FREQUENCY_OPTIONS } from "@/lib/dataset-options";
 import { SdiMetadataFields } from "@/components/admin/sdi-metadata-fields";
 import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
+import { siteConfig } from "@/lib/site-config";
 
 const FIELDS = {
   title: "Isi judul dengan 5–180 karakter.",
@@ -30,7 +31,7 @@ const FIELDS = {
   source_name: "Nama sumber data wajib diisi (2–240 karakter).",
   source_url:
     "Gunakan URL sumber lengkap dengan protokol https:// atau http://, atau kosongkan bila tidak tersedia.",
-  geographic_scope: "Isi cakupan wilayah, misalnya Kabupaten Wajo.",
+  geographic_scope: `Isi cakupan wilayah, misalnya ${siteConfig.regionName}.`,
   license_text: "Isi lisensi atau ketentuan penggunaan data.",
   update_frequency: "Pilih frekuensi pembaruan data.",
   reference_period_start: "Pilih tanggal mulai periode yang benar.",

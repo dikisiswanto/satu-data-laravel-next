@@ -1,6 +1,26 @@
 <?php
 
+$regionName = trim((string) env('PORTAL_REGION_NAME', 'Kabupaten Wajo'));
+$organizationName = trim((string) env('PORTAL_ORGANIZATION_NAME', ''));
+$organizationName = $organizationName !== '' ? $organizationName : 'Pemerintah '.$regionName;
+$regionShortName = trim((string) env('PORTAL_REGION_SHORT_NAME', ''));
+if ($regionShortName === '') {
+    $regionShortName = preg_replace('/^(Kabupaten|Kota|Provinsi|Kecamatan)\s+/i', '', $regionName) ?: $regionName;
+}
+$regionSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $regionShortName), '-'));
+$brandName = trim((string) env('PORTAL_BRAND_NAME', ''));
+$brandName = $brandName !== '' ? $brandName : 'Portal Satu Data '.$regionName;
+$sdiProfileId = trim((string) env('SDI_EXPORT_PROFILE_ID', ''));
+$sdiProfileId = $sdiProfileId !== '' ? $sdiProfileId : $regionSlug.'-sdi-harvest-flat';
+$geoportalProfileId = trim((string) env('GEOPORTAL_MANIFEST_PROFILE_ID', ''));
+$geoportalProfileId = $geoportalProfileId !== '' ? $geoportalProfileId : $regionSlug.'-geoportal-manifest-v1';
+
 return [
+    'region_name' => $regionName,
+    'organization_name' => $organizationName,
+    'brand_name' => $brandName,
+    'sdi_export_profile_id' => $sdiProfileId,
+    'geoportal_manifest_profile_id' => $geoportalProfileId,
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
     'legacy_supabase_database_url' => env('LEGACY_SUPABASE_DATABASE_URL', ''),
     'public_backend_api_url' => env('PUBLIC_BACKEND_API_URL', ''),
@@ -8,7 +28,9 @@ return [
     'anonymous_rate_limit_per_minute' => max(30, min(300, (int) env('ANONYMOUS_RATE_LIMIT_PER_MINUTE', 120))),
     // Authenticated portal requests have a separate account budget. Sensitive
     // routes retain their own endpoint-specific limits.
-    'portal_user_rate_limit_per_minute' => max(300, min(1200, (int) env('PORTAL_USER_RATE_LIMIT_PER_MINUTE', 1200))),
+    'portal_user_rate_limit_per_minute' => max(600, min(1800, (int) env('PORTAL_USER_RATE_LIMIT_PER_MINUTE', 1200))),
+    'portal_write_user_rate_limit_per_minute' => max(60, min(300, (int) env('PORTAL_WRITE_USER_RATE_LIMIT_PER_MINUTE', 120))),
+    'portal_write_ip_rate_limit_per_minute' => max(150, min(600, (int) env('PORTAL_WRITE_IP_RATE_LIMIT_PER_MINUTE', 300))),
     'frontend_token_ttl_days' => max(1, min(30, (int) env('FRONTEND_TOKEN_TTL_DAYS', 14))),
     'conversion' => [
         'job_timeout' => max(120, min(900, (int) env('CONVERSION_JOB_TIMEOUT', 900))),

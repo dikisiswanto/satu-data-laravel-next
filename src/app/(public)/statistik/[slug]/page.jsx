@@ -6,6 +6,7 @@ import {
   getCanonicalMetadata,
   getPublicSiteOrigin,
   getSocialMetadata,
+  siteConfig,
 } from "@/lib/site-config";
 import {
   getPublicIndicatorBySlugResult,
@@ -141,10 +142,10 @@ export async function generateMetadata({ params }) {
       robots: { index: false, follow: false },
     };
   }
-  const title = `${indicator.title} — Statistik Kabupaten Wajo`;
+  const title = `${indicator.title} — Statistik ${siteConfig.regionName}`;
   const description = (
     indicator.definition ||
-    `Definisi, nilai, periode, dan sumber indikator ${indicator.title} di Kabupaten Wajo.`
+    `Definisi, nilai, periode, dan sumber indikator ${indicator.title} di ${siteConfig.regionName}.`
   ).slice(0, 160);
   const path = `/statistik/${indicator.slug}`;
   return {
@@ -281,7 +282,7 @@ export default async function PublicIndicatorDetailPage({
     name: indicator.title,
     description:
       indicator.definition ||
-      `Observasi indikator ${indicator.title} dari Pemerintah Kabupaten Wajo.`,
+      `Observasi indikator ${indicator.title} dari ${siteConfig.organizationName}.`,
     identifier: indicator.code || indicator.slug,
     ...(origin ? { url: `${origin}/statistik/${indicator.slug}` } : {}),
     ...(indicator.organizations?.name
@@ -294,7 +295,7 @@ export default async function PublicIndicatorDetailPage({
       : {}),
     publisher: {
       "@type": "GovernmentOrganization",
-      name: "Pemerintah Kabupaten Wajo",
+      name: siteConfig.organizationName,
     },
     ...(indicator.published_at
       ? { datePublished: indicator.published_at }
@@ -508,8 +509,8 @@ export default async function PublicIndicatorDetailPage({
             )}
             <p className="mt-3 text-xs leading-5 text-muted">
               Sumber data grafik, jika tersedia: observasi yang telah
-              diterbitkan pada Portal Satu Data Kabupaten Wajo. Nilai draf dan
-              revisi lama tidak ditampilkan.
+              diterbitkan pada {siteConfig.name}. Nilai draf dan revisi lama
+              tidak ditampilkan.
             </p>
           </section>
           <section

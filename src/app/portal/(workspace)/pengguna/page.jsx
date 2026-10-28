@@ -71,6 +71,7 @@ export default async function UserAccessPage() {
           <Link
             className="mt-3 inline-flex font-semibold underline"
             href="/portal/pengguna"
+            prefetch={false}
           >
             Coba muat ulang
           </Link>

@@ -171,7 +171,11 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
       : null;
   return (
     <>
-      <Link href="/portal/dataset" className="text-sm font-medium text-primary">
+      <Link
+        href="/portal/dataset"
+        className="text-sm font-medium text-primary"
+        prefetch={false}
+      >
         ← Kembali ke daftar
       </Link>
       <PageHeading
@@ -417,6 +421,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 <Link
                   href={`/portal/dataset/${data.id}/edit`}
                   className="mt-5 inline-flex rounded-control border px-4 py-2.5 text-sm font-semibold hover:bg-slate-50"
+                  prefetch={false}
                 >
                   Ubah informasi
                 </Link>

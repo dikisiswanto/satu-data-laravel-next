@@ -35,6 +35,7 @@ export default function PortalDashboardLoading() {
           <Link
             href="/portal/dataset"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+            prefetch={false}
           >
             Kelola dataset <ArrowRight size={15} aria-hidden="true" />
           </Link>

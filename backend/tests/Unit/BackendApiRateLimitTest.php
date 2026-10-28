@@ -45,8 +45,25 @@ class BackendApiRateLimitTest extends TestCase
         $limit = $limiter($request);
 
         $this->assertInstanceOf(Limit::class, $limit);
-        $this->assertSame(1200, $limit->maxAttempts);
+        $this->assertSame(600, $limit->maxAttempts);
         $this->assertSame('user:admin-user-id', $limit->key);
+    }
+
+    public function test_portal_mutations_have_separate_per_user_and_per_ip_budgets(): void
+    {
+        $request = Request::create('https://portal.test/api/v1/portal/organizations', 'POST');
+        $request->setUserResolver(fn () => (object) ['id' => 'admin-user-id']);
+        $request->server->set('REMOTE_ADDR', '192.0.2.12');
+
+        $limiter = RateLimiter::limiter('portal-write');
+        $limits = $limiter($request);
+
+        $this->assertIsArray($limits);
+        $this->assertCount(2, $limits);
+        $this->assertSame(120, $limits[0]->maxAttempts);
+        $this->assertSame('portal-write-user:admin-user-id', $limits[0]->key);
+        $this->assertSame(300, $limits[1]->maxAttempts);
+        $this->assertSame('portal-write-ip:192.0.2.12', $limits[1]->key);
     }
 
     private function backendApiLimit(Request $request): Limit

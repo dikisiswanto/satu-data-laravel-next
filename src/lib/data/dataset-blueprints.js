@@ -1,3 +1,5 @@
+import { siteConfig } from "@/lib/site-config";
+
 /**
  * Operator-oriented starter profiles. These are practical examples, not a
  * substitute for an approved Walidata data list or authoritative standards.
@@ -83,8 +85,7 @@ export const DATASET_BLUEPRINTS = [
   {
     id: "geospasial",
     title: "Data geospasial",
-    description:
-      "Untuk titik fasilitas, jalur jalan, batas, dan area tematik yang akan dipakai di GeoPortal Wajo.",
+    description: `Untuk titik fasilitas, jalur jalan, batas, dan area tematik yang akan dipakai di GeoPortal ${siteConfig.regionShortName}.`,
     useWhen:
       "Geometri dan atribut harus berasal dari sumber yang dapat dipertanggungjawabkan.",
     columns: [
@@ -106,7 +107,7 @@ export const DATASET_BLUEPRINTS = [
   },
 ];
 
-export const WAJO_DATA_THEMES = [
+export const DATA_THEME_SUGGESTIONS = [
   {
     id: "wilayah-layanan",
     title: "Wilayah dan layanan dasar",

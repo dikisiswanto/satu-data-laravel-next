@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
 
 function Block({ className = "" }) {
   return (
@@ -47,15 +48,15 @@ function LoginLoading() {
         </Link>
         <div className="mt-7 flex items-center gap-3 border-b border-[#e4ebea] pb-5">
           <Image
-            src="/logo-kabupaten-wajo.webp"
-            alt="Lambang Kabupaten Wajo"
+            src={siteConfig.logoPath}
+            alt={siteConfig.logoAlt}
             width={48}
             height={56}
             priority
           />
           <div>
             <p className="text-xs font-medium text-muted">
-              Pemerintah Kabupaten Wajo
+              {siteConfig.organizationName}
             </p>
             <strong className="mt-1 block text-sm font-semibold text-[#244650]">
               Ruang Pengelola Data
@@ -110,7 +111,7 @@ function LoginLoading() {
         </div>
       </section>
       <p className="mt-5 text-center text-xs text-[#74858a]">
-        Portal Satu Data Kabupaten Wajo · Akses pengelola
+        {siteConfig.name} · Akses pengelola
       </p>
       <p className="sr-only" role="status">
         Memuat halaman masuk.

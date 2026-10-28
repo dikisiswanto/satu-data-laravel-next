@@ -1,11 +1,97 @@
-export const siteConfig = {
-  name: "Portal Satu Data Kabupaten Wajo",
-  description:
-    "Portal resmi untuk menemukan, memahami, dan menggunakan data publik Kabupaten Wajo.",
-  shortName: "Satu Data Wajo",
-  locale: "id-ID",
-  timeZone: "Asia/Makassar",
-};
+const configuredRegionName = (
+  process.env.NEXT_PUBLIC_REGION_NAME || "Kabupaten Wajo"
+).trim();
+const configuredRegionShortName = (
+  process.env.NEXT_PUBLIC_REGION_SHORT_NAME ||
+  configuredRegionName.replace(/^(?:Kabupaten|Kota|Provinsi|Kecamatan)\s+/i, "")
+).trim();
+const configuredShortName = (
+  process.env.NEXT_PUBLIC_SHORT_NAME || `Satu Data ${configuredRegionShortName}`
+).trim();
+const configuredOrganizationName = (
+  process.env.NEXT_PUBLIC_ORGANIZATION_NAME ||
+  `Pemerintah ${configuredRegionName}`
+).trim();
+const configuredAppName = (
+  process.env.NEXT_PUBLIC_APP_NAME || `Portal Satu Data ${configuredRegionName}`
+).trim();
+const configuredDescription = (
+  process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
+  `Portal resmi untuk menemukan, memahami, dan menggunakan data publik ${configuredRegionName}.`
+).trim();
+const isDefaultWajoDeployment = /^kabupaten wajo$/i.test(configuredRegionName);
+const configuredLogoPath = (
+  process.env.NEXT_PUBLIC_LOGO_PATH ||
+  (isDefaultWajoDeployment ? "/logo-kabupaten-wajo.webp" : "/icons/portal.svg")
+).trim();
+const configuredHeroImage = (
+  process.env.NEXT_PUBLIC_HERO_IMAGE ||
+  (isDefaultWajoDeployment ? "/wajo-hero-panorama.webp" : "/portal-social.svg")
+).trim();
+const configuredPpidName = (
+  process.env.NEXT_PUBLIC_PPID_NAME ||
+  (isDefaultWajoDeployment ? "PPID Kabupaten Wajo" : "PPID instansi")
+).trim();
+const configuredPpidUrl = (
+  process.env.NEXT_PUBLIC_PPID_URL ||
+  (isDefaultWajoDeployment ? "https://e-ppid-utama.wajokab.go.id/" : "")
+).trim();
+
+export const siteConfig = Object.freeze({
+  name: configuredAppName,
+  title: configuredAppName,
+  description: configuredDescription,
+  shortName: configuredShortName,
+  regionName: configuredRegionName,
+  regionShortName: configuredRegionShortName,
+  organizationName: configuredOrganizationName,
+  publicSubtitle: (
+    process.env.NEXT_PUBLIC_PUBLIC_SUBTITLE ||
+    `Portal Data ${configuredRegionName}`
+  ).trim(),
+  portalTitle: (process.env.NEXT_PUBLIC_PORTAL_TITLE || "Portal Admin").trim(),
+  logoPath: configuredLogoPath,
+  logoAlt: (
+    process.env.NEXT_PUBLIC_LOGO_ALT || `Lambang ${configuredRegionName}`
+  ).trim(),
+  heroImage: configuredHeroImage,
+  iconPath: (
+    process.env.NEXT_PUBLIC_ICON_PATH ||
+    (isDefaultWajoDeployment ? "/icons/icon.svg" : "/icons/portal.svg")
+  ).trim(),
+  pwaIcon192: (
+    process.env.NEXT_PUBLIC_PWA_ICON_192 ||
+    (isDefaultWajoDeployment ? "/icons/icon-192.png" : "/icons/portal.svg")
+  ).trim(),
+  pwaIcon512: (
+    process.env.NEXT_PUBLIC_PWA_ICON_512 ||
+    (isDefaultWajoDeployment ? "/icons/icon-512.png" : "/icons/portal.svg")
+  ).trim(),
+  ppidName: configuredPpidName,
+  ppidUrl: configuredPpidUrl,
+  ppidContactUrl: (
+    process.env.NEXT_PUBLIC_PPID_CONTACT_URL ||
+    (isDefaultWajoDeployment
+      ? "https://e-ppid-utama.wajokab.go.id/kontak/"
+      : "")
+  ).trim(),
+  ppidAddress: (
+    process.env.NEXT_PUBLIC_PPID_ADDRESS ||
+    (isDefaultWajoDeployment
+      ? "Jl. Rusa No. 17, Bulu Pabbulu, Kecamatan Tempe, Kabupaten Wajo, Sulawesi Selatan 90911"
+      : "")
+  ).trim(),
+  ppidEmail: (
+    process.env.NEXT_PUBLIC_PPID_EMAIL ||
+    (isDefaultWajoDeployment ? "ppid@wajokab.go.id" : "")
+  ).trim(),
+  ppidPhone: (
+    process.env.NEXT_PUBLIC_PPID_PHONE ||
+    (isDefaultWajoDeployment ? "+62 811-4780-6767" : "")
+  ).trim(),
+  locale: process.env.NEXT_PUBLIC_LOCALE || "id-ID",
+  timeZone: process.env.NEXT_PUBLIC_TIME_ZONE || "Asia/Makassar",
+});
 
 /**
  * Return the canonical public origin. Production must explicitly configure an
@@ -51,11 +137,11 @@ export function getSocialMetadata({
   type = "website",
 }) {
   const origin = getPublicSiteOrigin();
-  const image = "/wajo-hero-panorama.webp";
+  const image = siteConfig.heroImage;
   const absolutePath = origin ? new URL(path, origin).toString() : undefined;
   return {
     openGraph: {
-      locale: "id_ID",
+      locale: siteConfig.locale.replace("-", "_"),
       siteName: siteConfig.name,
       title,
       description,

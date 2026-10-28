@@ -1,6 +1,9 @@
+import { notifyPortalToast } from "@/lib/ui/portal-toast";
+
 /** Human-readable, non-sensitive messages for common API failure contracts. */
 const COMMON_ERRORS = {
-  unauthorized: "Sesi Anda sudah berakhir. Masuk kembali untuk melanjutkan.",
+  unauthorized:
+    "Sesi atau akses Anda belum dapat diverifikasi. Muat ulang halaman; masuk kembali jika masalah berlanjut.",
   account_inactive:
     "Akun ini sedang dinonaktifkan. Hubungi administrator portal jika Anda memerlukan akses.",
   authentication_unavailable:
@@ -88,11 +91,11 @@ export function apiErrorMessage(
 
 /** Explain ambiguous transport/proxy failures without claiming that a write failed. */
 export function apiTransportFailureMessage(error, fallback) {
-  if (error?.code === "invalid_api_response") {
-    return "Kami belum menerima konfirmasi dari layanan. Perubahan mungkin sudah tersimpan; muat ulang halaman dan periksa statusnya sebelum mengirim ulang.";
-  }
-  return (
-    fallback ||
-    "Koneksi terputus sebelum layanan memberi konfirmasi. Perubahan mungkin sudah tersimpan; muat ulang halaman dan periksa statusnya sebelum mengirim ulang."
-  );
+  const message =
+    error?.code === "invalid_api_response"
+      ? "Kami belum menerima konfirmasi dari layanan. Perubahan mungkin sudah tersimpan; muat ulang halaman dan periksa statusnya sebelum mengirim ulang."
+      : fallback ||
+        "Koneksi terputus sebelum layanan memberi konfirmasi. Perubahan mungkin sudah tersimpan; muat ulang halaman dan periksa statusnya sebelum mengirim ulang.";
+  notifyPortalToast("error", message);
+  return message;
 }

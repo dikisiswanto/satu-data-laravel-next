@@ -234,7 +234,7 @@ export function PortalContextGuide() {
         </span>
         <ChevronDown
           size={17}
-          className="mt-1 shrink-0 text-[#62798a]"
+          className="portal-disclosure-arrow mt-1 shrink-0 text-[#62798a] transition-transform"
           aria-hidden="true"
         />
       </summary>

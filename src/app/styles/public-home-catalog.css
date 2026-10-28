@@ -55,7 +55,7 @@ body:has(.portal-tour-panel[data-tour-target="portal-users-access"])
   @apply max-h-[min(42vh,_22rem)] overflow-y-auto;
 }
 
-/* Static route content has no entry/reveal animation to prevent layout shift. */
+/* Public route transitions stay static; only the homepage hero has a one-time, flow-safe entrance sequence. */
 
 .home-hero-inner {
   @apply pt-[2.4rem] pb-[2.4rem] gap-[1.75rem];

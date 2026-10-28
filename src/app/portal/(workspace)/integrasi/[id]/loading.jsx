@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import {
   AdminPageLoading,
@@ -14,16 +15,17 @@ export default function SdiMetadataLoading() {
       label="Memuat metadata pertukaran SDI"
       eyebrow="Interoperabilitas"
       title="Metadata pertukaran SDI"
-      description="Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia."
+      description={`Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor ${siteConfig.shortName}. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia.`}
     >
       <Link
         href="/portal/integrasi"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         Kembali ke kesiapan integrasi
       </Link>
       <section
-        className="portal-form-card space-y-5 p-5 sm:p-7"
+        className="w-full portal-form-card space-y-5 p-5 sm:p-7"
         aria-busy="true"
       >
         <div className="rounded-xl border border-[#d6e4ed] bg-[#f4f8fb] p-4">

@@ -87,4 +87,43 @@ describe("consistent admin design system", () => {
       expect(source, path).toContain("portal-page-heading");
     }
   });
+
+  it("keeps portal form and information cards full width and rotates only disclosure arrows", () => {
+    expect(normalizedStyles).toContain(
+      ".portal-form-card, .portal-form-section",
+    );
+    expect(normalizedStyles).toContain("max-width: none !important");
+    expect(normalizedStyles).toContain("svg.portal-disclosure-arrow");
+    expect(normalizedStyles).not.toContain("svg:last-child {");
+    expect(read("src/components/portal-context-guide.jsx")).toContain(
+      "portal-disclosure-arrow",
+    );
+    expect(
+      read("src/components/admin/dataset-preparation-assistant.jsx"),
+    ).toContain("portal-disclosure-arrow");
+    expect(read("src/components/admin/organization-form.jsx")).toContain(
+      "w-full max-w-none",
+    );
+  });
+
+  it("keeps submit and pending action buttons dimension-stable when state changes", () => {
+    const formButton = read("src/components/ui/form-submit-button.jsx");
+    const pendingButton = read("src/components/ui/pending-action-button.jsx");
+    const buttonStyles = read("src/app/styles/form-text-safety.css");
+    const compactShell = read("src/components/portal-shell.jsx");
+
+    expect(formButton).toContain('data-stateful-button="true"');
+    expect(pendingButton).toContain('data-stateful-button="true"');
+    expect(formButton).toContain("button-state-stack");
+    expect(pendingButton).toContain("button-state-stack");
+    expect(buttonStyles).toContain('button[data-stateful-button="true"]');
+    expect(buttonStyles).toContain("padding-block: 0.625rem");
+    expect(buttonStyles).toContain(
+      "transition-property: background-color, border-color, color, box-shadow, opacity",
+    );
+    expect(compactShell).toContain("w-12 shrink-0 items-center justify-center");
+    expect(compactShell).toContain(
+      'className="sr-only sm:hidden">Sedang keluar</span>',
+    );
+  });
 });

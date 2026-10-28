@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import { createHash } from "node:crypto";
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
@@ -536,7 +537,7 @@ export function toCsv(headers, records) {
 
 export async function toXlsx(headers, records) {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Portal Satu Data Kabupaten Wajo";
+  workbook.creator = siteConfig.name;
   workbook.created = new Date();
   const sheet = workbook.addWorksheet("Data");
   sheet.addRow(headers);
@@ -769,9 +770,9 @@ export async function toPdf(title, headers, records) {
       bufferPages: true,
       info: {
         Title: safeTitle,
-        Author: "Portal Satu Data Kabupaten Wajo",
+        Author: siteConfig.name,
         Subject: "Ekspor dataset dalam format PDF",
-        Creator: "Portal Satu Data Kabupaten Wajo",
+        Creator: siteConfig.name,
       },
     });
     const chunks = [];
@@ -809,10 +810,15 @@ export async function toPdf(title, headers, records) {
         ellipsis: true,
       });
       doc.font("Helvetica-Bold").fontSize(7.5).fillColor(palette.blue);
-      doc.text("PORTAL SATU DATA KABUPATEN WAJO", x + 17, y + 37, {
-        width: tableWidth - 32,
-        lineBreak: false,
-      });
+      doc.text(
+        siteConfig.name.toLocaleUpperCase(siteConfig.locale),
+        x + 17,
+        y + 37,
+        {
+          width: tableWidth - 32,
+          lineBreak: false,
+        },
+      );
       doc.font("Helvetica").fontSize(7.3).fillColor(palette.muted);
       const shownRange = `Menampilkan ${visibleRecords.length.toLocaleString("id-ID")} dari ${totalRows.toLocaleString("id-ID")} baris`;
       const columnRange = `Kolom ${columns.length} dari ${headers.length}`;
@@ -848,7 +854,7 @@ export async function toPdf(title, headers, records) {
         ellipsis: true,
       });
       doc.font("Helvetica").fontSize(7).fillColor(palette.muted);
-      doc.text("Portal Satu Data Kabupaten Wajo · lanjutan", marginX, 35, {
+      doc.text(`${siteConfig.name} · lanjutan`, marginX, 35, {
         width: tableWidth,
         lineBreak: false,
       });
@@ -1032,7 +1038,7 @@ export async function toPdf(title, headers, records) {
       doc.restore();
       doc.font("Helvetica").fontSize(7).fillColor(palette.muted);
       doc.text(
-        "Pemerintah Kabupaten Wajo · Portal Satu Data",
+        `${siteConfig.organizationName} · ${siteConfig.shortName}`,
         marginX,
         footerY,
         {

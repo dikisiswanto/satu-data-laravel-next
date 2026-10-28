@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LogOut, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { logoutAction } from "@/app/portal/actions";
 import { PortalNavigation } from "@/components/portal-navigation";
+import { portalBrand } from "@/lib/portal-brand";
 import { PortalOnboarding } from "@/components/portal-onboarding";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 export function PortalShell({ children, email, shellContext = null }) {
@@ -38,11 +39,12 @@ export function PortalShell({ children, email, shellContext = null }) {
           <Link
             href="/portal"
             className="flex min-w-0 items-center gap-3.5 py-2"
+            prefetch={false}
           >
             <span className="flex size-10 shrink-0 items-center justify-center">
               <Image
-                src="/logo-kabupaten-wajo.webp"
-                alt="Lambang Kabupaten Wajo"
+                src={portalBrand.logo}
+                alt={portalBrand.logoAlt}
                 width={48}
                 height={56}
                 className="h-10 w-auto object-contain"
@@ -51,10 +53,10 @@ export function PortalShell({ children, email, shellContext = null }) {
             </span>
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-bold tracking-tight text-ink sm:text-base">
-                Satu Data Wajo
+                {portalBrand.title}
               </span>
               <span className="mt-0.5 truncate text-xs text-muted">
-                Portal Admin
+                {portalBrand.subtitle}
               </span>
             </span>
           </Link>
@@ -62,6 +64,7 @@ export function PortalShell({ children, email, shellContext = null }) {
             <Link
               href="/"
               className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted transition hover:bg-white hover:text-primary sm:inline-flex"
+              prefetch={false}
             >
               Portal publik <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
@@ -81,8 +84,13 @@ export function PortalShell({ children, email, shellContext = null }) {
             </div>
             <form action={logoutAction}>
               <FormSubmitButton
-                className="inline-flex items-center gap-2 rounded-lg border border-[#d7e2e9] bg-[#f9fbfc] px-3 py-2.5 text-sm font-semibold text-[#344e62] transition-colors hover:bg-[#f0f5f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7] focus-visible:ring-offset-2"
-                pendingText="Keluar…"
+                className="inline-flex w-12 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#d7e2e9] bg-[#f9fbfc] px-3 py-2.5 text-sm font-semibold text-[#344e62] transition-colors hover:bg-[#f0f5f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7] focus-visible:ring-offset-2 sm:w-auto"
+                pendingText={
+                  <>
+                    <span className="hidden sm:inline">Keluar…</span>
+                    <span className="sr-only sm:hidden">Sedang keluar</span>
+                  </>
+                }
                 aria-label="Keluar dari akun"
               >
                 <LogOut size={15} aria-hidden="true" />
@@ -108,6 +116,7 @@ export function PortalShell({ children, email, shellContext = null }) {
               <Link
                 href="/portal?tour=1&step=0#portal-dashboard-overview"
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary underline underline-offset-4"
+                prefetch={false}
               >
                 Lihat panduan portal{" "}
                 <ArrowUpRight size={13} aria-hidden="true" />
@@ -124,8 +133,8 @@ export function PortalShell({ children, email, shellContext = null }) {
         </main>
       </div>
       <footer className="page-container pb-6 pt-1 text-center text-xs text-muted sm:text-left">
-        Portal Satu Data Kabupaten Wajo <span aria-hidden="true">·</span> Ruang
-        pengelola
+        {portalBrand.organization} · {portalBrand.title}{" "}
+        <span aria-hidden="true">·</span> Ruang pengelola
       </footer>
     </div>
   );

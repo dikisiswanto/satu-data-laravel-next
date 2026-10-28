@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Satu Data Kabupaten Wajo API
+  title: Portal Satu Data API
   version: 1.2.0
   description:
     REST API untuk katalog data publik, indikator, interoperabilitas Satu
@@ -8,7 +8,7 @@ info:
     kontrak kanonis. Endpoint lama yang belum diberi versi tetap tersedia untuk kompatibilitas
     UI selama masa migrasi.
   contact:
-    name: Pengelola Portal Satu Data Kabupaten Wajo
+    name: Pengelola Portal Satu Data
 servers:
   - url: http://localhost:8000
     description: Development; sesuaikan API_PUBLIC_URL saat deployment.

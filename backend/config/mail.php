@@ -8,5 +8,5 @@ return [
         'array' => ['transport' => 'array'],
         'failover' => ['transport' => 'failover', 'mailers' => ['smtp', 'log']],
     ],
-    'from' => ['address' => env('MAIL_FROM_ADDRESS', 'noreply@example.com'), 'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Satu Data Wajo'))],
+    'from' => ['address' => env('MAIL_FROM_ADDRESS', 'noreply@example.com'), 'name' => (env('MAIL_FROM_NAME') ?: (env('APP_NAME') ?: 'Portal Satu Data'))],
 ];

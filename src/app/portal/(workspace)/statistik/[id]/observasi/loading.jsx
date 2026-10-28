@@ -16,6 +16,7 @@ export default function IndicatorObservationsLoading() {
       <Link
         href="/portal/statistik"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         Kembali ke indikator
       </Link>
@@ -37,7 +38,7 @@ export default function IndicatorObservationsLoading() {
       </section>
       {/* Pengisian observasi bergantung pada hak edit. Gunakan placeholder netral sampai server memastikan peran akun. */}
       <section
-        className="portal-form-card mb-6 max-w-4xl space-y-5 p-5 sm:p-7"
+        className="w-full portal-form-card mb-6 max-w-none space-y-5 p-5 sm:p-7"
         aria-busy="true"
         aria-hidden="true"
       >
@@ -88,6 +89,7 @@ export default function IndicatorObservationsLoading() {
       <Link
         href="/portal/statistik"
         className="inline-flex items-center gap-2 text-sm font-semibold text-primary underline underline-offset-4"
+        prefetch={false}
       >
         Kembali ke indikator statistik
       </Link>

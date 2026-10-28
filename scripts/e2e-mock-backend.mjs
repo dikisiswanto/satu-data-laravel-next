@@ -39,6 +39,20 @@ createServer(async (request, response) => {
   }
 
   const token = request.headers.authorization?.replace(/^Bearer\s+/i, "");
+  // Portal routes must be authenticated even for browser-originated requests.
+  // E2E therefore catches regressions where the HttpOnly cookie is not converted
+  // into an Authorization header by the Next.js portal API proxy.
+  if (
+    url.pathname.startsWith("/api/v1/portal/") &&
+    (!token || token === "e2e-invalid-session")
+  ) {
+    send(response, 401, {
+      message: "Unauthenticated",
+      error: "unauthorized",
+    });
+    return;
+  }
+
   if (url.pathname === "/api/v1/auth/me") {
     if (!token || token === "e2e-invalid-session") {
       send(response, 401, {

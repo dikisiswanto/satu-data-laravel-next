@@ -19,6 +19,7 @@ export default function DatasetWorkspaceDetailLoading() {
       <Link
         href="/portal/dataset"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         ← Kembali ke daftar
       </Link>

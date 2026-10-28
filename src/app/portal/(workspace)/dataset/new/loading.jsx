@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import {
   AdminPageLoading,
   LoadingBlock,
@@ -14,21 +15,23 @@ export default function NewDatasetLoading() {
       description="Mulai dengan informasi dasar dataset. Jika perlu, unduh template untuk menata kolom. Metadata standar nasional dapat dilengkapi setelah rujukan resminya tersedia. Dataset baru tampil di portal publik setelah selesai diperiksa dan diterbitkan."
       contextGuide
     >
-      <details className="mb-4 max-w-3xl rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
-        <summary className="cursor-pointer font-semibold text-[#214f3c]">
-          Sumber resmi untuk membantu memeriksa data
-        </summary>
-        <p className="mt-2 text-sm leading-6 text-[#456857]">
-          Buka rujukan ini untuk memeriksa definisi, angka, dan asal data.
-          Daftar ini bukan dataset yang sudah diimpor atau ditetapkan sebagai
-          prioritas resmi.
-        </p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2" aria-hidden="true">
-          {Array.from({ length: 4 }, (_, index) => (
-            <LoadingBlock key={index} className="h-10 rounded-lg" />
-          ))}
-        </div>
-      </details>
+      {/^kabupaten wajo$/i.test(siteConfig.regionName) ? (
+        <details className="mb-4 w-full max-w-none rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
+          <summary className="cursor-pointer font-semibold text-[#214f3c]">
+            Sumber resmi untuk membantu memeriksa data
+          </summary>
+          <p className="mt-2 text-sm leading-6 text-[#456857]">
+            Buka rujukan ini untuk memeriksa definisi, angka, dan asal data.
+            Daftar ini bukan dataset yang sudah diimpor atau ditetapkan sebagai
+            prioritas resmi.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2" aria-hidden="true">
+            {Array.from({ length: 4 }, (_, index) => (
+              <LoadingBlock key={index} className="h-10 rounded-lg" />
+            ))}
+          </div>
+        </details>
+      ) : null}
       <DatasetPreparationAssistant />
       <section
         id="dataset-create-form-loading"
@@ -53,7 +56,7 @@ export default function NewDatasetLoading() {
           <LoadingField
             label="Cakupan wilayah"
             name="geographic_scope"
-            controlText="Contoh: Kabupaten Wajo"
+            controlText={`Contoh: ${siteConfig.regionName}`}
             required
           />
           <LoadingField

@@ -61,47 +61,47 @@ Route::middleware('throttle:backend-api')->group(function (): void {
             Route::get('/dashboard', [PortalAdminController::class, 'dashboard']);
             Route::get('/shell', [PortalAdminController::class, 'shell']);
             Route::get('/profile', [PortalAdminController::class, 'profile']);
-            Route::patch('/profile', [PortalAdminController::class, 'updateProfile'])->middleware('same.origin');
-            Route::patch('/profile/password', [PortalAdminController::class, 'updatePassword'])->middleware('same.origin');
-            Route::post('/onboarding', [PortalAdminController::class, 'completeOnboarding'])->middleware('same.origin');
+            Route::patch('/profile', [PortalAdminController::class, 'updateProfile'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::patch('/profile/password', [PortalAdminController::class, 'updatePassword'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::post('/onboarding', [PortalAdminController::class, 'completeOnboarding'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/riwayat', [PortalAdminController::class, 'auditLogs']);
             Route::get('/profiles', [PortalAdminController::class, 'profiles']);
             Route::get('/sdi/runs', [PortalAdminController::class, 'harvestRuns']);
             Route::get('/sdi-registry/catalog', [PortalAdminController::class, 'sdiRegistryCatalog']);
 
             Route::get('/datasets', [PortalDatasetController::class, 'index']);
-            Route::post('/datasets', [PortalDatasetController::class, 'create'])->middleware('same.origin');
+            Route::post('/datasets', [PortalDatasetController::class, 'create'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/datasets/{id}', [PortalDatasetController::class, 'show']);
-            Route::patch('/datasets/{id}', [PortalDatasetController::class, 'update'])->middleware('same.origin');
-            Route::post('/datasets/{id}/workflow', [PortalDatasetController::class, 'workflowAction'])->middleware('same.origin');
-            Route::patch('/datasets/{id}/sdi-metadata', [PortalDatasetController::class, 'updateSdiMetadata'])->middleware('same.origin');
-            Route::post('/dataset/{id}/upload', [PortalDatasetController::class, 'uploadControl'])->middleware('same.origin')->middleware('throttle:60,1');
+            Route::patch('/datasets/{id}', [PortalDatasetController::class, 'update'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::post('/datasets/{id}/workflow', [PortalDatasetController::class, 'workflowAction'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::patch('/datasets/{id}/sdi-metadata', [PortalDatasetController::class, 'updateSdiMetadata'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::post('/dataset/{id}/upload', [PortalDatasetController::class, 'uploadControl'])->middleware(['same.origin', 'throttle:portal-write'])->middleware('throttle:60,1');
             Route::get('/dataset/{id}/conversion-status', [PortalDatasetController::class, 'conversionStatus']);
 
             Route::get('/organizations', [PortalAdminController::class, 'organizations']);
-            Route::post('/organizations', [PortalAdminController::class, 'saveOrganization'])->middleware('same.origin');
+            Route::post('/organizations', [PortalAdminController::class, 'saveOrganization'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/organizations/{id}', [PortalAdminController::class, 'organization']);
-            Route::patch('/organizations/{id}', [PortalAdminController::class, 'saveOrganization'])->middleware('same.origin');
+            Route::patch('/organizations/{id}', [PortalAdminController::class, 'saveOrganization'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/memberships', [PortalAdminController::class, 'memberships']);
-            Route::post('/memberships', [PortalAdminController::class, 'saveMembership'])->middleware('same.origin');
-            Route::patch('/memberships/{id}', [PortalAdminController::class, 'saveMembership'])->middleware('same.origin');
-            Route::post('/users/invite', [PortalAdminController::class, 'inviteUser'])->middleware('same.origin');
+            Route::post('/memberships', [PortalAdminController::class, 'saveMembership'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::patch('/memberships/{id}', [PortalAdminController::class, 'saveMembership'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::post('/users/invite', [PortalAdminController::class, 'inviteUser'])->middleware(['same.origin', 'throttle:portal-write']);
 
             Route::get('/indicators', [PortalIndicatorController::class, 'index']);
             Route::get('/indicators/{id}', [PortalIndicatorController::class, 'show']);
-            Route::post('/indicators', [PortalIndicatorController::class, 'save'])->middleware('same.origin');
-            Route::post('/indicators/{id}', [PortalIndicatorController::class, 'action'])->middleware('same.origin');
+            Route::post('/indicators', [PortalIndicatorController::class, 'save'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::post('/indicators/{id}', [PortalIndicatorController::class, 'action'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/indicators/{id}/observations', [PortalIndicatorController::class, 'observations']);
-            Route::post('/indicators/{id}/observations', [PortalIndicatorController::class, 'saveObservation'])->middleware('same.origin');
-            Route::patch('/indicators/{id}/observations', [PortalIndicatorController::class, 'publishObservation'])->middleware('same.origin');
+            Route::post('/indicators/{id}/observations', [PortalIndicatorController::class, 'saveObservation'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::patch('/indicators/{id}/observations', [PortalIndicatorController::class, 'publishObservation'])->middleware(['same.origin', 'throttle:portal-write']);
 
-            Route::post('/sdi-registry', [PortalSdiController::class, 'saveRegistry'])->middleware('same.origin');
-            Route::patch('/sdi-registry', [PortalSdiController::class, 'reviewRegistry'])->middleware('same.origin');
+            Route::post('/sdi-registry', [PortalSdiController::class, 'saveRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
+            Route::patch('/sdi-registry', [PortalSdiController::class, 'reviewRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
             Route::get('/kualitas/summary', [PortalSdiController::class, 'qualitySummary']);
-            Route::post('/integrasi/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:5,1']);
+            Route::post('/integrasi/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:portal-write', 'throttle:5,1']);
             Route::get('/standar', [PortalSdiController::class, 'standards']);
 
-            Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('same.origin');
+            Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware(['same.origin', 'throttle:portal-write']);
         });
     });
 
@@ -128,13 +128,16 @@ Route::middleware('throttle:backend-api')->group(function (): void {
             Route::get('/standards', [PortalSdiController::class, 'standards']);
         });
 
-        Route::prefix('auth')->middleware('throttle:10,1')->group(function (): void {
-            Route::post('/login', [AuthController::class, 'login'])->middleware('same.origin');
+        Route::prefix('auth')->group(function (): void {
+            // The tight per-IP budget is for credential attempts only. Session
+            // verification is called on every server-rendered route and uses
+            // the much higher authenticated per-user budget below.
+            Route::post('/login', [AuthController::class, 'login'])->middleware(['same.origin', 'throttle:10,1']);
             Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware(['same.origin', 'throttle:3,1']);
             Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware(['same.origin', 'throttle:5,1']);
             Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
                 Route::get('/me', [AuthController::class, 'me']);
-                Route::post('/logout', [AuthController::class, 'logout'])->middleware('same.origin');
+                Route::post('/logout', [AuthController::class, 'logout'])->middleware(['same.origin', 'throttle:portal-write']);
             });
         });
 
@@ -147,9 +150,9 @@ Route::middleware('throttle:backend-api')->group(function (): void {
                 Route::get('/dashboard', [PortalAdminController::class, 'dashboard']);
                 Route::get('/shell', [PortalAdminController::class, 'shell']);
                 Route::get('/profile', [PortalAdminController::class, 'profile']);
-                Route::patch('/profile', [PortalAdminController::class, 'updateProfile'])->middleware('same.origin');
-                Route::patch('/profile/password', [PortalAdminController::class, 'updatePassword'])->middleware('same.origin');
-                Route::post('/onboarding', [PortalAdminController::class, 'completeOnboarding'])->middleware('same.origin');
+                Route::patch('/profile', [PortalAdminController::class, 'updateProfile'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/profile/password', [PortalAdminController::class, 'updatePassword'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/onboarding', [PortalAdminController::class, 'completeOnboarding'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/audit-logs', [PortalAdminController::class, 'auditLogs']);
                 Route::get('/profiles', [PortalAdminController::class, 'profiles']);
                 Route::get('/sdi/harvest-runs', [PortalAdminController::class, 'harvestRuns']);
@@ -160,44 +163,44 @@ Route::middleware('throttle:backend-api')->group(function (): void {
                 Route::get('/sdi-registry/catalog', [PortalAdminController::class, 'sdiRegistryCatalog']);
 
                 Route::get('/datasets', [PortalDatasetController::class, 'index']);
-                Route::post('/datasets', [PortalDatasetController::class, 'create'])->middleware('same.origin');
+                Route::post('/datasets', [PortalDatasetController::class, 'create'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/datasets/{id}', [PortalDatasetController::class, 'show']);
-                Route::patch('/datasets/{id}', [PortalDatasetController::class, 'update'])->middleware('same.origin');
-                Route::post('/datasets/{id}/workflow', [PortalDatasetController::class, 'workflowAction'])->middleware('same.origin');
-                Route::patch('/datasets/{id}/sdi-metadata', [PortalDatasetController::class, 'updateSdiMetadata'])->middleware('same.origin');
-                Route::post('/datasets/{id}/uploads', [PortalDatasetController::class, 'uploadControl'])->middleware('same.origin')->middleware('throttle:60,1');
+                Route::patch('/datasets/{id}', [PortalDatasetController::class, 'update'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/datasets/{id}/workflow', [PortalDatasetController::class, 'workflowAction'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/datasets/{id}/sdi-metadata', [PortalDatasetController::class, 'updateSdiMetadata'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/datasets/{id}/uploads', [PortalDatasetController::class, 'uploadControl'])->middleware(['same.origin', 'throttle:portal-write'])->middleware('throttle:60,1');
                 Route::get('/datasets/{id}/conversion-status', [PortalDatasetController::class, 'conversionStatus']);
 
                 Route::get('/organizations', [PortalAdminController::class, 'organizations']);
-                Route::post('/organizations', [PortalAdminController::class, 'saveOrganization'])->middleware('same.origin');
+                Route::post('/organizations', [PortalAdminController::class, 'saveOrganization'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/organizations/{id}', [PortalAdminController::class, 'organization']);
-                Route::patch('/organizations/{id}', [PortalAdminController::class, 'saveOrganization'])->middleware('same.origin');
+                Route::patch('/organizations/{id}', [PortalAdminController::class, 'saveOrganization'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/memberships', [PortalAdminController::class, 'memberships']);
-                Route::post('/memberships', [PortalAdminController::class, 'saveMembership'])->middleware('same.origin');
-                Route::patch('/memberships/{id}', [PortalAdminController::class, 'saveMembership'])->middleware('same.origin');
-                Route::post('/users/invite', [PortalAdminController::class, 'inviteUser'])->middleware('same.origin');
+                Route::post('/memberships', [PortalAdminController::class, 'saveMembership'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/memberships/{id}', [PortalAdminController::class, 'saveMembership'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/users/invite', [PortalAdminController::class, 'inviteUser'])->middleware(['same.origin', 'throttle:portal-write']);
 
                 Route::get('/indicators', [PortalIndicatorController::class, 'index']);
                 Route::get('/indicators/{id}', [PortalIndicatorController::class, 'show']);
-                Route::post('/indicators', [PortalIndicatorController::class, 'save'])->middleware('same.origin');
-                Route::post('/indicators/{id}/workflow', [PortalIndicatorController::class, 'action'])->middleware('same.origin');
-                Route::post('/indicators/{id}', [PortalIndicatorController::class, 'action'])->middleware('same.origin'); // Deprecated transition alias.
+                Route::post('/indicators', [PortalIndicatorController::class, 'save'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/indicators/{id}/workflow', [PortalIndicatorController::class, 'action'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::post('/indicators/{id}', [PortalIndicatorController::class, 'action'])->middleware(['same.origin', 'throttle:portal-write']); // Deprecated transition alias.
                 Route::get('/indicators/{id}/observations', [PortalIndicatorController::class, 'observations']);
-                Route::post('/indicators/{id}/observations', [PortalIndicatorController::class, 'saveObservation'])->middleware('same.origin');
-                Route::patch('/indicators/{id}/observations/{observationId}', [PortalIndicatorController::class, 'publishObservation'])->middleware('same.origin');
-                Route::patch('/indicators/{id}/observations', [PortalIndicatorController::class, 'publishObservation'])->middleware('same.origin'); // Deprecated transition alias.
+                Route::post('/indicators/{id}/observations', [PortalIndicatorController::class, 'saveObservation'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/indicators/{id}/observations/{observationId}', [PortalIndicatorController::class, 'publishObservation'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/indicators/{id}/observations', [PortalIndicatorController::class, 'publishObservation'])->middleware(['same.origin', 'throttle:portal-write']); // Deprecated transition alias.
 
-                Route::post('/sdi/registry/entries', [PortalSdiController::class, 'saveRegistry'])->middleware('same.origin');
-                Route::patch('/sdi/registry/reviews', [PortalSdiController::class, 'reviewRegistry'])->middleware('same.origin');
+                Route::post('/sdi/registry/entries', [PortalSdiController::class, 'saveRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/sdi/registry/reviews', [PortalSdiController::class, 'reviewRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/data-quality/summary', [PortalSdiController::class, 'qualitySummary']);
-                Route::post('/integrations/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:5,1']);
+                Route::post('/integrations/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:portal-write', 'throttle:5,1']);
                 Route::get('/sdi/standards', [PortalSdiController::class, 'standards']);
 
                 // Deprecated aliases for the first Laravel cutover; remove only after all clients migrate.
-                Route::post('/sdi-registry', [PortalSdiController::class, 'saveRegistry'])->middleware('same.origin');
-                Route::patch('/sdi-registry', [PortalSdiController::class, 'reviewRegistry'])->middleware('same.origin');
+                Route::post('/sdi-registry', [PortalSdiController::class, 'saveRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
+                Route::patch('/sdi-registry', [PortalSdiController::class, 'reviewRegistry'])->middleware(['same.origin', 'throttle:portal-write']);
                 Route::get('/kualitas/summary', [PortalSdiController::class, 'qualitySummary']);
-                Route::post('/integrasi/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:5,1']);
+                Route::post('/integrasi/preflight', [PortalSdiController::class, 'preflight'])->middleware(['same.origin', 'throttle:portal-write', 'throttle:5,1']);
                 Route::get('/standar', [PortalSdiController::class, 'standards']);
             });
         });

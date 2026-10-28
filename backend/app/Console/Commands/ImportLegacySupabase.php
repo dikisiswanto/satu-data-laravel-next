@@ -43,7 +43,7 @@ class ImportLegacySupabase extends Command
         'conversion_jobs' => ['schema' => 'public', 'source' => 'conversion_jobs', 'keys' => ['id']],
         'indicators' => ['schema' => 'public', 'source' => 'indicators', 'keys' => ['id']],
         'indicator_observations' => ['schema' => 'public', 'source' => 'indicator_observations', 'keys' => ['id']],
-        // Metadata references these catalog records through FKs in the v6 schema.
+        // Metadata references these catalog records through FKs in the target schema.
         // Import the parent catalogs before importing metadata; reference entries
         // themselves depend on reference_code_systems.
         'sdi_standard_registry' => ['schema' => 'public', 'source' => 'sdi_standard_registry', 'keys' => ['id']],

@@ -17,16 +17,13 @@ import {
   getCanonicalMetadata,
   getPublicSiteOrigin,
   getSocialMetadata,
+  siteConfig,
 } from "@/lib/site-config";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { DatasetResourcePreview } from "@/components/dataset-resource-preview";
 
-const GEOPORTAL_FALLBACK_URL = "https://geoportal-wajo.vercel.app";
-
 function getGeoPortalUrl() {
-  return (
-    safeHttpUrl(process.env.NEXT_PUBLIC_GEOPORTAL_URL) || GEOPORTAL_FALLBACK_URL
-  );
+  return safeHttpUrl(process.env.NEXT_PUBLIC_GEOPORTAL_URL) || null;
 }
 
 function isGeospatialDataset(dataset) {
@@ -83,14 +80,15 @@ export async function generateMetadata({ params }) {
   return {
     title: dataset.title,
     description: (
-      dataset.description || "Metadata dataset resmi Kabupaten Wajo."
+      dataset.description || `Metadata dataset resmi ${siteConfig.regionName}.`
     ).slice(0, 160),
     ...getCanonicalMetadata(`/dataset/${dataset.slug}`),
     ...getSocialMetadata({
       path: `/dataset/${dataset.slug}`,
       title: dataset.title,
       description: (
-        dataset.description || "Metadata dataset resmi Kabupaten Wajo."
+        dataset.description ||
+        `Metadata dataset resmi ${siteConfig.regionName}.`
       ).slice(0, 160),
       type: "article",
     }),
@@ -141,8 +139,7 @@ export default async function DatasetDetailPage({ params }) {
     "@type": "Dataset",
     name: dataset.title,
     description:
-      dataset.description ||
-      "Dataset resmi dari Portal Satu Data Kabupaten Wajo.",
+      dataset.description || `Dataset resmi dari ${siteConfig.name}.`,
     ...(siteOrigin ? { url: `${siteOrigin}/dataset/${dataset.slug}` } : {}),
     identifier: dataset.slug,
     ...(dataset.organizations?.name
@@ -155,7 +152,7 @@ export default async function DatasetDetailPage({ params }) {
       : {}),
     publisher: {
       "@type": "GovernmentOrganization",
-      name: "Pemerintah Kabupaten Wajo",
+      name: siteConfig.organizationName,
     },
     ...(dataset.published_at ? { datePublished: dataset.published_at } : {}),
     ...(dataset.updated_at ? { dateModified: dataset.updated_at } : {}),
@@ -289,24 +286,27 @@ export default async function DatasetDetailPage({ params }) {
                       id="geospatial-viewer-title"
                       className="text-lg font-semibold"
                     >
-                      Jelajahi melalui Peta Interaktif Wajo
+                      Jelajahi melalui Peta Interaktif{" "}
+                      {siteConfig.regionShortName}
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-muted">
-                      Untuk melihat konteks lokasi dan peta tematik, buka
-                      GeoPortal Wajo. Metadata, sumber, versi, dan berkas resmi
-                      dataset tetap tersedia dari katalog Satu Data ini.
+                      {getGeoPortalUrl()
+                        ? `Untuk melihat konteks lokasi dan peta tematik, buka GeoPortal ${siteConfig.regionShortName}. Metadata, sumber, versi, dan berkas resmi dataset tetap tersedia dari katalog Satu Data ini.`
+                        : "Tautan GeoPortal untuk instansi ini belum dikonfigurasi. Metadata, sumber, versi, dan berkas resmi dataset tetap tersedia dari katalog Satu Data ini."}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-3">
-                      <a
-                        href={getGeoPortalUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-10 items-center gap-2 rounded-control bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
-                      >
-                        <MapPinned size={16} aria-hidden="true" />
-                        Buka peta interaktif
-                        <ExternalLink size={14} aria-hidden="true" />
-                      </a>
+                      {getGeoPortalUrl() ? (
+                        <a
+                          href={getGeoPortalUrl()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-10 items-center gap-2 rounded-control bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
+                        >
+                          <MapPinned size={16} aria-hidden="true" />
+                          Buka peta interaktif
+                          <ExternalLink size={14} aria-hidden="true" />
+                        </a>
+                      ) : null}
                       <a
                         href={`/api/v1/datasets/${encodeURIComponent(dataset.slug)}`}
                         target="_blank"

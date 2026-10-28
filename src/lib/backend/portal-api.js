@@ -19,23 +19,38 @@ function portalPath(path) {
 
 /** Fetch the Laravel portal API response, including pagination metadata. */
 export function portalApi(path, options = {}) {
-  return withInvalidSessionRedirect(() =>
-    backendFetch(portalPath(path), options),
+  const endpoint = portalPath(path);
+  return withInvalidSessionRedirect(
+    () => backendFetch(endpoint, options),
+    endpoint,
   );
 }
 
 /** Fetch the `data` member from a Laravel portal API response. */
 export function portalData(path, options = {}) {
-  return withInvalidSessionRedirect(() =>
-    backendData(portalPath(path), options),
+  const endpoint = portalPath(path);
+  return withInvalidSessionRedirect(
+    () => backendData(endpoint, options),
+    endpoint,
   );
 }
 
-async function withInvalidSessionRedirect(request) {
+async function withInvalidSessionRedirect(request, endpoint) {
   try {
     return await request();
   } catch (error) {
-    if (Number(error?.status) === 401) redirect("/portal/login");
+    const status = Number(error?.status || 0);
+    if (status >= 500 || status === 429 || status === 0) {
+      const log = status >= 500 || status === 0 ? console.error : console.warn;
+      log("portal_api_request_failed", {
+        path: String(endpoint).split("?")[0],
+        status: status || null,
+        code: typeof error?.code === "string" ? error.code : "unknown_error",
+        request_id:
+          typeof error?.requestId === "string" ? error.requestId : null,
+      });
+    }
+    if (status === 401) redirect("/portal/login");
     throw error;
   }
 }

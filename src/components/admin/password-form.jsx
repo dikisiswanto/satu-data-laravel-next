@@ -88,7 +88,7 @@ export function PasswordForm() {
     <form
       onSubmit={submit}
       aria-busy={busy}
-      className="mt-8 portal-form-section"
+      className="w-full mt-8 portal-form-section"
     >
       <h2 className="font-semibold">Ubah kata sandi</h2>
       <p className="mt-2 text-sm leading-6 text-muted">

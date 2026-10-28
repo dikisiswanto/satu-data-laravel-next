@@ -204,7 +204,7 @@ describe("dataset conversion helpers", () => {
     expect(workerSource).toContain("if (y + row.height > contentBottom())");
     expect(workerSource).toContain("doc.addPage({");
     expect(workerSource).toContain("Title: safeTitle");
-    expect(workerSource).toContain('Author: "Portal Satu Data Kabupaten Wajo"');
+    expect(workerSource).toContain("Author: siteConfig.name");
     expect(workerSource).toContain(
       "fillAndStroke(palette.blue, palette.blueDark)",
     );

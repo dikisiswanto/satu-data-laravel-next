@@ -30,7 +30,20 @@ const verifyRequestUser = cache(async () => {
     const payload = await backendFetch("/api/v1/auth/me");
     return { data: { user: payload?.data || null }, error: null };
   } catch (retryError) {
-    if (isTransientAuthFailure(retryError)) throw retryError;
+    if (isTransientAuthFailure(retryError)) {
+      console.error("portal_session_verification_unavailable", {
+        status: Number(retryError?.status || 0) || null,
+        code:
+          typeof retryError?.code === "string"
+            ? retryError.code
+            : "transport_error",
+        request_id:
+          typeof retryError?.requestId === "string"
+            ? retryError.requestId
+            : null,
+      });
+      throw retryError;
+    }
     return { data: { user: null }, error: retryError };
   }
 });

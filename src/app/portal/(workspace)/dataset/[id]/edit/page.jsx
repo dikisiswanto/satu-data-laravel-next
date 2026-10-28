@@ -58,6 +58,7 @@ export default async function EditDatasetPage({ params, searchParams }) {
       <Link
         href={`/portal/dataset/${id}`}
         className="text-sm font-medium text-primary"
+        prefetch={false}
       >
         ← Kembali ke dataset
       </Link>

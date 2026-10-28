@@ -14,7 +14,7 @@ export default function NewOrganizationLoading() {
       contextGuide
     >
       <section
-        className="portal-form-card max-w-3xl space-y-5 p-5 sm:p-8"
+        className="w-full portal-form-card max-w-none space-y-5 p-5 sm:p-8"
         aria-busy="true"
       >
         <div className="grid gap-4 sm:grid-cols-2">

@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -84,7 +85,7 @@ export default async function SdiIntegrationPage() {
       <PageHeading
         eyebrow="Interoperabilitas"
         title="Kesiapan integrasi Satu Data Indonesia"
-        description="Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal Wajo; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi."
+        description="Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi."
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -162,9 +163,9 @@ export default async function SdiIntegrationPage() {
             </div>
             <p className="mt-3 text-xs leading-5 text-[#45677f]">
               Alamat API saja belum membuat koneksi ke SPLP aktif. Pengelola
-              integrasi perlu mendaftarkan katalog Wajo di sistem tujuan, lalu
-              menguji pengambilan metadata dan berkas, pembaruan versi, serta
-              penarikan dataset dari katalog.
+              integrasi perlu mendaftarkan katalog portal ini di sistem tujuan,
+              lalu menguji pengambilan metadata dan berkas, pembaruan versi,
+              serta penarikan dataset dari katalog.
             </p>
           </div>
         </div>
@@ -193,11 +194,14 @@ export default async function SdiIntegrationPage() {
                         }
                       </p>
                       <p className="mt-1 text-xs text-muted">
-                        {new Date(run.finished_at).toLocaleString("id-ID", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                          timeZone: "Asia/Makassar",
-                        })}{" "}
+                        {new Date(run.finished_at).toLocaleString(
+                          siteConfig.locale,
+                          {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                            timeZone: siteConfig.timeZone,
+                          },
+                        )}{" "}
                         WITA · {run.summary?.eligible_count ?? 0} layak ·{" "}
                         {run.summary?.issue_count ?? 0} temuan
                       </p>
@@ -215,8 +219,8 @@ export default async function SdiIntegrationPage() {
                 ))}
               </div>
               <p className="mt-2 text-xs text-muted">
-                Riwayat ini menunjukkan hasil pemeriksaan di Portal Wajo.
-                Riwayat ini belum menunjukkan bahwa sistem nasional sudah
+                Riwayat ini menunjukkan hasil pemeriksaan pada {siteConfig.name}
+                . Riwayat ini belum menunjukkan bahwa sistem nasional sudah
                 berhasil mengambil data.
               </p>
             </div>
@@ -269,6 +273,7 @@ export default async function SdiIntegrationPage() {
                     <Link
                       href={`/portal/integrasi/${dataset.id}`}
                       className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold text-primary hover:bg-surface-secondary"
+                      prefetch={false}
                     >
                       Lengkapi metadata{" "}
                       <ArrowUpRight size={15} aria-hidden="true" />
@@ -375,6 +380,7 @@ function EndpointCard({ href, label, detail, format }) {
         target="_blank"
         rel="noreferrer"
         className="mt-2 inline-flex items-center gap-1 break-all text-sm font-medium text-primary underline-offset-4 hover:underline"
+        prefetch={false}
       >
         {detail}
         <ArrowUpRight size={13} aria-hidden="true" />

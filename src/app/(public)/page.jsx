@@ -26,18 +26,20 @@ import {
 } from "@/lib/data/public";
 import { formatDate } from "@/lib/utils";
 import { SectionReveal } from "@/components/section-reveal";
-import { getCanonicalMetadata, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getSocialMetadata,
+  siteConfig,
+} from "@/lib/site-config";
 
 export const metadata = {
-  title: "Portal Satu Data Kabupaten Wajo",
-  description:
-    "Temukan dataset, indikator, dan informasi resmi dari perangkat daerah Kabupaten Wajo.",
+  title: siteConfig.name,
+  description: `Temukan dataset, indikator, dan informasi resmi dari perangkat daerah ${siteConfig.regionName}.`,
   ...getCanonicalMetadata("/"),
   ...getSocialMetadata({
     path: "/",
-    title: "Portal Satu Data Kabupaten Wajo",
-    description:
-      "Temukan dataset, indikator, dan informasi resmi dari perangkat daerah Kabupaten Wajo.",
+    title: siteConfig.name,
+    description: `Temukan dataset, indikator, dan informasi resmi dari perangkat daerah ${siteConfig.regionName}.`,
   }),
 };
 
@@ -189,21 +191,26 @@ function HomeHeroContent({
 }) {
   const topicLinks = getTopicLinks(availableCategories);
   return (
-    <section className="home-hero" aria-busy={loading ? "true" : undefined}>
+    <section
+      className="home-hero"
+      style={{ "--home-hero-image": `url("${siteConfig.heroImage}")` }}
+      aria-busy={loading ? "true" : undefined}
+    >
       <div className="home-hero-pattern" aria-hidden="true" />
       <div className="page-container home-hero-inner">
         <div className="home-hero-copy">
           <p className="home-hero-kicker">
-            <span /> PORTAL DATA TERPADU KABUPATEN WAJO
+            <span />{" "}
+            {`PORTAL DATA TERPADU ${siteConfig.regionName.toUpperCase()}`}
           </p>
           <h1>
             Temukan Data,
             <br />
-            <span>Pahami Wajo.</span>
+            <span>Pahami {siteConfig.regionShortName}.</span>
           </h1>
           <p className="home-hero-description">
-            Jelajahi data resmi Kabupaten Wajo untuk memahami kondisi daerah,
-            menyusun perencanaan, dan mendukung keputusan berbasis data.
+            Jelajahi data resmi {siteConfig.regionName} untuk memahami kondisi
+            daerah, menyusun perencanaan, dan mendukung keputusan berbasis data.
           </p>
           <div className="home-hero-search">
             <SearchForm placeholder="Cari dataset, tema, atau kata kunci…" />
@@ -233,7 +240,7 @@ function HomeHeroContent({
           <div className="home-visual-caption">
             <span className="home-live-dot" />
             <span>
-              <strong>Satu Data Wajo</strong>
+              <strong>{siteConfig.shortName}</strong>
               <small>Satu tempat untuk menemukan data daerah</small>
             </span>
           </div>

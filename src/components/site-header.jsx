@@ -19,6 +19,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { NavigationLink } from "@/components/ui/navigation-link";
 import { cn } from "@/lib/utils";
+import { siteConfig } from "@/lib/site-config";
 
 const links = [
   { href: "/", label: "Beranda", icon: Home, exact: true },
@@ -140,12 +141,12 @@ export function SiteHeader() {
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2 rounded-md sm:gap-3"
-          aria-label="Portal Satu Data Kabupaten Wajo — Beranda"
+          aria-label={`${siteConfig.name} — Beranda`}
         >
           <span className="flex size-11 shrink-0 items-center justify-center">
             <Image
-              src="/logo-kabupaten-wajo.webp"
-              alt="Lambang Kabupaten Wajo"
+              src={siteConfig.logoPath}
+              alt={siteConfig.logoAlt}
               width={48}
               height={56}
               priority
@@ -154,10 +155,10 @@ export function SiteHeader() {
           </span>
           <span className="site-brand-copy block leading-tight">
             <span className="block truncate text-sm font-bold tracking-tight sm:text-base">
-              Satu Data Wajo
+              {siteConfig.shortName}
             </span>
             <span className="block truncate text-xs text-muted">
-              Portal Data Kabupaten Wajo
+              {siteConfig.publicSubtitle}
             </span>
           </span>
         </Link>

@@ -16,7 +16,7 @@ class HealthController extends Controller
 
             return response()->json([
                 'status' => 'ok',
-                'service' => 'satu-data-wajo-api',
+                'service' => 'portal-satu-data-api',
                 'timestamp' => now()->toISOString(),
                 'checks' => ['database' => 'ok'],
             ], 200, ['Cache-Control' => 'no-store']);
@@ -25,7 +25,7 @@ class HealthController extends Controller
 
             return response()->json([
                 'status' => 'degraded',
-                'service' => 'satu-data-wajo-api',
+                'service' => 'portal-satu-data-api',
                 'timestamp' => now()->toISOString(),
                 'checks' => ['database' => 'error'],
             ], 503, ['Cache-Control' => 'no-store']);

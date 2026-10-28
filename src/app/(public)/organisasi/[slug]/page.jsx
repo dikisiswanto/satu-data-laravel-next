@@ -7,7 +7,11 @@ import { DatasetCard } from "@/components/dataset-card";
 import { getPublicOrganizationBySlugResult } from "@/lib/data/organizations";
 import { getPublishedDatasetsResult } from "@/lib/data/public";
 import { SectionReveal } from "@/components/section-reveal";
-import { getCanonicalMetadata, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getSocialMetadata,
+  siteConfig,
+} from "@/lib/site-config";
 
 function formatCount(value) {
   return new Intl.NumberFormat("id-ID").format(Number(value) || 0);
@@ -33,7 +37,7 @@ export async function generateMetadata({ params }) {
         ...getCanonicalMetadata(`/organisasi/${org.slug}`),
         ...getSocialMetadata({
           path: `/organisasi/${org.slug}`,
-          title: `${org.name} | Satu Data Wajo`,
+          title: `${org.name} | ${siteConfig.shortName}`,
           description: (
             org.description || `Dataset publik yang dikelola ${org.name}.`
           ).slice(0, 160),

@@ -16,11 +16,12 @@ export default function EditDatasetLoading() {
       <Link
         href="/portal/dataset"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         ← Kembali ke dataset
       </Link>
       <section
-        className="portal-form-card space-y-6 p-5 sm:p-8"
+        className="w-full portal-form-card space-y-6 p-5 sm:p-8"
         aria-busy="true"
       >
         <LoadingField label="Judul" name="title" required />

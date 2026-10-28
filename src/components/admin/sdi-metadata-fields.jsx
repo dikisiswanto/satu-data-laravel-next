@@ -171,7 +171,7 @@ export function SdiMetadataFields({
           <ChevronDown
             size={17}
             aria-hidden="true"
-            className="transition-transform group-open:rotate-180"
+            className="portal-disclosure-arrow transition-transform group-open:rotate-180"
           />
         </span>
       </summary>
@@ -232,6 +232,7 @@ export function SdiMetadataFields({
                   <Link
                     href="/portal/standar"
                     className="mt-2 inline-flex text-xs font-semibold text-primary underline"
+                    prefetch={false}
                   >
                     Buka registri standar
                   </Link>
@@ -285,6 +286,7 @@ export function SdiMetadataFields({
                   <Link
                     href="/portal/standar"
                     className="mt-2 inline-flex text-xs font-semibold text-primary underline"
+                    prefetch={false}
                   >
                     Buka registri kode referensi
                   </Link>

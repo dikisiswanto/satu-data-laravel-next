@@ -61,7 +61,9 @@ export function SourceUploadForm({
             }),
           },
         );
-        prepared = await readApiMutationResponse(prepareResponse);
+        prepared = await readApiMutationResponse(prepareResponse, {
+          notify: !prepareResponse.ok,
+        });
         if (
           attempt > 0 ||
           prepareResponse.status !== 503 ||
@@ -92,7 +94,7 @@ export function SourceUploadForm({
               rate_limit_unavailable:
                 "Kami belum dapat memeriksa batas unggahan. Coba lagi beberapa saat lagi.",
               unauthorized:
-                "Sesi Anda sudah berakhir. Masuk kembali sebelum mengunggah berkas.",
+                "Sesi atau akses akun belum dapat diverifikasi. Muat ulang halaman; masuk kembali jika masalah berlanjut.",
               account_inactive:
                 "Akun ini sedang dinonaktifkan. Hubungi administrator portal jika Anda membutuhkan akses.",
               forbidden:
@@ -142,7 +144,9 @@ export function SourceUploadForm({
           body: uploadBody,
         });
         if (!uploadResponse.ok) {
-          const uploadResult = await readApiMutationResponse(uploadResponse);
+          const uploadResult = await readApiMutationResponse(uploadResponse, {
+            notify: true,
+          });
           throw new Error(uploadResult.error || "storage_upload_failed");
         }
       } catch {

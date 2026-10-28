@@ -102,7 +102,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
     expect(page).toContain("<GeoPortalStatisticsPromo />");
     expect(loading).toContain("<GeoPortalStatisticsPromo />");
     expect(promo).toContain("Jelajahi data berbasis lokasi");
-    expect(promo).toContain("Buka GeoPortal Wajo");
+    expect(promo).toContain("GeoPortal ${siteConfig.regionShortName}");
   });
 
   it("keeps the organization directory's helper sentence visible with only counts reserved", () => {
@@ -310,12 +310,12 @@ describe("loading shells preserve static UI copy and route structure", () => {
       [
         "src/app/portal/(workspace)/integrasi/page.jsx",
         "src/app/portal/(workspace)/integrasi/loading.jsx",
-        "Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal Wajo; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi.",
+        "Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi.",
       ],
       [
         "src/app/portal/(workspace)/integrasi/[id]/page.jsx",
         "src/app/portal/(workspace)/integrasi/[id]/loading.jsx",
-        "Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia.",
+        "profil ekspor ${siteConfig.shortName}. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia.",
       ],
       [
         "src/app/portal/(workspace)/statistik/[id]/observasi/page.jsx",
@@ -431,8 +431,8 @@ describe("loading shells preserve static UI copy and route structure", () => {
     const page = read("src/app/(public)/page.jsx");
     for (const phrase of [
       "Temukan Data,",
-      "Pahami Wajo.",
-      "PORTAL DATA TERPADU KABUPATEN WAJO",
+      "Pahami {siteConfig.regionShortName}.",
+      "siteConfig.regionName.toUpperCase()",
       "Dataset terbaru",
       "Data berdasarkan tema",
       "Ringkasan dihitung dari data yang tersedia untuk publik.",
@@ -554,7 +554,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
       read("src/components/admin/sdi-metadata-editor.jsx"),
     );
     const staticCopy = [
-      "Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo.",
+      "profil ekspor ${siteConfig.shortName}.",
       "Metadata standar dan pertukaran SDI (lanjutan)",
       "Bagian ini tidak perlu ditebak saat membuat draf. Lengkapi jika Anda sudah memiliki rujukan resmi, atau minta bantuan Walidata.",
       "Simpan metadata pertukaran",

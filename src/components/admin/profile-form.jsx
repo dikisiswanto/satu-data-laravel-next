@@ -67,7 +67,7 @@ export function ProfileForm({ displayName }) {
     <form
       onSubmit={submit}
       aria-busy={busy}
-      className="mt-6 space-y-4 portal-form-section"
+      className="w-full mt-6 space-y-4 portal-form-section"
     >
       {message ? (
         <p

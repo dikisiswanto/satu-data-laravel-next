@@ -36,7 +36,7 @@ describe("public mobile layout, stable shell and portal login entry", () => {
     expect(login).not.toContain("requestedAuthStatus");
   });
 
-  it("does not animate or hide static public page content during route transitions", () => {
+  it("keeps route transitions stable and limits entry motion to the homepage hero", () => {
     expect(template).toContain("return children;");
     expect(template).not.toContain("public-route-transition");
     expect(sectionReveal).not.toContain("IntersectionObserver");
@@ -44,8 +44,15 @@ describe("public mobile layout, stable shell and portal login entry", () => {
     expect(read("src/app/globals.css")).toContain(
       "./styles/public-responsive.css",
     );
-    expect(read("src/app/styles/public-pages-motion.css")).not.toContain(
-      "@keyframes public-route-enter",
+    const publicMotion = read("src/app/styles/public-pages-motion.css");
+    expect(publicMotion).not.toContain("@keyframes public-route-enter");
+    expect(publicMotion).toContain("@keyframes home-hero-copy-enter");
+    expect(publicMotion).toContain("@keyframes home-hero-title-enter");
+    expect(publicMotion).toContain("@keyframes home-hero-visual-enter");
+    expect(publicMotion).toContain("@keyframes home-hero-stat-enter");
+    expect(publicMotion).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(publicMotion).toMatch(
+      /\.home-hero-copy > \.home-hero-kicker[\s\S]*?animation-delay: 60ms/s,
     );
     expect(publicHomeStyles).not.toContain("@keyframes public-route-enter");
     expect(publicHomeStyles).not.toContain(".public-section-reveal.is-pending");
@@ -72,7 +79,7 @@ describe("public mobile layout, stable shell and portal login entry", () => {
     );
     expect(home).toContain("home-metric-skeleton");
     expect(home).toContain("Temukan Data,");
-    expect(home).toContain("Pahami Wajo.");
+    expect(home).toContain("Pahami {siteConfig.regionShortName}.");
   });
 
   it("provides accessible shimmer fallbacks on public routes with dynamic content", () => {

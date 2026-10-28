@@ -20,18 +20,20 @@ export function FormSubmitButton({
         type="submit"
         disabled={disabled || pending}
         aria-busy={pending}
+        data-stateful-button="true"
+        data-pending={pending ? "true" : "false"}
         className={cn(
           className,
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
         )}
         {...props}
       >
-        <span className="grid min-w-0 grid-cols-[max-content] [&>*]:col-start-1 [&>*]:row-start-1">
+        <span className="button-state-stack grid min-w-0 grid-cols-[max-content] [&>*]:col-start-1 [&>*]:row-start-1">
           <span
             className={
               pending
-                ? "invisible"
-                : "inline-flex min-w-0 items-center justify-center gap-2"
+                ? "button-state-layer button-state-normal invisible"
+                : "button-state-layer button-state-normal"
             }
             aria-hidden={pending || undefined}
           >
@@ -40,8 +42,8 @@ export function FormSubmitButton({
           <span
             className={
               pending
-                ? "inline-flex min-w-0 items-center justify-center gap-2"
-                : "invisible inline-flex items-center justify-center gap-2"
+                ? "button-state-layer button-state-pending"
+                : "button-state-layer button-state-pending invisible"
             }
             aria-hidden={!pending || undefined}
           >

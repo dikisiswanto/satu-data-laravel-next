@@ -21,7 +21,7 @@ export default function AdminIntegrationLoading() {
       label="Memuat kesiapan integrasi"
       eyebrow="Interoperabilitas"
       title="Kesiapan integrasi Satu Data Indonesia"
-      description="Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal Wajo; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi."
+      description="Halaman ini membantu Anda memeriksa apakah metadata dan berkas dataset sudah lengkap untuk dibagikan ke sistem lain. Hasil di sini hanya pemeriksaan dari portal; hasil ini belum berarti katalog sudah diterima oleh SPLP atau katalog nasional. Kode SDS dan kode referensi tetap perlu dicocokkan dengan sumber resmi."
     >
       <div className="grid gap-4 sm:grid-cols-3" aria-hidden="true">
         {["Dataset terbit", "Metadata lengkap", "Perlu dilengkapi"].map(
@@ -59,7 +59,7 @@ export default function AdminIntegrationLoading() {
         </div>
         <p className="mt-3 text-xs leading-5 text-[#45677f]">
           Alamat API saja belum membuat koneksi ke SPLP aktif. Pengelola
-          integrasi perlu mendaftarkan katalog Wajo di sistem tujuan, lalu
+          integrasi perlu mendaftarkan katalog portal ini di sistem tujuan, lalu
           menguji pengambilan metadata dan berkas, pembaruan versi, serta
           penarikan dataset dari katalog.
         </p>

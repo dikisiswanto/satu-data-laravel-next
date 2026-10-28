@@ -5,6 +5,7 @@ import { ServiceWorkerRegistration } from "@/components/service-worker-registrat
 import { QueryProvider } from "@/components/query-provider";
 import { PortalQueryCacheGuard } from "@/components/portal-query-cache-guard";
 import { RouteProgress } from "@/components/route-progress";
+import { PortalToastProvider } from "@/components/ui/portal-toast-provider";
 import { getPublicSiteOrigin, siteConfig } from "@/lib/site-config";
 const inter = Inter({
   subsets: ["latin"],
@@ -15,47 +16,51 @@ const siteUrl = getPublicSiteOrigin();
 export const metadata = {
   ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: {
-    default: "Portal Satu Data Kabupaten Wajo",
-    template: "%s | Satu Data Wajo",
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.shortName}`,
   },
-  description:
-    "Portal resmi untuk menemukan, memahami, dan menggunakan data publik Kabupaten Wajo.",
+  description: siteConfig.description,
   applicationName: siteConfig.name,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Satu Data Wajo",
+    title: siteConfig.shortName,
   },
   icons: {
     icon: [
-      { url: "/icons/icon.svg", type: "image/svg+xml" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: siteConfig.iconPath, type: "image/svg+xml" },
+      {
+        url: siteConfig.pwaIcon192,
+        sizes: siteConfig.pwaIcon192.endsWith(".svg") ? "any" : "192x192",
+        type: siteConfig.pwaIcon192.endsWith(".svg")
+          ? "image/svg+xml"
+          : "image/png",
+      },
     ],
-    apple: "/icons/icon-192.png",
+    apple: siteConfig.pwaIcon192,
   },
   category: "government",
   openGraph: {
     type: "website",
-    locale: "id_ID",
-    siteName: "Portal Satu Data Kabupaten Wajo",
-    title: "Portal Satu Data Kabupaten Wajo",
-    description:
-      "Portal resmi untuk menemukan, memahami, dan menggunakan data publik Kabupaten Wajo.",
+    locale: siteConfig.locale.replace("-", "_"),
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
     images: [
       {
-        url: "/wajo-hero-panorama.webp",
+        url: siteConfig.heroImage,
         width: 2103,
         height: 748,
-        alt: "Portal Satu Data Kabupaten Wajo",
+        alt: siteConfig.name,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Portal Satu Data Kabupaten Wajo",
-    description: "Portal resmi data publik Kabupaten Wajo.",
-    images: ["/wajo-hero-panorama.webp"],
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.heroImage],
   },
   robots: {
     index: true,
@@ -71,9 +76,10 @@ export const metadata = {
 };
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" data-scroll-behavior="smooth">
+    <html lang={siteConfig.locale} data-scroll-behavior="smooth">
       <body className={inter.variable}>
         <ServiceWorkerRegistration />
+        <PortalToastProvider />
         <Suspense fallback={null}>
           <RouteProgress />
         </Suspense>

@@ -7,6 +7,7 @@ use App\Http\Middleware\RequireSameOriginForMutations;
 use App\Http\Middleware\TrustConfiguredProxies;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -31,6 +32,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'same.origin' => RequireSameOriginForMutations::class,
             'active.user' => EnsureActiveUser::class,
         ]);
+        // Browser CRUD sends the HttpOnly token as a cookie, while server-rendered
+        // requests send it as Authorization: Bearer. Laravel sorts route middleware
+        // by priority, so explicitly run the cookie-to-bearer adapter before Sanctum's
+        // authentication middleware; otherwise refresh works but every browser
+        // mutation can incorrectly return 401.
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: AttachFrontendToken::class,
+        );
         // Baca konfigurasi proxy saat request diproses, bukan ketika container
         // belum mendaftarkan layanan config. Ini membuat `artisan migrate` dapat
         // berjalan pada bootstrap CLI maupun saat konfigurasi di-cache.

@@ -31,13 +31,16 @@ export default function AccountSettingsLoading() {
             </div>
           ))}
         </dl>
-        <div className="mt-6 space-y-4 portal-form-section" aria-hidden="true">
+        <div
+          className="w-full mt-6 space-y-4 portal-form-section"
+          aria-hidden="true"
+        >
           <LoadingField label="Nama tampilan" name="display_name" />
           <div className="inline-flex h-10 items-center rounded-control bg-primary px-4 py-3 text-sm font-semibold text-white">
             Simpan perubahan
           </div>
         </div>
-        <section className="mt-8 portal-form-section">
+        <section className="w-full mt-8 portal-form-section">
           <h2 className="font-semibold">Ubah kata sandi</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             Gunakan kata sandi unik minimal 12 karakter, dengan huruf besar,

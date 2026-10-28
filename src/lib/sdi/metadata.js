@@ -1,3 +1,5 @@
+import { getPublicSiteOrigin, siteConfig } from "@/lib/site-config";
+
 export const SDI_METADATA_FIELDS = [
   { key: "ddp_id", label: "ID DDP" },
   { key: "ddp_name", label: "Nama DDP" },
@@ -232,13 +234,12 @@ export function toDcatCatalog(
     },
     "@id": `${origin}/api/v1/sdi/catalog`,
     "@type": "dcat:Catalog",
-    "dct:title": "Katalog Data Terbuka Kabupaten Wajo",
-    "dct:description":
-      "Katalog dataset publik Kabupaten Wajo dengan distribusi berkas aktif dan metadata yang siap dipertukarkan.",
+    "dct:title": `Katalog Data Terbuka ${siteConfig.regionName}`,
+    "dct:description": `Katalog dataset publik ${siteConfig.regionName} dengan distribusi berkas aktif dan metadata yang siap dipertukarkan.`,
     "dct:publisher": {
       "@type": "foaf:Organization",
-      "@id": "https://wajokab.go.id/",
-      "foaf:name": "Pemerintah Kabupaten Wajo",
+      ...(getPublicSiteOrigin() ? { "@id": getPublicSiteOrigin() } : {}),
+      "foaf:name": siteConfig.organizationName,
     },
     "dct:modified": now,
     "dcat:dataset": datasets.map(({ dataset, metadata, resources }) => {

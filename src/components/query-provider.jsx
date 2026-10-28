@@ -13,16 +13,16 @@ export function QueryProvider({ children }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 15_000,
+            staleTime: 30_000,
             gcTime: 5 * 60_000,
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
             refetchOnReconnect: true,
             retry: (failureCount, error) => {
               const status = Number(error?.status || 0);
               if ([400, 401, 403, 404, 409, 413, 422].includes(status)) {
                 return false;
               }
-              return failureCount < 2;
+              return failureCount < 1;
             },
             retryDelay: (failureCount, error) =>
               Number(error?.status) === 429 && error.retryAfterMs != null

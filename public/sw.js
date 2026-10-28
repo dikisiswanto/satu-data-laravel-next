@@ -1,4 +1,4 @@
-const CACHE_NAME = "satu-data-wajo-static-v2";
+const CACHE_NAME = "portal-satu-data-static-v4";
 const OFFLINE_URL = "/offline.html";
 const STATIC_PREFIXES = ["/icons/", "/_next/static/"];
 const MAX_CACHED_ASSETS = 120;
@@ -8,7 +8,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll([OFFLINE_URL, "/icons/icon-192.png"]))
+      .then((cache) => cache.addAll([OFFLINE_URL]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -21,7 +21,11 @@ self.addEventListener("activate", (event) => {
         Promise.all(
           keys
             .filter(
-              (key) => key.startsWith("satu-data-wajo-") && key !== CACHE_NAME,
+              (key) =>
+                (key.startsWith("satu-data-wajo-") ||
+                  key.startsWith("satu-data-static-") ||
+                  key.startsWith("portal-satu-data-static-")) &&
+                key !== CACHE_NAME,
             )
             .map((key) => caches.delete(key)),
         ),
@@ -56,13 +60,23 @@ self.addEventListener("fetch", (event) => {
   // Never cache HTML, API responses, authenticated pages, or user-specific data.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).catch(async () => {
+      fetch(request).catch(async (error) => {
+        // Next.js cancels obsolete navigation requests when the user changes
+        // routes quickly. Do not turn that normal AbortError into a synthetic
+        // 503 shown in DevTools as if the server were unavailable.
+        if (request.signal.aborted || error?.name === "AbortError") throw error;
         try {
           const cache = await caches.open(CACHE_NAME);
-          return (await cache.match(OFFLINE_URL)) || Response.error();
+          const offline = await cache.match(OFFLINE_URL);
+          if (offline) return offline;
         } catch {
-          return Response.error();
+          // Storage failures should not disguise the original connection issue.
         }
+        // Do not synthesize an HTTP 503 for an offline/cancelled navigation:
+        // it looks like an application or rate-limit error in DevTools. If the
+        // offline document is unavailable, let the browser report a network
+        // failure rather than inventing an HTTP status the server never sent.
+        return Response.error();
       }),
     );
     return;

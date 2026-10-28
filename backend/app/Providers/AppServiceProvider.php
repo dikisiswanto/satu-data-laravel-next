@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('portal-user', function (Request $request) {
             $userId = $request->user()?->id;
 
-            $limit = (int) config('satu_data.portal_user_rate_limit_per_minute', 1200);
+            $limit = (int) config('satu_data.portal_user_rate_limit_per_minute', 600);
             $key = $userId
                 ? 'user:'.$userId
                 : 'portal-anonymous:'.(string) $request->ip();
@@ -53,6 +53,21 @@ class AppServiceProvider extends ServiceProvider
                     429,
                     array_merge($headers, ['Cache-Control' => 'no-store'])
                 ));
+        });
+
+        // Mutations have a tighter budget than reads, with both per-user and
+        // per-source-IP limits. The budgets are high enough for normal admin
+        // work but bound scripts that repeatedly submit write operations.
+        RateLimiter::for('portal-write', function (Request $request) {
+            $userId = $request->user()?->id;
+            $ip = (string) $request->ip();
+
+            return [
+                Limit::perMinute((int) config('satu_data.portal_write_user_rate_limit_per_minute', 120))
+                    ->by($userId ? 'portal-write-user:'.$userId : 'portal-write-anonymous:'.$ip),
+                Limit::perMinute((int) config('satu_data.portal_write_ip_rate_limit_per_minute', 300))
+                    ->by('portal-write-ip:'.$ip),
+            ];
         });
 
         ResetPassword::createUrlUsing(function (User $user, string $token): string {

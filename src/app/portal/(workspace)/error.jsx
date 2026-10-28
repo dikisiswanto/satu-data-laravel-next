@@ -53,6 +53,7 @@ export default function PortalError({ error, reset }) {
         <Link
           href="/portal"
           className="inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
+          prefetch={false}
         >
           <ArrowLeft size={16} aria-hidden="true" /> Kembali ke ringkasan
         </Link>

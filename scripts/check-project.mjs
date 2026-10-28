@@ -429,7 +429,7 @@ const checks = [
   ],
   [
     "src/app/layout.jsx",
-    /wajo-hero-panorama\.webp/,
+    /siteConfig\.heroImage/,
     "Metadata root harus mengatur gambar pratinjau sosial",
   ],
   [

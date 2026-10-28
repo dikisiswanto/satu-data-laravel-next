@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import {
   DATASET_BLUEPRINTS,
   OPERATOR_START_STEPS,
-  WAJO_DATA_THEMES,
+  DATA_THEME_SUGGESTIONS,
 } from "../../src/lib/data/dataset-blueprints.js";
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
@@ -31,16 +31,16 @@ describe("operator-focused dataset preparation", () => {
     }
   });
 
-  it("documents useful Wajo domains as recommendations, not approved official priorities", () => {
-    expect(WAJO_DATA_THEMES.length).toBeGreaterThanOrEqual(6);
-    expect(WAJO_DATA_THEMES.map((theme) => theme.id)).toContain(
+  it("documents regional data themes as recommendations, not approved official priorities", () => {
+    expect(DATA_THEME_SUGGESTIONS.length).toBeGreaterThanOrEqual(6);
+    expect(DATA_THEME_SUGGESTIONS.map((theme) => theme.id)).toContain(
       "pangan-perikanan-ekonomi",
     );
-    expect(WAJO_DATA_THEMES.map((theme) => theme.id)).toContain(
+    expect(DATA_THEME_SUGGESTIONS.map((theme) => theme.id)).toContain(
       "infrastruktur-lingkungan",
     );
     expect(
-      WAJO_DATA_THEMES.every((theme) => theme.purpose && theme.examples),
+      DATA_THEME_SUGGESTIONS.every((theme) => theme.purpose && theme.examples),
     ).toBe(true);
     expect(OPERATOR_START_STEPS).toHaveLength(5);
   });

@@ -86,7 +86,7 @@ export function MembershipForm({ organizations }) {
     <form
       onSubmit={submit}
       aria-busy={busy}
-      className="space-y-4 portal-form-card p-5"
+      className="w-full space-y-4 portal-form-card p-5"
     >
       <h2 className="font-semibold">Tambahkan akses pengguna</h2>
       <p className="text-sm leading-6 text-muted">

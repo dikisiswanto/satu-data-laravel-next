@@ -21,6 +21,7 @@ import {
 import { UPDATE_FREQUENCY_OPTIONS } from "@/lib/dataset-options";
 import { SdiMetadataFields } from "@/components/admin/sdi-metadata-fields";
 import { readSdiMetadataFormFields } from "@/lib/sdi/form-metadata";
+import { siteConfig } from "@/lib/site-config";
 
 const FIELD_MESSAGES = {
   title: "Judul wajib diisi dan harus memiliki 5–180 karakter.",
@@ -42,7 +43,7 @@ const REQUEST_ERRORS = {
   forbidden:
     "Akun Anda belum memiliki akses untuk membuat dataset pada organisasi yang dipilih. Jika pilihan ini seharusnya tersedia, hubungi administrator portal.",
   unauthorized:
-    "Sesi Anda sudah berakhir. Masuk kembali, lalu simpan draf ini.",
+    "Sesi atau akses Anda belum dapat diverifikasi. Muat ulang halaman; masuk kembali jika masalah berlanjut.",
   account_inactive:
     "Akun ini sedang dinonaktifkan. Hubungi administrator portal jika Anda membutuhkan akses.",
   authentication_unavailable:
@@ -416,6 +417,7 @@ export function DatasetCreateForm({
             <Link
               href="/portal/dataset"
               className="mt-2 inline-flex font-semibold underline underline-offset-4"
+              prefetch={false}
             >
               Periksa daftar dataset
             </Link>
@@ -423,7 +425,7 @@ export function DatasetCreateForm({
         </div>
       ) : null}
       <section
-        className="portal-form-section space-y-4 border p-4 sm:p-5"
+        className="w-full portal-form-section space-y-4 border p-4 sm:p-5"
         aria-labelledby="dataset-core-fields-title"
       >
         <div>
@@ -553,7 +555,7 @@ export function DatasetCreateForm({
           pemeriksaan, bukan untuk menyimpan draf.
         </p>
         <section
-          className="portal-form-section mt-4 space-y-4 border p-4 sm:p-5"
+          className="w-full portal-form-section mt-4 space-y-4 border p-4 sm:p-5"
           aria-labelledby="dataset-source-fields-title"
         >
           <div>
@@ -580,7 +582,7 @@ export function DatasetCreateForm({
               label="Cakupan wilayah"
               name="geographic_scope"
               maxLength={240}
-              placeholder="Contoh: Kabupaten Wajo"
+              placeholder={`Contoh: ${siteConfig.regionName}`}
               error={fieldErrors.geographic_scope}
               onChange={() => clearFieldError("geographic_scope")}
             />

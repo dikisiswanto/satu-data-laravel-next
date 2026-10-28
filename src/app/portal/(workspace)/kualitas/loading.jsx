@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import {
   AdminPageLoading,
   LoadingBlock,
@@ -127,8 +128,9 @@ export default function DataQualityLoading() {
               Riwayat pemeriksaan integrasi
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Ini adalah hasil pemeriksaan dari Portal Wajo. Hasil ini belum
-              menunjukkan bahwa katalog sudah diambil oleh sistem nasional.
+              Ini adalah hasil pemeriksaan dari {siteConfig.name}. Hasil ini
+              belum menunjukkan bahwa katalog sudah diambil oleh sistem
+              nasional.
             </p>
           </div>
         </div>

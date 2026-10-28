@@ -1,8 +1,10 @@
-/** Shared identity for the private portal shell and its loading states. */
+import { siteConfig } from "@/lib/site-config";
+
+/** All visible portal branding is resolved from deployment configuration. */
 export const portalBrand = Object.freeze({
-  title: "Satu Data Wajo",
-  subtitle: "Portal Admin",
-  organization: "Pemerintah Kabupaten Wajo",
-  logo: "/logo-kabupaten-wajo.webp",
-  logoAlt: "Lambang Kabupaten Wajo",
+  title: siteConfig.shortName,
+  subtitle: siteConfig.portalTitle,
+  organization: siteConfig.organizationName,
+  logo: siteConfig.logoPath,
+  logoAlt: siteConfig.logoAlt,
 });

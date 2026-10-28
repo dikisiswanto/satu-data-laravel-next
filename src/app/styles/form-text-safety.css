@@ -271,3 +271,34 @@
   :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   text-indent: 0;
 }
+
+/* Pending/success state changes must never animate spacing or change a button's
+   box model. The normal and pending labels share one grid cell, and both layers
+   contribute to the same intrinsic width before either state is activated. */
+button[data-stateful-button="true"] {
+  box-sizing: border-box;
+  min-block-size: 2.75rem;
+  padding-block: 0.625rem;
+  transition-property:
+    background-color, border-color, color, box-shadow, opacity;
+}
+
+.button-state-stack {
+  display: grid;
+  grid-template-columns: max-content;
+  align-items: center;
+  justify-items: center;
+}
+
+.button-state-stack > .button-state-layer {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-inline-size: 100%;
+}
+
+.button-state-layer > svg {
+  flex: none;
+}

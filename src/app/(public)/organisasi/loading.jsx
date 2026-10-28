@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import { PageHeading } from "@/components/page-heading";
 import { Search } from "lucide-react";
 
@@ -15,7 +16,7 @@ export default function OrganizationDirectoryLoading() {
         className="mb-6 sm:mb-6"
         eyebrow="Pengampu data"
         title="Perangkat daerah"
-        description="Temukan perangkat daerah aktif yang mengampu data Kabupaten Wajo, termasuk organisasi yang sedang menyiapkan publikasi pertamanya."
+        description={`Temukan perangkat daerah aktif yang mengampu data ${siteConfig.regionName}, termasuk organisasi yang sedang menyiapkan publikasi pertamanya.`}
       />
       <section
         className="organization-search-panel"

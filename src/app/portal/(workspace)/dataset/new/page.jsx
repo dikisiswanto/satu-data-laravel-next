@@ -72,40 +72,42 @@ export default async function NewDatasetPage({ searchParams }) {
       />
       <PortalContextGuide />
 
-      <details className="mb-4 max-w-3xl rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
-        <summary className="cursor-pointer font-semibold text-[#214f3c]">
-          Sumber resmi untuk membantu memeriksa data
-        </summary>
-        <p className="mt-2 text-sm leading-6 text-[#456857]">
-          Buka rujukan ini untuk memeriksa definisi, angka, dan asal data.
-          Daftar ini bukan dataset yang sudah diimpor atau ditetapkan sebagai
-          prioritas resmi.
-        </p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          {datasetStarterReferences
-            .filter((reference) => safeHttpUrl(reference.source_url))
-            .slice(0, 6)
-            .map((reference) => (
-              <a
-                key={reference.code}
-                href={safeHttpUrl(reference.source_url)}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-[#d7e7e1] bg-white p-3 transition hover:border-[#80ad98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285d47]"
-              >
-                <span className="block text-sm font-semibold text-[#214f3c]">
-                  {reference.title}
-                </span>
-                <span className="mt-1 block text-xs leading-5 text-[#567363]">
-                  {reference.source_name}
-                  {reference.reference_year
-                    ? ` · ${reference.reference_year}`
-                    : ""}
-                </span>
-              </a>
-            ))}
-        </div>
-      </details>
+      {datasetStarterReferences.length ? (
+        <details className="mb-4 w-full max-w-none rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
+          <summary className="cursor-pointer font-semibold text-[#214f3c]">
+            Sumber resmi untuk membantu memeriksa data
+          </summary>
+          <p className="mt-2 text-sm leading-6 text-[#456857]">
+            Buka rujukan ini untuk memeriksa definisi, angka, dan asal data.
+            Daftar ini bukan dataset yang sudah diimpor atau ditetapkan sebagai
+            prioritas resmi.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {datasetStarterReferences
+              .filter((reference) => safeHttpUrl(reference.source_url))
+              .slice(0, 6)
+              .map((reference) => (
+                <a
+                  key={reference.code}
+                  href={safeHttpUrl(reference.source_url)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-[#d7e7e1] bg-white p-3 transition hover:border-[#80ad98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285d47]"
+                >
+                  <span className="block text-sm font-semibold text-[#214f3c]">
+                    {reference.title}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-[#567363]">
+                    {reference.source_name}
+                    {reference.reference_year
+                      ? ` · ${reference.reference_year}`
+                      : ""}
+                  </span>
+                </a>
+              ))}
+          </div>
+        </details>
+      ) : null}
       {orgs.length ? (
         <DatasetCreateForm
           orgs={orgs}
@@ -122,7 +124,7 @@ export default async function NewDatasetPage({ searchParams }) {
       ) : (
         <section
           role="status"
-          className="max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6"
+          className="w-full max-w-none rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6"
           aria-labelledby="dataset-org-required-title"
         >
           <div className="flex items-start gap-3">

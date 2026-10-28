@@ -79,7 +79,7 @@ class ProcessDatasetConversion implements ShouldQueue
             if (! is_resource($inputStream)) {
                 throw new \RuntimeException('source_download_failed');
             }
-            $temporarySourcePath = tempnam(sys_get_temp_dir(), 'satu-data-wajo-');
+            $temporarySourcePath = tempnam(sys_get_temp_dir(), 'portal-satu-data-');
             if (! is_string($temporarySourcePath)) {
                 fclose($inputStream);
                 throw new \RuntimeException('temporary_storage_unavailable');

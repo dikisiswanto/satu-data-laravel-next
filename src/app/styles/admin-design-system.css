@@ -269,11 +269,29 @@
   content: none;
 }
 
-.portal-app .portal-main :is(form, .portal-form-card).max-w-3xl {
-  max-width: 48rem !important;
+/* Resource forms and information panels use the available workspace width.
+ * Keep text measure constraints on inner copy, not on the surrounding card. */
+.portal-app .portal-main :is(.portal-form-card, .portal-form-section) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: none !important;
 }
-.portal-app .portal-main :is(form, .portal-form-card).max-w-4xl {
-  max-width: 56rem !important;
+
+.portal-app
+  .portal-main
+  :is(
+    .portal-context-guide,
+    .portal-preparation-guide,
+    .portal-workspace-panel,
+    .portal-state-panel,
+    .portal-empty-state,
+    .portal-template-panel,
+    .portal-panel-card
+  ) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
 }
 
 .portal-app .portal-dashboard-heading {
@@ -401,17 +419,20 @@
 .portal-app .portal-preparation-guide[open] > summary {
   background: #fbfdfe;
 }
-.portal-app .portal-context-guide > summary svg:last-child,
-.portal-app .portal-preparation-guide > summary svg:last-child {
+.portal-app .portal-context-guide > summary svg.portal-disclosure-arrow,
+.portal-app .portal-preparation-guide > summary svg.portal-disclosure-arrow {
   transition: transform 160ms ease;
 }
-.portal-app .portal-context-guide[open] > summary svg:last-child,
-.portal-app .portal-preparation-guide[open] > summary svg:last-child {
+.portal-app .portal-context-guide[open] > summary svg.portal-disclosure-arrow,
+.portal-app
+  .portal-preparation-guide[open]
+  > summary
+  svg.portal-disclosure-arrow {
   transform: rotate(180deg);
 }
 @media (prefers-reduced-motion: reduce) {
-  .portal-app .portal-context-guide > summary svg:last-child,
-  .portal-app .portal-preparation-guide > summary svg:last-child {
+  .portal-app .portal-context-guide > summary svg.portal-disclosure-arrow,
+  .portal-app .portal-preparation-guide > summary svg.portal-disclosure-arrow {
     transition: none;
   }
 }

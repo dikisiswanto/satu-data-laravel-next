@@ -4,9 +4,9 @@ export default function manifest() {
   return {
     id: "/",
     name: siteConfig.name,
-    short_name: "Satu Data Wajo",
+    short_name: siteConfig.shortName,
     description: siteConfig.description,
-    lang: "id-ID",
+    lang: siteConfig.locale,
     dir: "ltr",
     start_url: "/",
     scope: "/",
@@ -18,15 +18,19 @@ export default function manifest() {
     categories: ["government", "education", "utilities"],
     icons: [
       {
-        src: "/icons/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
+        src: siteConfig.pwaIcon192,
+        sizes: siteConfig.pwaIcon192.endsWith(".svg") ? "any" : "192x192",
+        type: siteConfig.pwaIcon192.endsWith(".svg")
+          ? "image/svg+xml"
+          : "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
+        src: siteConfig.pwaIcon512,
+        sizes: siteConfig.pwaIcon512.endsWith(".svg") ? "any" : "512x512",
+        type: siteConfig.pwaIcon512.endsWith(".svg")
+          ? "image/svg+xml"
+          : "image/png",
         purpose: "any",
       },
     ],

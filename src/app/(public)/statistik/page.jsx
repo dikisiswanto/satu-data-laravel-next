@@ -4,18 +4,20 @@ import { ArrowUpRight, ChartNoAxesColumn, Database, Info } from "lucide-react";
 import { PageHeading } from "@/components/page-heading";
 import { GeoPortalStatisticsPromo } from "@/components/geoportal-statistics-promo";
 import { getPublishedIndicatorsResult } from "@/lib/data/public";
-import { getCanonicalMetadata, getSocialMetadata } from "@/lib/site-config";
+import {
+  getCanonicalMetadata,
+  getSocialMetadata,
+  siteConfig,
+} from "@/lib/site-config";
 
 export const metadata = {
   title: "Statistik",
-  description:
-    "Jelajahi indikator dan data makro Kabupaten Wajo dengan definisi, satuan, periode, dan sumber yang jelas.",
+  description: `Jelajahi indikator dan data makro ${siteConfig.regionName} dengan definisi, satuan, periode, dan sumber yang jelas.`,
   ...getCanonicalMetadata("/statistik"),
   ...getSocialMetadata({
     path: "/statistik",
-    title: "Statistik dan Indikator | Satu Data Wajo",
-    description:
-      "Jelajahi indikator publik Kabupaten Wajo dengan definisi, satuan, periode, dan sumber yang jelas.",
+    title: `Statistik dan Indikator | ${siteConfig.shortName}`,
+    description: `Jelajahi indikator publik ${siteConfig.regionName} dengan definisi, satuan, periode, dan sumber yang jelas.`,
   }),
 };
 

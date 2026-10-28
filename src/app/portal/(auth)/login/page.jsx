@@ -7,6 +7,7 @@ import { loginAction } from "./actions";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import { cookies } from "next/headers";
+import { portalBrand } from "@/lib/portal-brand";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -81,15 +82,15 @@ export default async function LoginPage({ searchParams }) {
         </Link>
         <div className="mt-7 flex items-center gap-3 border-b border-[#e4ebea] pb-5">
           <Image
-            src="/logo-kabupaten-wajo.webp"
-            alt="Lambang Kabupaten Wajo"
+            src={portalBrand.logo}
+            alt={portalBrand.logoAlt}
             width={48}
             height={56}
             priority
           />
           <div>
             <p className="text-xs font-medium text-muted">
-              Pemerintah Kabupaten Wajo
+              {portalBrand.organization}
             </p>
             <strong className="mt-1 block text-sm font-semibold text-[#244650]">
               Ruang Pengelola Data
@@ -244,7 +245,7 @@ export default async function LoginPage({ searchParams }) {
         </div>
       </section>
       <p className="mt-5 text-center text-xs text-[#74858a]">
-        Portal Satu Data Kabupaten Wajo · Akses pengelola
+        {portalBrand.title} · Akses pengelola
       </p>
     </main>
   );

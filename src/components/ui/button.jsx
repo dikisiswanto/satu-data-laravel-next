@@ -21,11 +21,24 @@ const buttonStyles = cva(
     defaultVariants: { variant: "primary", size: "md" },
   },
 );
-export function Button({ className, variant, size, href, children, ...props }) {
+export function Button({
+  className,
+  variant,
+  size,
+  href,
+  children,
+  prefetch,
+  ...props
+}) {
   const classes = cn(buttonStyles({ variant, size }), className);
   if (href)
     return (
-      <Link className={classes} href={href} {...props}>
+      <Link
+        className={classes}
+        href={href}
+        prefetch={prefetch ?? (href.startsWith("/portal") ? false : undefined)}
+        {...props}
+      >
         {children}
       </Link>
     );

@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -175,13 +176,15 @@ export default async function DataQualityPage() {
               Riwayat pemeriksaan integrasi
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Ini adalah hasil pemeriksaan dari Portal Wajo. Hasil ini belum
-              menunjukkan bahwa katalog sudah diambil oleh sistem nasional.
+              Ini adalah hasil pemeriksaan dari {siteConfig.name}. Hasil ini
+              belum menunjukkan bahwa katalog sudah diambil oleh sistem
+              nasional.
             </p>
           </div>
           <Link
             href="/portal/integrasi"
             className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            prefetch={false}
           >
             Buka integrasi <ArrowRight size={15} aria-hidden="true" />
           </Link>
@@ -276,6 +279,7 @@ function Metric({ icon: Icon, label, value, detail, warning, href, action }) {
         <Link
           className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
           href={href}
+          prefetch={false}
         >
           {action} <ArrowRight size={13} aria-hidden="true" />
         </Link>
@@ -288,6 +292,7 @@ function Action({ href, title, description }) {
     <Link
       href={href}
       className="group rounded-xl border border-line p-4 transition hover:border-primary/40 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      prefetch={false}
     >
       <h3 className="font-semibold group-hover:text-primary">{title}</h3>
       <p className="mt-1 text-sm leading-5 text-muted">{description}</p>

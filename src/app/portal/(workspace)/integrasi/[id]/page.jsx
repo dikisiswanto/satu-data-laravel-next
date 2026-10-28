@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -60,6 +61,7 @@ export default async function EditSdiMetadataPage({ params }) {
       <Link
         href="/portal/integrasi"
         className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-primary"
+        prefetch={false}
       >
         <ArrowLeft size={16} aria-hidden="true" />
         Kembali ke kesiapan integrasi
@@ -67,7 +69,7 @@ export default async function EditSdiMetadataPage({ params }) {
       <PageHeading
         eyebrow="Interoperabilitas"
         title="Metadata pertukaran SDI"
-        description="Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor Satu Data Wajo. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia."
+        description={`Lengkapi metadata standar dan referensi yang dibutuhkan profil ekspor ${siteConfig.shortName}. Dataset hanya masuk ekspor siap-harvest ketika seluruh field penting dan distribusi versi aktif tersedia.`}
       />
       <SdiMetadataEditor
         datasetId={id}

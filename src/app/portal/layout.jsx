@@ -1,7 +1,8 @@
+import { siteConfig } from "@/lib/site-config";
 export const metadata = {
   title: {
     default: "Ruang pengelola",
-    template: "%s | Portal Satu Data",
+    template: `%s | ${siteConfig.shortName}`,
   },
   robots: {
     index: false,

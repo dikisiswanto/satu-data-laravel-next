@@ -272,7 +272,7 @@ export function PortalNavigation({ roles = [], loading = false }) {
             </strong>
           </span>
           <ChevronDown
-            className="shrink-0 text-[#61788a] transition-transform group-open:rotate-180"
+            className="portal-disclosure-arrow shrink-0 text-[#61788a] transition-transform group-open:rotate-180"
             size={17}
             aria-hidden="true"
           />

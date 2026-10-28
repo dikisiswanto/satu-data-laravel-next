@@ -127,7 +127,7 @@ export function SdiMetadataEditor({
     <form
       onSubmit={submit}
       aria-busy={pending}
-      className="portal-form-card space-y-5 p-5 sm:p-8"
+      className="w-full portal-form-card space-y-5 p-5 sm:p-8"
     >
       <div className="rounded-xl border border-[#d6e4ed] bg-[#f4f8fb] p-4">
         <p className="font-semibold text-[#193d59]">{datasetTitle}</p>

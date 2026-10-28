@@ -1,13 +1,13 @@
 {
   "$schema": "https://getcomposer.org/schema.json",
-  "name": "silirdev/satu-data-wajo-api",
+  "name": "silirdev/portal-satu-data-api",
   "type": "project",
-  "description": "Laravel API backend for Portal Satu Data Kabupaten Wajo; frontend remains in Next.js.",
+  "description": "Laravel API backend for the configurable Portal Satu Data application; frontend remains in Next.js.",
   "keywords": [
     "laravel",
     "api",
     "open-data",
-    "wajo"
+    "government-data"
   ],
   "license": "proprietary",
   "require": {

@@ -145,6 +145,7 @@ export default async function IndicatorsAdminPage({ searchParams }) {
                   <Link
                     href={`/portal/statistik/${item.id}/observasi`}
                     className="inline-flex items-center rounded-lg border border-line px-3 py-2 text-xs font-semibold text-primary hover:bg-surface-secondary"
+                    prefetch={false}
                   >
                     Kelola observasi
                   </Link>
@@ -200,6 +201,7 @@ export default async function IndicatorsAdminPage({ searchParams }) {
                 <Link
                   href="/portal/statistik/baru"
                   className="portal-table-action"
+                  prefetch={false}
                 >
                   Buat indikator
                 </Link>

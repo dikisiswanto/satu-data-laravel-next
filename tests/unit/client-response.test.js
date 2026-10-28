@@ -40,6 +40,43 @@ describe("readApiMutationResponse", () => {
     });
   });
 
+  it("accepts an empty 204 response as a successful mutation", async () => {
+    const response = {
+      ok: true,
+      status: 204,
+      url: "http://portal.local/api/v1/portal/organizations/123",
+      headers: { get: vi.fn().mockReturnValue(null) },
+      json: vi.fn().mockRejectedValue(new SyntaxError("No Content")),
+    };
+
+    await expect(
+      readApiMutationResponse(response, { notify: false }),
+    ).resolves.toEqual({});
+  });
+
+  it("normalizes Laravel validation errors into form field issues", async () => {
+    const response = {
+      ok: false,
+      status: 422,
+      url: "http://portal.local/api/v1/portal/organizations",
+      headers: { get: vi.fn().mockReturnValue(null) },
+      json: vi.fn().mockResolvedValue({
+        message: "The given data was invalid.",
+        errors: {
+          code: ["Kode sudah digunakan."],
+          "address.city": ["Kota wajib diisi."],
+        },
+      }),
+    };
+
+    const payload = await readApiMutationResponse(response, { notify: false });
+    expect(payload.error).toBe("validation_failed");
+    expect(payload.issues).toEqual([
+      { path: ["code"], message: "Kode sudah digunakan." },
+      { path: ["address", "city"], message: "Kota wajib diisi." },
+    ]);
+  });
+
   it("keeps explicit non-2xx API error bodies available to domain-specific handlers", async () => {
     const response = {
       ok: false,

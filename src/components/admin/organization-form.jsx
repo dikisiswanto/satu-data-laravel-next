@@ -138,7 +138,7 @@ export function OrganizationForm({ initial = null }) {
     <form
       onSubmit={submit}
       aria-busy={busy}
-      className="max-w-3xl space-y-5 portal-form-card p-5 sm:p-8"
+      className="w-full max-w-none space-y-5 portal-form-card p-5 sm:p-8"
     >
       {error ? (
         <div className="rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">

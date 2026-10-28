@@ -206,6 +206,7 @@ export default async function PortalHomePage() {
               <Link
                 href="/portal/dataset"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                prefetch={false}
               >
                 Lihat katalog <ArrowRight size={15} aria-hidden="true" />
               </Link>
@@ -214,6 +215,7 @@ export default async function PortalHomePage() {
             <Link
               href="/portal/dataset"
               className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary"
+              prefetch={false}
             >
               Lihat katalog <ArrowRight size={15} aria-hidden="true" />
             </Link>
@@ -341,6 +343,7 @@ export default async function PortalHomePage() {
               <Link
                 href={nextTask.href}
                 className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                prefetch={false}
               >
                 {nextTask.action} <ArrowRight size={15} aria-hidden="true" />
               </Link>
@@ -368,6 +371,7 @@ export default async function PortalHomePage() {
                   key={key}
                   href={href}
                   className="group flex items-start gap-3 py-3 first:pt-1 last:pb-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  prefetch={false}
                 >
                   <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#2c6787] ring-1 ring-[#dce7ee]">
                     <Icon size={16} aria-hidden="true" />
@@ -396,6 +400,7 @@ export default async function PortalHomePage() {
             <Link
               href="/portal/pengguna"
               className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+              prefetch={false}
             >
               Kelola pengguna dan akses{" "}
               <ArrowRight size={14} aria-hidden="true" />
@@ -420,6 +425,7 @@ export default async function PortalHomePage() {
           <Link
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
             href="/portal/dataset"
+            prefetch={false}
           >
             Lihat katalog lengkap <ArrowRight size={15} aria-hidden="true" />
           </Link>
@@ -451,6 +457,7 @@ export default async function PortalHomePage() {
                   <Link
                     href={`/portal/dataset/${dataset.id}`}
                     className="portal-table-primary-link"
+                    prefetch={false}
                   >
                     {dataset.title}
                   </Link>
@@ -490,6 +497,7 @@ export default async function PortalHomePage() {
                   <Link
                     className="portal-table-action"
                     href={`/portal/dataset/${dataset.id}`}
+                    prefetch={false}
                   >
                     Buka <ArrowRight size={14} aria-hidden="true" />
                   </Link>

@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -120,8 +121,8 @@ export default function PublicIndicatorDetailLoading() {
           </div>
           <p className="mt-3 text-xs leading-5 text-muted">
             Sumber data grafik, jika tersedia: observasi yang telah diterbitkan
-            pada Portal Satu Data Kabupaten Wajo. Nilai draf dan revisi lama
-            tidak ditampilkan.
+            pada {siteConfig.name}. Nilai draf dan revisi lama tidak
+            ditampilkan.
           </p>
         </section>
 

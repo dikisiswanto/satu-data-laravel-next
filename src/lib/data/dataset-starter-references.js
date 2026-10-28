@@ -1,5 +1,7 @@
+import { siteConfig } from "@/lib/site-config";
+
 /** Editorial links for administrators. These are not imported datasets or observations. */
-export const datasetStarterReferences = [
+const wajoStarterReferences = [
   {
     code: "PPID-WAJO-INFORMASI-BERKALA",
     title: "Daftar Informasi Berkala Pemerintah Kabupaten Wajo",
@@ -47,3 +49,11 @@ export const datasetStarterReferences = [
     reference_year: 2025,
   },
 ];
+
+// These links are authoritative examples for the Wajo deployment only. Do not
+// present them as sources for a different district or institution.
+export const datasetStarterReferences = /^kabupaten wajo$/i.test(
+  siteConfig.regionName,
+)
+  ? wajoStarterReferences
+  : [];

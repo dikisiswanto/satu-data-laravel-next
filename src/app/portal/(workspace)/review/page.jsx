@@ -78,6 +78,7 @@ export default async function ReviewPage() {
                   <Link
                     href={`/portal/dataset/${item.id}`}
                     className="portal-table-primary-link"
+                    prefetch={false}
                   >
                     {item.title}
                   </Link>
@@ -121,6 +122,7 @@ export default async function ReviewPage() {
                     <Link
                       className="portal-table-action"
                       href={`/portal/dataset/${item.id}`}
+                      prefetch={false}
                     >
                       Periksa
                     </Link>
