@@ -14,6 +14,16 @@ export const metadata = {
   title: "Organisasi",
   robots: { index: false, follow: false },
 };
+const labels = {
+  super_admin: "Super administrator",
+  data_admin: "Administrator data",
+  admin_opd: "Administrator OPD",
+  reviewer: "Pemeriksa data",
+  editor: "Penyunting data",
+  viewer: "Pembaca",
+  auditor: "Auditor",
+};
+
 export default async function OrganizationsPage({ searchParams }) {
   const params = await searchParams;
   const {
@@ -27,14 +37,23 @@ export default async function OrganizationsPage({ searchParams }) {
   const canManage = (memberships || []).some((m) =>
     ["super_admin", "data_admin"].includes(m.role),
   );
-  const organizations = global
-    ? await portalData("organizations")
-    : memberships.map((membership) => membership.organizations).filter(Boolean);
-  const unique = [
-    ...new Map(
-      organizations.map((organization) => [organization.id, organization]),
-    ).values(),
-  ];
+  let unique = [];
+  let error = false;
+  try {
+    const organizations = global
+      ? await portalData("organizations")
+      : memberships
+          .map((membership) => membership.organizations)
+          .filter(Boolean);
+    unique = [
+      ...new Map(
+        organizations.map((organization) => [organization.id, organization]),
+      ).values(),
+    ];
+  } catch (cause) {
+    if (Number(cause?.status) === 401) redirect("/portal/login");
+    error = true;
+  }
   return (
     <>
       <PageHeading

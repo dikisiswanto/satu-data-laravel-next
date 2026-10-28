@@ -179,7 +179,7 @@ export function PortalOnboarding({ roleLabel, roles = [], completed }) {
   const Icon = current.icon || BookOpen;
   return (
     <aside
-      className="portal-tour-panel fixed inset-x-3 bottom-3 z-[110] mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-[0_12px_44px_rgba(15,35,55,0.22)] sm:inset-x-6 sm:bottom-6"
+      className="portal-tour-panel fixed inset-x-3 bottom-3 z-[110] mx-auto max-h-[min(58dvh,34rem)] max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_12px_44px_rgba(15,35,55,0.22)] sm:inset-x-6 sm:bottom-6"
       aria-labelledby="portal-tour-title"
     >
       <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-5">

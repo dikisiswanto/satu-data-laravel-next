@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, RotateCw } from "lucide-react";
 import { PendingActionButton } from "@/components/ui/pending-action-button";
 
 export default function PortalError({ error, reset }) {
+  const router = useRouter();
   const [retryPending, startRetry] = useTransition();
   useEffect(() => {
     console.error("portal_route_error", { digest: error?.digest || "unknown" });
@@ -36,7 +38,12 @@ export default function PortalError({ error, reset }) {
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <PendingActionButton
-          onClick={() => startRetry(() => reset())}
+          onClick={() =>
+            startRetry(() => {
+              reset();
+              router.refresh();
+            })
+          }
           pending={retryPending}
           pendingText="Mencoba lagi…"
           className="inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-4 py-3 text-sm font-semibold text-white"

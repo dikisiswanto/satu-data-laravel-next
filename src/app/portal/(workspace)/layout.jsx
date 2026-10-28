@@ -4,7 +4,7 @@ import { CircleAlert } from "lucide-react";
 import { PortalShellLoading } from "@/components/admin/portal-shell-loading";
 import { PortalSessionRetry } from "@/components/portal-session-retry";
 import { PortalShell } from "@/components/portal-shell";
-import { portalData } from "@/lib/backend/portal-api";
+import { getPortalShell } from "@/lib/backend/portal-api";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import {
   isMissingAuthSession,
@@ -42,7 +42,8 @@ async function AuthenticatedWorkspace({ children }) {
 
   let shellContext;
   try {
-    shellContext = await portalData("shell");
+    // Share the request-scoped cache with pages that need membership context.
+    shellContext = await getPortalShell();
   } catch (error) {
     if (Number(error?.status) === 401) redirect("/portal/login");
     return <PortalSessionCheckUnavailable retryAfterMs={error.retryAfterMs} />;

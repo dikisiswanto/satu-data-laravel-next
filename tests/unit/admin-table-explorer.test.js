@@ -16,6 +16,13 @@ const auditPage = readFileSync(
   new URL("../../src/app/portal/(workspace)/riwayat/page.jsx", import.meta.url),
   "utf8",
 );
+const auditDetail = readFileSync(
+  new URL(
+    "../../src/components/admin/audit-log-detail-dialog.jsx",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const auditController = readFileSync(
   new URL(
     "../../backend/app/Http/Controllers/Api/PortalAdminController.php",
@@ -55,10 +62,19 @@ describe("administrative table exploration and audit accountability", () => {
     expect(auditPage).toContain("actor_display_name");
     expect(auditPage).toContain("organization_name");
     expect(auditPage).toContain("Waktu (WITA)");
-    expect(auditPage).toContain("request_id");
+    expect(auditDetail).toContain("request_id");
     expect(auditPage).toContain("outcomeLabels");
     expect(auditPage).toContain('portalData("audit-logs?limit=500")');
     expect(auditController).toContain("limit(min(500");
+  });
+
+  it("opens audit details in an accessible dialog and shows changed fields", () => {
+    expect(auditPage).toContain("AuditLogDetailDialog");
+    expect(auditDetail).toContain('aria-haspopup="dialog"');
+    expect(auditDetail).toContain("dialog.showModal()");
+    expect(auditDetail).toContain("Bagian yang berubah");
+    expect(auditDetail).toContain("changed_fields");
+    expect(auditController).toContain("json_decode($row->summary, true)");
   });
 
   it("enforces audit role checks and organization scope in the Laravel API", () => {

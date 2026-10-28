@@ -105,6 +105,10 @@ class DatasetWorkflowService
                 'updated_by' => $user->id,
             ];
             $draft->fill($fields);
+            $changedFields = array_values(array_diff(
+                array_keys($draft->getDirty()),
+                ['updated_by'],
+            ));
 
             if (! $isPublishedDraft) {
                 $locked->fill($fields)->save();
@@ -118,6 +122,7 @@ class DatasetWorkflowService
             $versionRow->save();
 
             $this->audit->record($user->id, 'dataset.update', 'dataset', $locked->id, $locked->organization_id, 'success', [
+                'changed_fields' => $changedFields,
                 'version' => $version,
                 'draft_snapshot_only' => $isPublishedDraft,
             ]);

@@ -32,9 +32,13 @@ export function getRetryAfterMs(response) {
  */
 export async function readApiMutationResponse(response) {
   const payload = await readApiResponse(response);
-  if (response.ok && Object.keys(payload).length === 0) {
+  const isEmpty = Object.keys(payload).length === 0;
+  const requestId = response.headers?.get?.("X-Request-Id") || null;
+  if (requestId && !payload.request_id) payload.request_id = requestId;
+  if (response.ok && isEmpty) {
     const error = new Error("invalid_api_response");
     error.code = "invalid_api_response";
+    error.requestId = requestId;
     throw error;
   }
 

@@ -5,6 +5,7 @@ import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
+import { AuditLogDetailDialog } from "@/components/admin/audit-log-detail-dialog";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -13,26 +14,50 @@ export const metadata = {
 };
 
 const actionLabels = {
+  "account.login": "Masuk ke portal",
+  "account.logout": "Keluar dari portal",
+  "account.password_reset": "Mengatur ulang kata sandi",
   "dataset.create_draft": "Membuat draf dataset",
+  "dataset.create": "Membuat dataset",
+  "dataset.update": "Memperbarui metadata dataset",
   "dataset.update_metadata": "Memperbarui metadata dataset",
   "dataset.source_uploaded": "Mengunggah berkas sumber",
+  "dataset.source_upload": "Mengunggah berkas sumber",
+  "dataset.sdi_metadata_update": "Memperbarui metadata SDI dataset",
+  "dataset.version_start": "Memulai versi dataset",
   "dataset.submit_review": "Mengajukan dataset untuk pemeriksaan",
   "dataset.publish": "Menerbitkan dataset",
   "dataset.archive": "Mengarsipkan dataset",
   "dataset.return_for_changes": "Mengembalikan dataset untuk perbaikan",
+  "dataset.submit_for_review": "Mengajukan dataset untuk pemeriksaan",
+  "dataset.publish": "Menerbitkan dataset",
+  "dataset.archive": "Mengarsipkan dataset",
+  "dataset.abandon_version": "Membatalkan versi draf dataset",
+  "dataset.start_version": "Memulai versi dataset",
   "indicator.create": "Membuat indikator statistik",
   "indicator.update": "Memperbarui indikator statistik",
+  "indicator.observation_create": "Menambahkan nilai indikator",
+  "indicator.observation_publish": "Menerbitkan nilai indikator",
   "indicator.publish": "Menerbitkan indikator statistik",
   "indicator.submit_for_review": "Mengajukan indikator untuk pemeriksaan",
   "indicator.return_for_changes": "Mengembalikan indikator untuk perbaikan",
+  "indicator.submit_for_review": "Mengajukan indikator untuk pemeriksaan",
+  "indicator.publish": "Menerbitkan indikator statistik",
+  "indicator.archive": "Mengarsipkan indikator statistik",
   "indicator.archive": "Mengarsipkan indikator statistik",
   "organization.create": "Membuat organisasi",
   "organization.update": "Memperbarui organisasi",
+  "sdi.registry_create": "Menambahkan referensi SDI",
+  "sdi.registry_verify": "Memverifikasi referensi SDI",
+  "sdi.registry_deprecate": "Menonaktifkan referensi SDI",
+  "sdi.preflight": "Memeriksa kesiapan integrasi SDI",
+  "user.invite": "Mengundang pengguna",
   "membership.create": "Menambahkan akses pengguna",
   "membership.update": "Memperbarui akses pengguna",
   "profile.update": "Memperbarui profil",
   "profile.onboarding_completed": "Menyelesaikan panduan awal",
   "account.password_changed": "Mengubah kata sandi",
+  "account.onboarding_completed": "Menyelesaikan panduan awal",
 };
 const entityLabels = {
   dataset: "Dataset",
@@ -42,6 +67,10 @@ const entityLabels = {
   membership: "Kewenangan pengguna",
   profile: "Profil pengguna",
   account: "Akun",
+  user: "Pengguna",
+  indicator_observation: "Nilai indikator",
+  sdi_registry: "Referensi SDI",
+  sdi_harvest_run: "Pemeriksaan integrasi SDI",
 };
 const outcomeLabels = {
   success: "Berhasil",
@@ -263,28 +292,13 @@ export default async function AuditHistoryPage() {
                   key: "summary",
                   label: "Rincian / permintaan",
                   render: (item) => (
-                    <details className="max-w-sm text-sm">
-                      <summary className="cursor-pointer font-medium text-primary">
-                        Lihat detail
-                      </summary>
-                      <div className="mt-2 space-y-2">
-                        {item.request_id ? (
-                          <p className="text-xs text-muted">
-                            Kode pelacakan: <code>{item.request_id}</code>
-                          </p>
-                        ) : null}
-                        {item.summary && Object.keys(item.summary).length ? (
-                          <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-slate-50 p-3 text-xs">
-                            {JSON.stringify(item.summary, null, 2)}
-                          </pre>
-                        ) : (
-                          <p className="text-xs text-muted">
-                            Tidak ada informasi tambahan yang dicatat pada
-                            tindakan ini.
-                          </p>
-                        )}
-                      </div>
-                    </details>
+                    <AuditLogDetailDialog
+                      item={item}
+                      actionLabel={actionLabel(item.action)}
+                      entityLabel={
+                        entityLabels[item.entity_type] || item.entity_type
+                      }
+                    />
                   ),
                 },
               ]}

@@ -55,7 +55,7 @@ export default async function LoginPage({ searchParams }) {
           <Link
             href="/portal/login?retry=1"
             prefetch={false}
-            className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-md border border-[#d7e2e9] bg-white px-3.5 py-2 text-sm font-semibold text-[#344e62] transition-colors hover:bg-[#f4f7f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7] focus-visible:ring-offset-2"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-[#d7e2e9] bg-white px-4 py-2.5 text-sm font-semibold leading-5 text-[#344e62] transition-colors hover:bg-[#f4f7f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5fa7] focus-visible:ring-offset-2 [&_svg]:shrink-0"
           >
             <RotateCw size={15} aria-hidden="true" /> Coba lagi
           </Link>

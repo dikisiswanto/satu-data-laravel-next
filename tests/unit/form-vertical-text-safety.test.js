@@ -8,6 +8,8 @@ describe("form vertical text safety across public and admin pages", () => {
   const safety = read("src/app/styles/form-text-safety.css");
   const normalizedSafety = safety.replace(/\s+/g, " ");
   const globals = read("src/app/globals.css");
+  const integrationPage = read("src/app/portal/(workspace)/integrasi/page.jsx");
+  const preflight = read("src/components/admin/sdi-preflight-button.jsx");
 
   it("loads form text safety after all page and responsive styles", () => {
     const designSystemImport = globals.indexOf(
@@ -61,5 +63,14 @@ describe("form vertical text safety across public and admin pages", () => {
     expect(safety).not.toMatch(
       /label:not\(\.sr-only\)[\s\S]{0,180}overflow:\s*hidden/,
     );
+  });
+
+  it("keeps SDI integration controls and endpoint labels readable at narrow widths", () => {
+    expect(integrationPage).toContain("min-w-0 flex-1 break-words");
+    expect(integrationPage).toContain("shrink-0 whitespace-nowrap");
+    expect(preflight).toContain(
+      'className="field h-11 min-w-0 flex-1 bg-white"',
+    );
+    expect(preflight).toContain("min-h-11 items-center");
   });
 });

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getRequestVerifiedUser } from "@/lib/backend/request-user";
 import { getPortalShell, portalData } from "@/lib/backend/portal-api";
@@ -36,10 +37,18 @@ export default async function UserAccessPage() {
   );
   if (!globalAdmin) redirect("/portal");
   // These two admin tables do not depend on each other's result.
-  const [orgs, memberships] = await Promise.all([
-    portalData("organizations"),
-    portalData("memberships"),
-  ]);
+  let orgs = [];
+  let memberships = [];
+  let error = false;
+  try {
+    [orgs, memberships] = await Promise.all([
+      portalData("organizations"),
+      portalData("memberships"),
+    ]);
+  } catch (cause) {
+    if (Number(cause?.status) === 401) redirect("/portal/login");
+    error = true;
+  }
   return (
     <>
       <PageHeading
@@ -49,20 +58,40 @@ export default async function UserAccessPage() {
       />
       <PortalContextGuide />
 
-      <div id="portal-users-access" className="grid gap-5 xl:grid-cols-2">
-        {superAdmin ? (
-          <InviteUserForm organizations={orgs || []} />
-        ) : (
-          <section className="rounded-card border bg-white p-5">
-            <h2 className="font-semibold">Undang pengguna</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Hanya administrator utama yang dapat mengundang pengguna dan
-              mengubah hak aksesnya.
-            </p>
-          </section>
-        )}
-        {superAdmin ? <MembershipForm organizations={orgs || []} /> : null}
-      </div>
+      {error ? (
+        <div
+          className="portal-state-panel portal-state-error mb-6"
+          role="alert"
+        >
+          <h2>Data pengguna dan organisasi belum dapat dimuat</h2>
+          <p>
+            Formulir akses sementara disembunyikan agar pilihan pengguna atau
+            organisasi yang kosong tidak menyebabkan perubahan yang keliru.
+          </p>
+          <Link
+            className="mt-3 inline-flex font-semibold underline"
+            href="/portal/pengguna"
+          >
+            Coba muat ulang
+          </Link>
+        </div>
+      ) : null}
+      {!error ? (
+        <div id="portal-users-access" className="grid gap-5 xl:grid-cols-2">
+          {superAdmin ? (
+            <InviteUserForm organizations={orgs || []} />
+          ) : (
+            <section className="rounded-card border bg-white p-5">
+              <h2 className="font-semibold">Undang pengguna</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Hanya administrator utama yang dapat mengundang pengguna dan
+                mengubah hak aksesnya.
+              </p>
+            </section>
+          )}
+          {superAdmin ? <MembershipForm organizations={orgs || []} /> : null}
+        </div>
+      ) : null}
       <section className="portal-workspace-panel mt-8">
         <div className="portal-panel-heading">
           <div>
@@ -89,7 +118,7 @@ export default async function UserAccessPage() {
         ) : (
           <PortalDataTable
             caption="Daftar peran dan akses pengguna"
-            rows={memberships || []}
+            rows={memberships}
             alwaysShowFilters={["role", "is_active", "organization_name"]}
             filterLabelOverrides={{
               role: "Peran",
@@ -103,10 +132,13 @@ export default async function UserAccessPage() {
                 render: (m) => (
                   <div className="portal-dataset-title-cell">
                     <span className="portal-table-primary-link">
-                      {m.organizations?.name || "Cakupan seluruh portal"}
+                      {m.display_name || m.email || "Pengguna belum bernama"}
                     </span>
-                    <span className="portal-table-subtext font-mono">
-                      {m.user_id}
+                    <span className="portal-table-subtext break-all">
+                      {m.email || `ID ${m.user_id}`}
+                    </span>
+                    <span className="portal-table-subtext">
+                      Lingkup: {m.organizations?.name || "Seluruh portal"}
                     </span>
                   </div>
                 ),

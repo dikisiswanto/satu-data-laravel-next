@@ -49,4 +49,20 @@ describe("readApiMutationResponse", () => {
       error: "forbidden",
     });
   });
+
+  it("attaches a backend request id to an error envelope for support diagnostics", async () => {
+    const response = {
+      ok: false,
+      status: 500,
+      headers: {
+        get: vi.fn().mockReturnValue("6d71eaba-6a79-4a0b-ae7a-e9b56fca7dd1"),
+      },
+      json: vi.fn().mockResolvedValue({ error: "service_unavailable" }),
+    };
+
+    await expect(readApiMutationResponse(response)).resolves.toEqual({
+      error: "service_unavailable",
+      request_id: "6d71eaba-6a79-4a0b-ae7a-e9b56fca7dd1",
+    });
+  });
 });

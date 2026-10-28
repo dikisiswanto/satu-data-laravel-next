@@ -64,6 +64,7 @@ export function OrganizationForm({ initial = null }) {
       id: initial?.id || null,
       is_active: raw.is_active === "on",
     };
+    const requestId = globalThis.crypto?.randomUUID?.();
     try {
       const response = await fetch(
         initial?.id
@@ -71,7 +72,10 @@ export function OrganizationForm({ initial = null }) {
           : "/api/v1/portal/organizations",
         {
           method: initial?.id ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(requestId ? { "X-Request-Id": requestId } : {}),
+          },
           body: JSON.stringify(payload),
         },
       );
@@ -107,11 +111,11 @@ export function OrganizationForm({ initial = null }) {
               ? "Hanya administrator data yang dapat mengelola organisasi."
               : result.error === "conflict"
                 ? "Kode atau alamat URL sudah digunakan. Periksa kedua nilai, lalu ubah yang berbenturan."
-                : apiErrorMessage(
+                : `${apiErrorMessage(
                     result.error,
                     response.status,
                     "Organisasi belum dapat disimpan. Periksa isian.",
-                  ),
+                  )}${result.request_id ? ` Kode laporan: ${result.request_id}` : ""}`,
           );
           if (result.error === "conflict") {
             window.requestAnimationFrame(() =>

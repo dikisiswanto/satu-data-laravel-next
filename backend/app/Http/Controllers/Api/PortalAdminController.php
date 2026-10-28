@@ -161,9 +161,13 @@ class PortalAdminController extends Controller
                 'short_name' => $data['short_name'] ?? null, 'description' => $data['description'] ?? null,
                 'official_email' => $data['official_email'] ?? null, 'official_url' => $data['official_url'] ?? null,
                 'is_active' => $data['is_active'] ?? ($organization->exists ? $organization->is_active : true),
-            ])->save();
+            ]);
+            $changedFields = $recordId
+                ? array_values(array_diff(array_keys($organization->getDirty()), ['updated_at']))
+                : [];
+            $organization->save();
             $this->catalogRevision->bump();
-            $this->audit->record($request->user()->id, $recordId ? 'organization.update' : 'organization.create', 'organization', $organization->id, $organization->id, 'success', ['code' => $organization->code]);
+            $this->audit->record($request->user()->id, $recordId ? 'organization.update' : 'organization.create', 'organization', $organization->id, $organization->id, 'success', ['code' => $organization->code, 'changed_fields' => $changedFields]);
 
             return $organization->fresh();
         }, 3);
@@ -220,8 +224,12 @@ class PortalAdminController extends Controller
                 'user_id' => $data['user_id'], 'organization_id' => $data['organization_id'], 'role' => $data['role'],
                 'is_active' => $data['is_active'] ?? ($membership->exists ? $membership->is_active : true),
                 'created_by' => $membership->exists && $membership->created_by ? $membership->created_by : $request->user()->id,
-            ])->save();
-            $this->audit->record($request->user()->id, $recordId ? 'membership.update' : 'membership.create', 'membership', $membership->id, $membership->organization_id, 'success', ['role' => $membership->role, 'user_id' => $membership->user_id]);
+            ]);
+            $changedFields = $recordId
+                ? array_values(array_diff(array_keys($membership->getDirty()), ['created_by', 'updated_at']))
+                : [];
+            $membership->save();
+            $this->audit->record($request->user()->id, $recordId ? 'membership.update' : 'membership.create', 'membership', $membership->id, $membership->organization_id, 'success', ['role' => $membership->role, 'user_id' => $membership->user_id, 'changed_fields' => $changedFields]);
 
             return $membership->fresh(['organization']);
         }, 3);
@@ -355,7 +363,19 @@ class PortalAdminController extends Controller
                 $query->whereIn('a.organization_id', $organizationIds);
             }
         }
-        $data = $query->limit(min(500, max(1, (int) $request->query('limit', 100))))->get();
+        $data = $query
+            ->limit(min(500, max(1, (int) $request->query('limit', 100))))
+            ->get()
+            ->map(function (object $row): object {
+                if (is_string($row->summary ?? null)) {
+                    $decoded = json_decode($row->summary, true);
+                    $row->summary = is_array($decoded) ? $decoded : [];
+                } elseif (! is_array($row->summary ?? null)) {
+                    $row->summary = [];
+                }
+
+                return $row;
+            });
 
         return response()->json(['data' => $data], 200, ['Cache-Control' => 'private, no-store']);
     }

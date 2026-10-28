@@ -146,11 +146,17 @@ class PortalIndicatorController extends Controller
                 $indicator->status = 'draft';
                 $indicator->published_at = null;
             }
+            $changedFields = $id
+                ? array_values(array_diff(
+                    array_keys($indicator->getDirty()),
+                    ['updated_by', 'updated_at'],
+                ))
+                : [];
             $indicator->save();
             if ($wasPublic) {
                 $this->catalogRevision->bump();
             }
-            $this->audit->record($request->user()->id, $id ? 'indicator.update' : 'indicator.create', 'indicator', $indicator->id, $indicator->organization_id, 'success');
+            $this->audit->record($request->user()->id, $id ? 'indicator.update' : 'indicator.create', 'indicator', $indicator->id, $indicator->organization_id, 'success', ['changed_fields' => $changedFields]);
 
             return $indicator->fresh('organization');
         }, 3);

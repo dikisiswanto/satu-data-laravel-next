@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { backendData, backendFetch } from "@/lib/backend/server";
 
 const PORTAL_API_PREFIX = "/api/v1/portal";
@@ -17,12 +18,25 @@ function portalPath(path) {
 
 /** Fetch the Laravel portal API response, including pagination metadata. */
 export function portalApi(path, options = {}) {
-  return backendFetch(portalPath(path), options);
+  return withInvalidSessionRedirect(() =>
+    backendFetch(portalPath(path), options),
+  );
 }
 
 /** Fetch the `data` member from a Laravel portal API response. */
 export function portalData(path, options = {}) {
-  return backendData(portalPath(path), options);
+  return withInvalidSessionRedirect(() =>
+    backendData(portalPath(path), options),
+  );
+}
+
+async function withInvalidSessionRedirect(request) {
+  try {
+    return await request();
+  } catch (error) {
+    if (Number(error?.status) === 401) redirect("/portal/login");
+    throw error;
+  }
 }
 
 export const getPortalShell = cache(() => portalData("shell"));

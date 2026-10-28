@@ -357,10 +357,18 @@ function Metric({ icon: Icon, label, value, detail, tone }) {
 function EndpointCard({ href, label, detail, format }) {
   return (
     <div className="rounded-xl border border-[#d0dfeb] bg-white p-3">
-      <div className="flex items-center gap-2">
-        <FileJson size={16} className="text-[#285e85]" aria-hidden="true" />
-        <p className="text-sm font-semibold text-[#193d59]">{label}</p>
-        <span className="ml-auto text-[11px] text-[#45677f]">{format}</span>
+      <div className="flex min-w-0 items-start gap-2">
+        <FileJson
+          size={16}
+          className="shrink-0 text-[#285e85]"
+          aria-hidden="true"
+        />
+        <p className="min-w-0 flex-1 break-words text-sm font-semibold leading-5 text-[#193d59]">
+          {label}
+        </p>
+        <span className="shrink-0 whitespace-nowrap text-[11px] leading-5 text-[#45677f]">
+          {format}
+        </span>
       </div>
       <Link
         href={href}

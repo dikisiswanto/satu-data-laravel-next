@@ -291,8 +291,24 @@ class PortalDatasetController extends Controller
                 throw ValidationException::withMessages(['status' => ['dataset_not_editable']]);
             }
 
+            $existingMetadata = DB::table('dataset_sdi_metadata')
+                ->where('dataset_id', $dataset->id)
+                ->where('dataset_version', $version)
+                ->first();
+            $changedFields = array_values(array_filter(
+                array_keys($data['sdi_metadata']),
+                function (string $field) use ($existingMetadata, $data): bool {
+                    $before = $existingMetadata?->{$field};
+                    if ($field === 'presentation_classification' && is_string($before)) {
+                        $before = json_decode($before, true);
+                    }
+
+                    return json_encode($before) !== json_encode($data['sdi_metadata'][$field] ?? null);
+                },
+            ));
+
             $this->workflow->saveSdiMetadata($dataset, $version, $data['sdi_metadata']);
-            $this->audit->record($request->user()->id, 'dataset.sdi_metadata_update', 'dataset', $dataset->id, $dataset->organization_id, 'success', ['version' => $version]);
+            $this->audit->record($request->user()->id, 'dataset.sdi_metadata_update', 'dataset', $dataset->id, $dataset->organization_id, 'success', ['changed_fields' => $changedFields, 'version' => $version]);
 
             return (object) [
                 'dataset_id' => $dataset->id,
