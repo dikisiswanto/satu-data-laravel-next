@@ -42,7 +42,10 @@ export function PasswordForm() {
     try {
       const response = await fetch("/api/v1/portal/profile/password", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ current_password: currentPassword, password }),
       });
       const result = await readApiMutationResponse(response);

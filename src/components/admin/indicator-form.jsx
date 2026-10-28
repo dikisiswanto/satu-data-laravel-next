@@ -99,7 +99,10 @@ export function IndicatorForm({ organizations, initial = null }) {
     try {
       const response = await fetch("/api/v1/portal/indicators", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
       const result = await readApiMutationResponse(response);

@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 const TOKEN_COOKIE = "wajo_portal_token";
 
@@ -10,8 +11,56 @@ export function backendBaseUrl() {
   );
 }
 
-export async function backendFetch(path, options = {}) {
+/**
+ * A GET shared by layout + page (or by multiple server components) only needs
+ * one backend round-trip during this React server render. React cache is
+ * request-scoped: it does not retain private data between users/requests.
+ * Auth verification is deliberately excluded so its transient-failure retry
+ * can make a real second request. Callers can also pass memoize:false when a
+ * same-render retry is intentionally required.
+ */
+const memoizedBackendGet = cache(async (path, auth, fetchCache, headersKey) => {
+  return performBackendFetch(path, {
+    auth,
+    cache: fetchCache,
+    headers: new Headers(JSON.parse(headersKey)),
+  });
+});
+
+export function backendFetch(path, options = {}) {
+  const method = String(options.method || "GET").toUpperCase();
+  const optionKeys = Object.keys(options);
+  const hasUnsupportedOptions = optionKeys.some(
+    (key) => !["auth", "method", "cache", "headers", "memoize"].includes(key),
+  );
+  const isAuthVerification = /(?:^|\/)auth\/me(?:\?|$)/.test(String(path));
+
+  if (
+    method === "GET" &&
+    !options.body &&
+    !options.signal &&
+    options.memoize !== false &&
+    !hasUnsupportedOptions &&
+    !isAuthVerification
+  ) {
+    const headers = new Headers(options.headers || {});
+    const headerEntries = [...headers.entries()].sort(([left], [right]) =>
+      left.localeCompare(right),
+    );
+    return memoizedBackendGet(
+      String(path),
+      options.auth !== false,
+      options.cache || "no-store",
+      JSON.stringify(headerEntries),
+    );
+  }
+
+  return performBackendFetch(path, options);
+}
+
+async function performBackendFetch(path, options = {}) {
   const { auth = true, ...fetchOptions } = options;
+  delete fetchOptions.memoize;
   const cookieStore = auth ? await cookies() : null;
   const token = cookieStore?.get(TOKEN_COOKIE)?.value;
   const headers = new Headers(options.headers || {});

@@ -32,7 +32,10 @@ export function ProfileForm({ displayName }) {
     try {
       const response = await fetch("/api/v1/portal/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ display_name: name }),
       });
       const result = await readApiMutationResponse(response);

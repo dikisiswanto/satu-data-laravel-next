@@ -68,12 +68,13 @@ export function OrganizationForm({ initial = null }) {
     try {
       const response = await fetch(
         initial?.id
-          ? `/api/v1/portal/organizations/${initial.id}`
+          ? `/api/v1/portal/organizations/${encodeURIComponent(initial.id)}`
           : "/api/v1/portal/organizations",
         {
           method: initial?.id ? "PATCH" : "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
             ...(requestId ? { "X-Request-Id": requestId } : {}),
           },
           body: JSON.stringify(payload),

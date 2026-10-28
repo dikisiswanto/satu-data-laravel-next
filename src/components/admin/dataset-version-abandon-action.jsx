@@ -34,10 +34,13 @@ export function DatasetVersionAbandonAction({ datasetId, version }) {
     setError("");
     try {
       const response = await fetch(
-        `/api/v1/portal/datasets/${datasetId}/workflow`,
+        `/api/v1/portal/datasets/${encodeURIComponent(datasetId)}/workflow`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({ action: "abandon_version" }),
         },
       );

@@ -47,11 +47,17 @@ export function ReviewActions({
     setPendingAction(action);
     setError("");
     try {
-      const response = await fetch(`/api/v1/portal/datasets/${id}/workflow`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, reason }),
-      });
+      const response = await fetch(
+        `/api/v1/portal/datasets/${encodeURIComponent(id)}/workflow`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ action, reason }),
+        },
+      );
       const result = await readApiMutationResponse(response);
       if (!response.ok) {
         if (response.status >= 500) markUncertain();

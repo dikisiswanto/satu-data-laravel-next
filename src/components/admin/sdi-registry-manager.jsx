@@ -51,7 +51,10 @@ export function SdiRegistryManager({
     try {
       const response = await fetch("/api/v1/portal/sdi/registry/entries", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
       const result = await readApiMutationResponse(response);
@@ -90,7 +93,10 @@ export function SdiRegistryManager({
     try {
       const response = await fetch("/api/v1/portal/sdi/registry/reviews", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ kind, id, action }),
       });
       const result = await readApiMutationResponse(response);

@@ -45,7 +45,7 @@ export function SourceUploadForm({
       ]);
       for (let attempt = 0; attempt < 2; attempt += 1) {
         prepareResponse = await fetch(
-          `/api/v1/portal/datasets/${datasetId}/uploads`,
+          `/api/v1/portal/datasets/${encodeURIComponent(datasetId)}/uploads`,
           {
             method: "POST",
             credentials: "same-origin",
@@ -149,7 +149,7 @@ export function SourceUploadForm({
         let cleaned = false;
         try {
           const cleanupResponse = await fetch(
-            `/api/v1/portal/datasets/${datasetId}/uploads`,
+            `/api/v1/portal/datasets/${encodeURIComponent(datasetId)}/uploads`,
             {
               method: "POST",
               credentials: "same-origin",
@@ -185,7 +185,7 @@ export function SourceUploadForm({
         (byte) => byte.toString(16).padStart(2, "0"),
       ).join("");
       const completeResponse = await fetch(
-        `/api/v1/portal/datasets/${datasetId}/uploads`,
+        `/api/v1/portal/datasets/${encodeURIComponent(datasetId)}/uploads`,
         {
           method: "POST",
           credentials: "same-origin",
@@ -222,7 +222,7 @@ export function SourceUploadForm({
         // not complete for these error contracts.
         try {
           const cleanupResponse = await fetch(
-            `/api/v1/portal/datasets/${datasetId}/uploads`,
+            `/api/v1/portal/datasets/${encodeURIComponent(datasetId)}/uploads`,
             {
               method: "POST",
               credentials: "same-origin",

@@ -84,13 +84,22 @@ export async function getSdiCatalogPackages() {
       throw new Error("public_catalog_revision_unavailable");
     }
     return await cachedLivePackagesByRevision(String(revision));
-  } catch {
-    // A failed revision lookup bypasses persistent cache, so this function never
-    // silently falls back to stale public records when invalidation is unavailable.
+  } catch (error) {
+    // Do not amplify throttling, transport, or service failures by immediately
+    // issuing two more API requests. Keep the explicit live fallback only for a
+    // successful response whose revision contract is malformed/unavailable.
+    if (Number.isFinite(Number(error?.status)) || error instanceof TypeError) {
+      return { error, packages: [], publishedCount: 0, excludedCount: 0 };
+    }
     try {
       return await loadLiveSdiPackages();
-    } catch (error) {
-      return { error, packages: [], publishedCount: 0, excludedCount: 0 };
+    } catch (fallbackError) {
+      return {
+        error: fallbackError,
+        packages: [],
+        publishedCount: 0,
+        excludedCount: 0,
+      };
     }
   }
 }

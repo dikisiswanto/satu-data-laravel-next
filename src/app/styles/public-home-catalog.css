@@ -28,22 +28,31 @@
   }
 }
 
-.portal-tour-target {
+/* Keep tour highlighting declarative so it cannot desynchronize React's DOM
+   during fast App Router transitions or trigger hydration mismatch warnings. */
+body:has(.portal-tour-panel[data-tour-target="portal-dashboard-overview"])
+  #portal-dashboard-overview,
+body:has(.portal-tour-panel[data-tour-target="portal-dataset-list"])
+  #portal-dataset-list,
+body:has(.portal-tour-panel[data-tour-target="dataset-create-form"])
+  #dataset-create-form,
+body:has(.portal-tour-panel[data-tour-target="portal-review-list"])
+  #portal-review-list,
+body:has(.portal-tour-panel[data-tour-target="portal-audit-history"])
+  #portal-audit-history,
+body:has(.portal-tour-panel[data-tour-target="portal-organizations-list"])
+  #portal-organizations-list,
+body:has(.portal-tour-panel[data-tour-target="portal-users-access"])
+  #portal-users-access {
   outline: 3px solid #1d4ed8 !important;
   box-shadow:
     0 0 0 8px rgb(29 78 216 / 12%),
     0 10px 28px rgb(15 35 55 / 12%) !important;
-  @apply [scroll-margin-block:7rem] relative z-[105] outline-offset-[4px] rounded-[0.9rem];
+  @apply [scroll-margin-block:7rem] relative z-[105] outline-offset-[4px] rounded-[.9rem];
 }
 
 .portal-tour-panel {
   @apply max-h-[min(42vh,_22rem)] overflow-y-auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .portal-tour-target {
-    @apply scroll-auto;
-  }
 }
 
 /* Static route content has no entry/reveal animation to prevent layout shift. */

@@ -114,35 +114,26 @@ export function PortalOnboarding({ roleLabel, roles = [], completed }) {
     : 0;
   const current = steps[stepIndex] || steps[0];
 
+  const targetIsOnCurrentPage = Boolean(
+    active && current && pathname === current.href,
+  );
+
   useEffect(() => {
-    if (!active || !current || pathname !== current.href) return undefined;
+    if (!targetIsOnCurrentPage || !current) return undefined;
     let cancelled = false;
-    const revealTarget = () => {
+    const frame = window.requestAnimationFrame(() => {
       if (cancelled) return;
-      document.querySelectorAll(".portal-tour-target").forEach((element) => {
-        element.classList.remove("portal-tour-target");
-        element.removeAttribute("data-tour-highlight");
-      });
-      const target = document.getElementById(current.target);
-      if (!target) return;
-      target.classList.add("portal-tour-target");
-      target.setAttribute("data-tour-highlight", "true");
-      target.scrollIntoView({
+      document.getElementById(current.target)?.scrollIntoView({
         behavior: "auto",
         block: "center",
         inline: "nearest",
       });
-    };
-    const frame = window.requestAnimationFrame(revealTarget);
+    });
     return () => {
       cancelled = true;
       window.cancelAnimationFrame(frame);
-      document.querySelectorAll(".portal-tour-target").forEach((element) => {
-        element.classList.remove("portal-tour-target");
-        element.removeAttribute("data-tour-highlight");
-      });
     };
-  }, [active, current, pathname]);
+  }, [current, targetIsOnCurrentPage]);
 
   if (!active || !current || !steps.length) return null;
 
@@ -179,6 +170,7 @@ export function PortalOnboarding({ roleLabel, roles = [], completed }) {
   const Icon = current.icon || BookOpen;
   return (
     <aside
+      data-tour-target={targetIsOnCurrentPage ? current.target : undefined}
       className="portal-tour-panel fixed inset-x-3 bottom-3 z-[110] mx-auto max-h-[min(58dvh,34rem)] max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_12px_44px_rgba(15,35,55,0.22)] sm:inset-x-6 sm:bottom-6"
       aria-labelledby="portal-tour-title"
     >

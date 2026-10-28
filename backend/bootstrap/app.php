@@ -51,6 +51,31 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $candidateId = (string) $request->header('X-Request-Id', '');
             $requestId = Str::isUuid($candidateId) ? strtolower($candidateId) : (string) Str::uuid();
+            $errorInfo = $exception instanceof QueryException ? ($exception->errorInfo ?? []) : [];
+            $sqlState = $errorInfo[0] ?? null;
+            $driverCode = isset($errorInfo[1]) ? (string) $errorInfo[1] : null;
+            $databaseMessage = strtolower($exception->getMessage());
+            $isUniqueConstraintViolation = $exception instanceof QueryException && (
+                $sqlState === '23505'
+                || $driverCode === '1062'
+                || str_contains($databaseMessage, 'unique constraint failed')
+                || str_contains($databaseMessage, 'duplicate entry')
+                || str_contains($databaseMessage, 'duplicate key value violates unique constraint')
+            );
+            if ($isUniqueConstraintViolation) {
+                Log::warning('api_unique_constraint_conflict', [
+                    'request_id' => $requestId,
+                    'method' => $request->method(),
+                    'path' => $request->path(),
+                    'sql_state' => $sqlState,
+                ]);
+
+                return response()->json([
+                    'error' => 'conflict',
+                    'message' => 'A record with the same unique identifier already exists.',
+                    'request_id' => $requestId,
+                ], 409, ['Cache-Control' => 'no-store', 'X-Request-Id' => $requestId]);
+            }
             Log::error('api_unhandled_exception', [
                 'request_id' => $requestId,
                 'method' => $request->method(),

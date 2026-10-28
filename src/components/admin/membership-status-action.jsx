@@ -41,10 +41,13 @@ export function MembershipStatusAction({ membership }) {
     setError("");
     try {
       const response = await fetch(
-        `/api/v1/portal/memberships/${membership.id}`,
+        `/api/v1/portal/memberships/${encodeURIComponent(membership.id)}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({
             user_id: membership.user_id,
             organization_id: membership.organization_id,

@@ -50,7 +50,10 @@ export function MembershipForm({ organizations }) {
     try {
       const response = await fetch("/api/v1/portal/memberships", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
       const result = await readApiMutationResponse(response);

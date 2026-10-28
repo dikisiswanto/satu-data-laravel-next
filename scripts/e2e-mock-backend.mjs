@@ -47,8 +47,43 @@ createServer(async (request, response) => {
       });
       return;
     }
+
+    // The current workspace verifies /auth/me (not /portal/shell) and relies
+    // on Laravel's serialized roles + memberships to authorize each module.
+    // Reproduce one transient 429 here so the E2E test covers the real path.
+    if (token === "e2e-rate-limited-session") {
+      const key = `auth-me:${token}`;
+      const attempts = sessions.get(key) || 0;
+      sessions.set(key, attempts + 1);
+      if (attempts === 0) {
+        send(
+          response,
+          429,
+          { message: "Terlalu banyak permintaan", error: "rate_limited" },
+          { "retry-after": "1" },
+        );
+        return;
+      }
+    }
+
     send(response, 200, {
-      data: { id: 1, name: "Pengelola E2E", email: "e2e@example.test" },
+      data: {
+        id: 1,
+        display_name: "Pengelola E2E",
+        email: "e2e@example.test",
+        is_active: true,
+        onboarding_completed_at: "2026-01-01T00:00:00.000Z",
+        roles: ["super_admin"],
+        memberships: [
+          {
+            id: "e2e-global-admin-membership",
+            role: "super_admin",
+            organization_id: null,
+            is_active: true,
+            organizations: null,
+          },
+        ],
+      },
     });
     return;
   }
@@ -60,19 +95,6 @@ createServer(async (request, response) => {
         error: "unauthenticated",
       });
       return;
-    }
-    if (token === "e2e-rate-limited-session") {
-      const attempts = sessions.get(token) || 0;
-      sessions.set(token, attempts + 1);
-      if (attempts === 0) {
-        send(
-          response,
-          429,
-          { message: "Terlalu banyak permintaan", error: "rate_limited" },
-          { "retry-after": "1" },
-        );
-        return;
-      }
     }
     send(response, 200, {
       data: {
@@ -87,6 +109,36 @@ createServer(async (request, response) => {
         ],
       },
     });
+    return;
+  }
+
+  if (url.pathname === "/api/v1/public/stats") {
+    send(response, 200, {
+      data: {
+        published_dataset_count: 0,
+        public_organization_count: 0,
+        published_indicator_count: 0,
+      },
+    });
+    return;
+  }
+
+  if (url.pathname === "/api/v1/public/facets") {
+    send(response, 200, {
+      data: { categories: [], organizations: [], years: [] },
+    });
+    return;
+  }
+
+  if (url.pathname === "/api/v1/public/revision") {
+    send(response, 200, {
+      data: { revision: 1, updated_at: "2026-10-28T00:00:00.000Z" },
+    });
+    return;
+  }
+
+  if (url.pathname === "/api/v1/sdi/data.json") {
+    send(response, 200, []);
     return;
   }
 

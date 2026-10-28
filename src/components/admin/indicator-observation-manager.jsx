@@ -79,10 +79,13 @@ export function IndicatorObservationManager({
     };
     try {
       const response = await fetch(
-        `/api/v1/portal/indicators/${indicator.id}/observations`,
+        `/api/v1/portal/indicators/${encodeURIComponent(indicator.id)}/observations`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify(payload),
         },
       );
@@ -127,10 +130,13 @@ export function IndicatorObservationManager({
     setNotice("");
     try {
       const response = await fetch(
-        `/api/v1/portal/indicators/${indicator.id}/observations?observation=${encodeURIComponent(id)}`,
+        `/api/v1/portal/indicators/${encodeURIComponent(indicator.id)}/observations/${encodeURIComponent(id)}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({ action: "publish" }),
         },
       );

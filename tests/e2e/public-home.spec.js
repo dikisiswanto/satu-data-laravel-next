@@ -309,10 +309,12 @@ test("menu seluler membuka navigasi yang dapat diakses dan Portal Admin menuju l
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/", { waitUntil: "networkidle" });
-  const toggle = page.getByRole("button", { name: "Buka navigasi" });
+  const toggle = page.locator('button[aria-controls="site-mobile-navigation"]');
   await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAccessibleName("Buka navigasi");
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(toggle).toHaveAccessibleName("Tutup navigasi");
   await expect(
     page.getByRole("navigation", { name: "Navigasi seluler" }),
   ).toBeVisible();
@@ -322,9 +324,8 @@ test("menu seluler membuka navigasi yang dapat diakses dan Portal Admin menuju l
       .getByRole("link", { name: /Masuk Portal Admin/ }),
   ).toHaveAttribute("href", "/portal/login");
   await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("button", { name: "Buka navigasi" }),
-  ).toHaveAttribute("aria-expanded", "false");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(toggle).toHaveAccessibleName("Buka navigasi");
 });
 
 test("tabel pratinjau menjaga overflow di area tabel pada layar ponsel", async ({

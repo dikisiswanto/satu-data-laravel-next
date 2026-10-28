@@ -34,7 +34,10 @@ export function SdiPreflightButton() {
     try {
       const response = await fetch("/api/v1/portal/integrations/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ target }),
       });
       const payload = await readApiMutationResponse(response);
