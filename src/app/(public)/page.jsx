@@ -228,7 +228,7 @@ function HomeHeroContent({
           </nav>
         </div>
         <div
-          className="home-hero-visual"
+          className={`home-hero-visual${loading ? " home-hero-visual--loading" : ""}`}
           role="group"
           aria-label="Akses cepat ke data publik"
         >

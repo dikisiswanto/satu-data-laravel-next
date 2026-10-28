@@ -108,37 +108,19 @@
 }
 
 .home-orbit-one {
-  animation: wajo-orbit-breathe 10s ease-in-out infinite;
   transform-origin: center;
 }
 
 .home-orbit-two {
-  animation:
-    wajo-orbit-rotate 34s linear infinite,
-    wajo-orbit-breathe 8s ease-in-out -2s infinite;
   transform-origin: center;
 }
 
 .home-visual-mark {
-  animation: wajo-database-float 6s ease-in-out infinite;
   will-change: transform;
 }
 
 .home-visual-mark svg {
-  animation: wajo-database-glow 4.5s ease-in-out infinite;
   transform-origin: center;
-}
-
-.home-visual-chip-top {
-  animation: wajo-chip-drift 6.8s ease-in-out -0.8s infinite;
-}
-
-.home-visual-chip-bottom {
-  animation: wajo-chip-drift 7.6s ease-in-out -2.4s infinite reverse;
-}
-
-.home-live-dot {
-  animation: wajo-live-pulse 2.5s ease-out infinite;
 }
 
 @keyframes wajo-orbit-breathe {
@@ -159,16 +141,6 @@
   }
 }
 
-@keyframes wajo-database-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
 @keyframes wajo-database-glow {
   0%,
   100% {
@@ -178,16 +150,6 @@
   50% {
     opacity: 1;
     scale: 1.045;
-  }
-}
-
-@keyframes wajo-chip-drift {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -5px;
   }
 }
 
@@ -215,7 +177,7 @@
 }
 
 /* Motion is intentionally confined to the right-side hero illustration.
-   Keep the left copy/search column static and prevent layout shift while reading. */
+   Each animated element has one animation owner to avoid stacked/replayed motion. */
 .home-hero-copy,
 .home-hero-copy *,
 .home-hero-copy *::before,
@@ -239,10 +201,20 @@
     both;
 }
 
+.home-orbit-one {
+  animation: wajo-orbit-breathe 10s ease-in-out infinite;
+}
+
+.home-orbit-two {
+  animation: wajo-orbit-rotate 34s linear infinite;
+}
+
 .home-visual-mark {
-  animation:
-    home-hero-pop-enter 760ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both,
-    wajo-database-float 6s ease-in-out infinite;
+  animation: home-hero-pop-enter 760ms cubic-bezier(0.16, 1, 0.3, 1) 520ms both;
+}
+
+.home-visual-mark svg {
+  animation: wajo-database-glow 4.5s ease-in-out infinite;
 }
 
 .home-visual-caption {
@@ -251,15 +223,26 @@
 }
 
 .home-visual-chip-top {
-  animation:
-    home-hero-chip-enter 720ms cubic-bezier(0.16, 1, 0.3, 1) 700ms both,
-    wajo-chip-drift 6.8s ease-in-out -0.8s infinite;
+  animation: home-hero-chip-enter 720ms cubic-bezier(0.16, 1, 0.3, 1) 700ms both;
 }
 
 .home-visual-chip-bottom {
-  animation:
-    home-hero-chip-enter 760ms cubic-bezier(0.16, 1, 0.3, 1) 850ms both,
-    wajo-chip-drift 7.6s ease-in-out -2.4s infinite reverse;
+  animation: home-hero-chip-enter 760ms cubic-bezier(0.16, 1, 0.3, 1) 850ms both;
+}
+
+.home-live-dot {
+  animation: wajo-live-pulse 2.5s ease-out infinite;
+}
+
+/* Suspense renders a static hero fallback before the data-backed hero. Do not
+   animate that fallback: the visual entry should play only after real content mounts. */
+.home-hero-visual--loading,
+.home-hero-visual--loading *,
+.home-hero-visual--loading *::before,
+.home-hero-visual--loading *::after {
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }
 
 @keyframes home-hero-element-enter {

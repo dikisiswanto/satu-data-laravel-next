@@ -133,9 +133,11 @@ describe("CSS pruning guardrails", () => {
     for (const animation of [
       "wajo-orbit-breathe",
       "wajo-orbit-rotate",
-      "wajo-database-float",
-      "wajo-chip-drift",
+      "wajo-database-glow",
       "wajo-live-pulse",
+      "home-hero-visual-enter",
+      "home-hero-pop-enter",
+      "home-hero-chip-enter",
     ]) {
       expect(motion).toContain(`@keyframes ${animation}`);
     }

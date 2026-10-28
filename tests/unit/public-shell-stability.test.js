@@ -64,6 +64,42 @@ describe("public mobile layout, stable shell and portal login entry", () => {
     expect(publicMotion).toMatch(
       /\.home-stats,[\s\S]*?animation: none !important;[\s\S]*?transition: none !important;/,
     );
+    expect(home).toContain('loading ? " home-hero-visual--loading" : ""');
+    expect(publicMotion).toMatch(
+      /\.home-hero-visual--loading,[\s\S]*?animation: none !important;[\s\S]*?transition: none !important;/,
+    );
+
+    // Each visual element owns a single animation. The Suspense fallback is
+    // deliberately static, so it cannot play the entrance before real content.
+    for (const selector of [
+      ".home-hero-visual",
+      ".home-orbit-one",
+      ".home-orbit-two",
+      ".home-visual-mark",
+      ".home-visual-mark svg",
+      ".home-visual-caption",
+      ".home-visual-chip-top",
+      ".home-visual-chip-bottom",
+      ".home-live-dot",
+    ]) {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const rules = [
+        ...publicMotion.matchAll(
+          new RegExp(`(?:^|\\n)\\s*${escaped}\\s*\\{([^}]*)\\}`, "g"),
+        ),
+      ];
+      const activeAnimationDeclarations = rules.flatMap((rule) =>
+        [...rule[1].matchAll(/\banimation\s*:\s*([^;]+);/g)]
+          .map((declaration) => declaration[1].trim())
+          .filter((value) => value !== "none !important"),
+      );
+      expect(
+        activeAnimationDeclarations.length,
+        `${selector} has only one active animation declaration`,
+      ).toBe(1);
+    }
+    expect(publicMotion).not.toContain("wajo-database-float");
+    expect(publicMotion).not.toContain("wajo-chip-drift");
     expect(publicHomeStyles).not.toContain("@keyframes public-route-enter");
     expect(publicHomeStyles).not.toContain(".public-section-reveal.is-pending");
   });
