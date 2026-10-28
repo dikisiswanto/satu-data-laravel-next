@@ -122,8 +122,53 @@ async function proxyPortalApi(request) {
     signal: request.signal,
   };
   if (method !== "GET" && method !== "HEAD" && request.body) {
-    init.body = request.body;
-    init.duplex = "half";
+    const contentType = (
+      request.headers.get("content-type") || ""
+    ).toLowerCase();
+    if (contentType.includes("application/json")) {
+      // Buffer ordinary JSON mutations before forwarding. This avoids a flaky
+      // streamed-body handoff for small CRUD forms while keeping binary/multipart
+      // uploads streamed so large files are not duplicated in memory.
+      const declaredLength = Number(request.headers.get("content-length") || 0);
+      const maxJsonBodyBytes = 5 * 1024 * 1024;
+      if (declaredLength > maxJsonBodyBytes) {
+        return Response.json(
+          {
+            error: "request_too_large",
+            message: "JSON request body exceeds the portal limit.",
+          },
+          {
+            status: 413,
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Request-Id": requestId,
+              "X-Content-Type-Options": "nosniff",
+            },
+          },
+        );
+      }
+      const body = new Uint8Array(await request.arrayBuffer());
+      if (body.byteLength > maxJsonBodyBytes) {
+        return Response.json(
+          {
+            error: "request_too_large",
+            message: "JSON request body exceeds the portal limit.",
+          },
+          {
+            status: 413,
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Request-Id": requestId,
+              "X-Content-Type-Options": "nosniff",
+            },
+          },
+        );
+      }
+      init.body = body;
+    } else {
+      init.body = request.body;
+      init.duplex = "half";
+    }
   }
 
   let upstream;

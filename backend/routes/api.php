@@ -57,7 +57,7 @@ Route::middleware('throttle:backend-api')->group(function (): void {
         // in-memory copy of 25 MiB files through Next.js. The controller validates the capability.
         Route::post('/dataset/{id}/upload-content', [PortalDatasetController::class, 'uploadContent'])->middleware('throttle:30,1');
 
-        Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
+        Route::middleware(['auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
             Route::get('/dashboard', [PortalAdminController::class, 'dashboard']);
             Route::get('/shell', [PortalAdminController::class, 'shell']);
             Route::get('/profile', [PortalAdminController::class, 'profile']);
@@ -105,8 +105,8 @@ Route::middleware('throttle:backend-api')->group(function (): void {
         });
     });
 
-    Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user'])->get('/auth/me', [AuthController::class, 'me']);
-    Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user', 'same.origin'])->post('/auth/logout', [AuthController::class, 'logout']);
+    Route::middleware(['auth:sanctum', 'active.user', 'throttle:portal-user'])->get('/auth/me', [AuthController::class, 'me']);
+    Route::middleware(['auth:sanctum', 'active.user', 'throttle:portal-user', 'same.origin'])->post('/auth/logout', [AuthController::class, 'logout']);
 
     // Canonical versioned API aliases. Legacy /api/portal, /api/auth, /api/public,
     // and /api/sdi/v1 routes remain available during the frontend transition.
@@ -135,7 +135,7 @@ Route::middleware('throttle:backend-api')->group(function (): void {
             Route::post('/login', [AuthController::class, 'login'])->middleware(['same.origin', 'throttle:10,1']);
             Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware(['same.origin', 'throttle:3,1']);
             Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware(['same.origin', 'throttle:5,1']);
-            Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
+            Route::middleware(['auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
                 Route::get('/me', [AuthController::class, 'me']);
                 Route::post('/logout', [AuthController::class, 'logout'])->middleware(['same.origin', 'throttle:portal-write']);
             });
@@ -146,7 +146,7 @@ Route::middleware('throttle:backend-api')->group(function (): void {
             // is not required by the binary endpoint itself.
             Route::post('/datasets/{id}/uploads/content', [PortalDatasetController::class, 'uploadContent'])->middleware('throttle:30,1');
 
-            Route::middleware(['frontend.token', 'auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
+            Route::middleware(['auth:sanctum', 'active.user', 'throttle:portal-user'])->group(function (): void {
                 Route::get('/dashboard', [PortalAdminController::class, 'dashboard']);
                 Route::get('/shell', [PortalAdminController::class, 'shell']);
                 Route::get('/profile', [PortalAdminController::class, 'profile']);

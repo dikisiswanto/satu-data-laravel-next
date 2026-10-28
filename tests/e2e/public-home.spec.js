@@ -222,9 +222,27 @@ test("form tambah organisasi menyimpan lewat API portal dan kembali ke daftar", 
     .getByLabel("Bagian alamat halaman organisasi")
     .fill("dinas-e2e-wajo");
   await page.getByLabel("Nama resmi organisasi").fill("Dinas Uji Wajo");
+  const createResponsePromise = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === "/api/v1/portal/organizations" &&
+      response.request().method() === "POST"
+    );
+  });
   await page.getByRole("button", { name: "Simpan organisasi" }).click();
+  const createResponse = await createResponsePromise;
+  const createPayload = await createResponse.json().catch(() => null);
+  expect(
+    createResponse.status(),
+    `API organisasi mengembalikan ${createResponse.status()}: ${JSON.stringify(createPayload)}`,
+  ).toBe(201);
 
   await expect(page).toHaveURL(/\/portal\/organisasi\?saved=1/);
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "Organisasi berhasil disimpan." }),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Daftar organisasi" }),
   ).toBeVisible();

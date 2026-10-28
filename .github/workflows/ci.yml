@@ -99,6 +99,8 @@ jobs:
       MAIL_MAILER: array
     steps:
       - uses: actions/checkout@v4
+      - name: Siapkan berkas konfigurasi non-rahasia untuk pemeriksaan Laravel
+        run: cp backend/.env.example backend/.env
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
