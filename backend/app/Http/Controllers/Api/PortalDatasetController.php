@@ -223,17 +223,19 @@ class PortalDatasetController extends Controller
         }
         $data = $request->validate([
             'title' => ['required', 'string', 'min:5', 'max:180'],
-            'description' => ['required', 'string', 'min:20', 'max:5000'],
+            // Draft metadata can be saved incrementally. Publication-critical fields
+            // are enforced by DatasetWorkflowService::transition before review.
+            'description' => ['nullable', 'string', 'min:20', 'max:5000'],
             'category' => ['nullable', 'string', 'max:120'],
             'keywords' => ['sometimes', 'array', 'max:30'], 'keywords.*' => ['string', 'min:1', 'max:80'],
             'reference_period_start' => ['nullable', 'date_format:Y-m-d'],
             'reference_period_end' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:reference_period_start'],
-            'geographic_scope' => ['required', 'string', 'min:2', 'max:240'],
-            'update_frequency' => ['required', 'in:daily,weekly,monthly,quarterly,yearly,irregular,one_time'],
-            'source_name' => ['required', 'string', 'min:2', 'max:240'],
+            'geographic_scope' => ['nullable', 'string', 'min:2', 'max:240'],
+            'update_frequency' => ['nullable', 'in:daily,weekly,monthly,quarterly,yearly,irregular,one_time'],
+            'source_name' => ['nullable', 'string', 'min:2', 'max:240'],
             'source_url' => ['nullable', 'url:http,https', 'max:2048'],
             'methodology' => ['nullable', 'string', 'max:10000'], 'unit' => ['nullable', 'string', 'max:100'],
-            'license_text' => ['required', 'string', 'min:2', 'max:240'], 'sdi_metadata' => ['sometimes', 'array'],
+            'license_text' => ['nullable', 'string', 'min:2', 'max:240'], 'sdi_metadata' => ['sometimes', 'array'],
         ]);
         $updated = $this->workflow->updateMetadata($request->user(), $dataset, $data);
 

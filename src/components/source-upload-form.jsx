@@ -29,6 +29,41 @@ export function SourceUploadForm({
   } = useSubmissionLock();
   const [message, setMessage] = useState(null);
   const [statusUnknown, setStatusUnknown] = useState(false);
+  const maxFileBytes = 25 * 1024 * 1024;
+  const allowedExtensions = new Set(["csv", "xlsx", "json", "geojson"]);
+
+  function formatFileSize(bytes) {
+    if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+    if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toLocaleString("id-ID", { maximumFractionDigits: 1 })} MiB`;
+  }
+
+  function handleFileSelection(event) {
+    const input = event.currentTarget;
+    const selected = input.files?.[0] || null;
+    setFile(null);
+    setMessage(null);
+    if (!selected) return;
+    const extension = selected.name.split(".").pop()?.toLowerCase() || "";
+    if (!allowedExtensions.has(extension)) {
+      input.value = "";
+      setMessage({
+        type: "error",
+        text: "Format belum didukung. Pilih berkas CSV, XLSX, JSON, atau GeoJSON.",
+      });
+      return;
+    }
+    if (selected.size <= 0 || selected.size > maxFileBytes) {
+      input.value = "";
+      setMessage({
+        type: "error",
+        text: "Ukuran berkas harus lebih dari 0 dan maksimal 25 MiB.",
+      });
+      return;
+    }
+    setFile(selected);
+  }
+
   async function submit(event) {
     event.preventDefault();
     if (!file || statusUnknown) return;
@@ -324,16 +359,30 @@ export function SourceUploadForm({
     }
   }
   return (
-    <section className="mt-8 border-t pt-6">
-      <h3 className="font-semibold">
-        {isNewVersion && versionNumber
-          ? `Unggah sumber versi ${versionNumber}`
-          : "Unggah berkas sumber"}
-      </h3>
-      <p className="mt-2 text-sm leading-6 text-muted">
-        Ukuran berkas maksimal 25 MiB. Berkas sumber disimpan secara privat,
-        lalu diperiksa dan disiapkan untuk digunakan setelah unggahan selesai.
-      </p>
+    <section
+      id="dataset-source-upload"
+      className="mt-8 scroll-mt-24 border-t pt-6"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Langkah berikutnya
+          </p>
+          <h3 className="mt-1 font-semibold">
+            {isNewVersion && versionNumber
+              ? `Unggah sumber versi ${versionNumber}`
+              : "Unggah berkas sumber"}
+          </h3>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+            Pilih satu berkas asli yang akan menjadi sumber dataset. Portal akan
+            mendaftarkan berkas lalu memeriksa strukturnya; Anda tidak perlu
+            mengisi ulang metadata di tahap ini.
+          </p>
+        </div>
+        <span className="rounded-full border border-[#d5e2e9] bg-[#f5f8fa] px-3 py-1 text-xs font-semibold text-[#476274]">
+          Maks. 25 MiB
+        </span>
+      </div>
       {versionNumber ? (
         <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">
           {isNewVersion
@@ -341,32 +390,54 @@ export function SourceUploadForm({
             : `Berkas ini menjadi sumber untuk versi ${versionNumber}.`}
         </p>
       ) : null}
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-        <a
-          className="font-medium text-primary underline underline-offset-4"
-          href="/templates/data-tabular.csv"
-          download
-        >
-          Template CSV
-        </a>
-        <a
-          className="font-medium text-primary underline underline-offset-4"
-          href="/templates/data-spasial.geojson"
-          download
-        >
-          Template GeoJSON
-        </a>
-        <a
-          className="font-medium text-primary underline underline-offset-4"
-          href="/templates/metadata-dataset.json"
-          download
-        >
-          Template metadata JSON
-        </a>
-      </div>
+      <details className="mt-3 rounded-xl border border-[#e0e7ec] bg-[#fafcfd] px-3 py-2">
+        <summary className="cursor-pointer text-sm font-semibold text-[#355469]">
+          Perlu contoh struktur berkas sumber?
+        </summary>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <a
+            className="font-medium text-primary underline underline-offset-4"
+            href="/templates/data-tabular.csv"
+            download
+          >
+            Template CSV
+          </a>
+          <a
+            className="font-medium text-primary underline underline-offset-4"
+            href="/templates/data-spasial.geojson"
+            download
+          >
+            Template GeoJSON
+          </a>
+        </div>
+      </details>
+      <ol
+        className="mt-4 grid gap-2 sm:grid-cols-3"
+        aria-label="Tahapan unggah berkas"
+      >
+        {[
+          ["1", "Pilih berkas", "Pastikan format dan ukuran sesuai."],
+          [
+            "2",
+            "Unggah dan daftarkan",
+            "Portal menyimpan berkas sumber secara privat.",
+          ],
+          [
+            "3",
+            "Tunggu validasi",
+            "Status pemrosesan tampil pada halaman ini.",
+          ],
+        ].map(([number, title, description]) => (
+          <li key={number} className="rounded-lg bg-[#f5f8fa] p-3">
+            <span className="text-xs font-bold text-primary">{number}</span>
+            <p className="mt-1 text-sm font-semibold text-ink">{title}</p>
+            <p className="mt-1 text-xs leading-5 text-muted">{description}</p>
+          </li>
+        ))}
+      </ol>
       <form onSubmit={submit} aria-busy={busy} className="mt-4 space-y-3">
         <label htmlFor="source-file" className="block text-sm font-medium">
-          Pilih file CSV, XLSX, JSON, atau GeoJSON
+          Berkas sumber
         </label>
         <input
           id="source-file"
@@ -383,15 +454,42 @@ export function SourceUploadForm({
           }
           onChange={(event) => {
             event.currentTarget.setCustomValidity("");
-            setFile(event.target.files?.[0] || null);
+            handleFileSelection(event);
           }}
           className="block w-full rounded-control border bg-white p-2.5 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary disabled:opacity-50"
         />
         <FieldGuidance
           name="filename"
           id="source-file-help"
-          text="Format yang diterima: CSV, XLSX, JSON, atau GeoJSON; ukuran maksimal 25 MiB. Pilih satu berkas sumber. Untuk data spasial, pastikan geometri, sistem koordinat, dan properti sudah benar."
+          text="Format yang diterima: CSV, XLSX, JSON, atau GeoJSON. Untuk data spasial, pastikan geometri, sistem koordinat, dan properti sudah benar."
         />
+        {file ? (
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm"
+            role="status"
+          >
+            <div className="min-w-0">
+              <p className="break-all font-semibold text-emerald-950">
+                {file.name}
+              </p>
+              <p className="mt-0.5 text-xs text-emerald-800">
+                {formatFileSize(file.size)} · siap diunggah
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-xs font-semibold text-emerald-900 underline underline-offset-2"
+              disabled={busy}
+              onClick={() => {
+                setFile(null);
+                const input = document.getElementById("source-file");
+                if (input) input.value = "";
+              }}
+            >
+              Ganti berkas
+            </button>
+          </div>
+        ) : null}
         <PendingActionButton
           type="submit"
           pending={busy}

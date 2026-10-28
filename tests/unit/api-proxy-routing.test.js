@@ -18,9 +18,7 @@ describe("authenticated portal API routing", () => {
   it("registers the Laravel cookie adapter before API route authentication", () => {
     const bootstrap = read("backend/bootstrap/app.php");
     const routes = read("backend/routes/api.php");
-    expect(bootstrap).toContain(
-      "prependToGroup('api', AttachFrontendToken::class)",
-    );
+    expect(bootstrap).toContain("prepend(AttachFrontendToken::class)");
     expect(routes).toContain("'auth:sanctum'");
   });
 });

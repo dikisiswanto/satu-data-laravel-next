@@ -25,10 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Cookie-to-Bearer conversion belongs at the start of the API middleware
-        // group. This guarantees it runs before route-level throttles and
-        // auth:sanctum, including requests issued by Laravel's feature test client.
-        $middleware->prependToGroup('api', AttachFrontendToken::class);
+        // Run before route middleware priority sorting so the raw token cookie is
+        // promoted before either backend-api/portal-user throttles or auth:sanctum.
+        // The middleware itself is narrowly scoped to supported portal API paths.
+        $middleware->prepend(AttachFrontendToken::class);
         $middleware->append(AddApiSecurityHeaders::class);
         $middleware->alias([
             'same.origin' => RequireSameOriginForMutations::class,

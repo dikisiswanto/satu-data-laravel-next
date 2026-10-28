@@ -5,6 +5,7 @@ import {
   LoadingField,
 } from "@/components/admin/admin-page-loading";
 import { DatasetPreparationAssistant } from "@/components/admin/dataset-preparation-assistant";
+import { DatasetLifecycleGuide } from "@/components/admin/dataset-lifecycle-guide";
 
 export default function NewDatasetLoading() {
   return (
@@ -15,6 +16,14 @@ export default function NewDatasetLoading() {
       description="Mulai dengan informasi dasar dataset. Jika perlu, unduh template untuk menata kolom. Metadata standar nasional dapat dilengkapi setelah rujukan resminya tersedia. Dataset baru tampil di portal publik setelah selesai diperiksa dan diterbitkan."
       contextGuide
     >
+      <DatasetLifecycleGuide
+        activeStep={1}
+        completedThrough={0}
+        compact
+        heading="Mulai dari draf, lalu lanjutkan bertahap"
+        description="Untuk mulai cukup isi judul dan organisasi pengampu. Unggah sumber dan lengkapi persyaratan pemeriksaan setelah draf tersimpan."
+      />
+      {/******** Static loading shell mirrors the resolved page order. ********/}
       {/^kabupaten wajo$/i.test(siteConfig.regionName) ? (
         <details className="mb-4 w-full max-w-none rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">
           <summary className="cursor-pointer font-semibold text-[#214f3c]">
@@ -32,98 +41,99 @@ export default function NewDatasetLoading() {
           </div>
         </details>
       ) : null}
-      <DatasetPreparationAssistant />
       <section
         id="dataset-create-form-loading"
-        className="portal-form-card w-full max-w-none space-y-6 p-5 sm:p-8"
+        className="portal-form-card w-full max-w-none space-y-5 p-4 sm:p-6 lg:p-7"
         aria-busy="true"
       >
-        <LoadingField label="Judul dataset" name="title" required />
-        <LoadingField
-          label="Deskripsi"
-          name="description"
-          height="h-32"
-          required
-        />
-        <LoadingField
-          label="Organisasi pengampu"
-          name="organization_id"
-          required
-          controlText="Cari lalu pilih organisasi…"
-        />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <LoadingField label="Nama sumber data" name="source_name" required />
+        <div className="portal-form-section space-y-4 border p-4 sm:p-5">
+          <div>
+            <h2 className="text-sm font-semibold text-ink">Informasi utama</h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Mulai dari nama data, penjelasan singkat, dan pihak yang
+              bertanggung jawab.
+            </p>
+          </div>
+          <LoadingField label="Judul dataset" name="title" required />
           <LoadingField
-            label="Cakupan wilayah"
-            name="geographic_scope"
-            controlText={`Contoh: ${siteConfig.regionName}`}
+            label="Deskripsi (wajib sebelum pemeriksaan; opsional saat draf)"
+            name="description"
+            height="h-32"
+          />
+          <LoadingField
+            label="Organisasi pengampu"
+            name="organization_id"
             required
-          />
-          <LoadingField
-            label="Lisensi / ketentuan penggunaan"
-            name="license_text"
-            controlText="Contoh: lisensi atau ketentuan penggunaan yang telah disetujui"
-            required
-          />
-          <LoadingField
-            label="Frekuensi pembaruan"
-            name="update_frequency"
-            controlText="Pilih frekuensi"
-            required
-          />
-          <LoadingField
-            label="Awal periode data"
-            name="reference_period_start"
-            controlText="Pilih tanggal"
-          />
-          <LoadingField
-            label="Akhir periode data"
-            name="reference_period_end"
-            controlText="Pilih tanggal"
+            controlText="Cari lalu pilih organisasi…"
           />
         </div>
+        <details className="rounded-xl border border-[#dce5eb] bg-white px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold text-ink">
+            Lengkapi informasi data (opsional saat membuat draf)
+          </summary>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2" aria-hidden="true">
+            <LoadingField
+              label="Nama sumber data (wajib sebelum pemeriksaan)"
+              name="source_name"
+            />
+            <LoadingField
+              label="Cakupan wilayah (wajib sebelum pemeriksaan)"
+              name="geographic_scope"
+              controlText={`Contoh: ${siteConfig.regionName}`}
+            />
+            <LoadingField
+              label="Lisensi / ketentuan penggunaan (wajib sebelum pemeriksaan)"
+              name="license_text"
+              controlText="Contoh: lisensi atau ketentuan penggunaan yang telah disetujui"
+            />
+            <LoadingField
+              label="Frekuensi pembaruan (wajib sebelum pemeriksaan)"
+              name="update_frequency"
+              controlText="Pilih frekuensi jika sudah diketahui"
+            />
+            <LoadingField
+              label="Awal periode data"
+              name="reference_period_start"
+              controlText="Pilih tanggal"
+            />
+            <LoadingField
+              label="Akhir periode data"
+              name="reference_period_end"
+              controlText="Pilih tanggal"
+            />
+          </div>
+        </details>
         <div
           className="group rounded-2xl border border-[#cddde8] bg-[#f6f9fc] p-4 sm:p-5"
           aria-hidden="true"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg text-base font-semibold text-[#193d59]">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-base font-semibold text-[#193d59]">
             <span>Metadata standar dan pertukaran SDI (lanjutan)</span>
             <span className="rounded-full border border-[#d5e3ec] bg-white px-2.5 py-1 text-xs font-medium text-[#42677f]">
               Bisa dilengkapi setelah draf
             </span>
           </div>
         </div>
-        <section className="rounded-xl border border-[#e4e9e6] bg-[#f8faf8] p-4 text-sm leading-6 text-muted">
-          <p className="font-semibold text-ink">Sebelum menyimpan draf</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>
-              Periksa apakah sumber dapat dibuka dan tautannya mengarah ke
-              dokumen yang tepat.
-            </li>
-            <li>
-              Periksa periode awal dan akhir; tanggal akhir tidak boleh lebih
-              awal dari tanggal mulai.
-            </li>
-            <li>
-              Lengkapi satuan, metodologi, kata kunci, dan lisensi pada tahap
-              penyuntingan berikutnya.
-            </li>
-            <li>
-              Dataset disimpan sebagai draf. Data belum terlihat publik sampai
-              melalui pemeriksaan dan publikasi.
-            </li>
-          </ul>
-        </section>
-        <div className="flex flex-wrap gap-3 border-t pt-5">
+        <details className="rounded-xl border border-[#e4e9e6] bg-[#f8faf8] p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-ink">
+            Periksa kembali sebelum menyimpan
+          </summary>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Sebelum pemeriksaan, lengkapi informasi wajib dan pastikan berkas
+            sumber lolos validasi.
+          </p>
+        </details>
+        <div className="flex flex-wrap items-center gap-3 border-t pt-5">
           <div className="h-11 w-40 rounded-control bg-primary px-5 py-3 text-sm font-semibold text-white">
             Simpan sebagai draf
           </div>
-          <p className="self-center text-xs leading-5 text-muted">
-            Field bertanda * wajib diisi. Berkas sumber diunggah setelah draf
-            dibuat.
+          <p className="text-xs leading-5 text-muted">
+            Judul dan organisasi pengampu wajib untuk membuat draf. Berkas
+            sumber diunggah setelah draf dibuat.
           </p>
         </div>
       </section>
+      <DatasetPreparationAssistant />
     </AdminPageLoading>
   );
 }

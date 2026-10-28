@@ -86,22 +86,39 @@ class DatasetWorkflowService
             }
 
             // Published datasets are edited through an immutable draft snapshot;
-            // never expose unapproved metadata on the live public record.
+            // never expose unapproved metadata on the live public record. PATCH
+            // fields not supplied by a caller must retain the current draft value.
+            $baseFields = $locked->only([
+                'title', 'description', 'category', 'keywords', 'reference_period_start',
+                'reference_period_end', 'geographic_scope', 'update_frequency', 'source_name',
+                'source_url', 'methodology', 'unit', 'license_text', 'contact',
+            ]);
+            if ($isPublishedDraft && is_array($versionRow->metadata_snapshot)) {
+                $baseFields = array_merge($baseFields, $versionRow->metadata_snapshot);
+            }
             $draft = clone $locked;
+            $draft->fill(array_intersect_key($baseFields, array_flip([
+                'title', 'description', 'category', 'keywords', 'reference_period_start',
+                'reference_period_end', 'geographic_scope', 'update_frequency', 'source_name',
+                'source_url', 'methodology', 'unit', 'license_text', 'contact',
+            ])));
+            $stringValue = fn (string $key): ?string => array_key_exists($key, $data)
+                ? $this->nullableTrim($data[$key])
+                : (isset($baseFields[$key]) && is_string($baseFields[$key]) ? $baseFields[$key] : null);
             $fields = [
                 'title' => trim($data['title']),
-                'description' => trim($data['description']),
-                'category' => $data['category'] ?? null,
-                'keywords' => $data['keywords'] ?? [],
-                'reference_period_start' => $data['reference_period_start'] ?? null,
-                'reference_period_end' => $data['reference_period_end'] ?? null,
-                'geographic_scope' => trim($data['geographic_scope']),
-                'update_frequency' => $data['update_frequency'],
-                'source_name' => trim($data['source_name']),
-                'source_url' => $data['source_url'] ?? null,
-                'methodology' => $data['methodology'] ?? null,
-                'unit' => $data['unit'] ?? null,
-                'license_text' => trim($data['license_text']),
+                'description' => $stringValue('description'),
+                'category' => array_key_exists('category', $data) ? $data['category'] : ($baseFields['category'] ?? null),
+                'keywords' => array_key_exists('keywords', $data) ? ($data['keywords'] ?? []) : ($baseFields['keywords'] ?? []),
+                'reference_period_start' => array_key_exists('reference_period_start', $data) ? $data['reference_period_start'] : ($baseFields['reference_period_start'] ?? null),
+                'reference_period_end' => array_key_exists('reference_period_end', $data) ? $data['reference_period_end'] : ($baseFields['reference_period_end'] ?? null),
+                'geographic_scope' => $stringValue('geographic_scope'),
+                'update_frequency' => array_key_exists('update_frequency', $data) ? ($data['update_frequency'] ?: null) : ($baseFields['update_frequency'] ?? null),
+                'source_name' => $stringValue('source_name'),
+                'source_url' => $stringValue('source_url'),
+                'methodology' => $stringValue('methodology'),
+                'unit' => $stringValue('unit'),
+                'license_text' => $stringValue('license_text'),
                 'updated_by' => $user->id,
             ];
             $draft->fill($fields);
@@ -355,6 +372,17 @@ class DatasetWorkflowService
         $row['created_at'] = now();
         $row['updated_at'] = now();
         DB::table('dataset_sdi_metadata')->updateOrInsert(['dataset_id' => $datasetId, 'dataset_version' => $to], $row);
+    }
+
+    private function nullableTrim(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 
     private function snapshot(Dataset $dataset): array

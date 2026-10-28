@@ -17,6 +17,15 @@ export default function NewIndicatorLoading() {
         aria-busy="true"
       >
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2 border-b border-line pb-2">
+            <h2 className="text-sm font-semibold text-ink">
+              1. Identitas indikator
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Kode, alamat halaman, dan nama membantu indikator dikenali secara
+              konsisten.
+            </p>
+          </div>
           <LoadingField
             label="Kode indikator"
             name="code"
@@ -35,6 +44,15 @@ export default function NewIndicatorLoading() {
             required
             className="sm:col-span-2"
           />
+          <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
+            <h2 className="text-sm font-semibold text-ink">
+              2. Definisi dan pengampu
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Jelaskan arti indikator, satuan ukur, sumber nilai, dan organisasi
+              yang bertanggung jawab.
+            </p>
+          </div>
           <LoadingField
             label="Definisi indikator *"
             name="definition"
@@ -53,6 +71,15 @@ export default function NewIndicatorLoading() {
             name="organization_id"
             controlText="Pilih organisasi"
           />
+          <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
+            <h2 className="text-sm font-semibold text-ink">
+              3. Periode dan nilai awal (opsional)
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Isi jika nilai awal sudah tersedia. Nilai yang masih draf tidak
+              ditampilkan pada API publik.
+            </p>
+          </div>
           <LoadingField
             label="Label periode"
             name="period_label"

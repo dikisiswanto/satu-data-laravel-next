@@ -18,6 +18,15 @@ export default function EditOrganizationLoading() {
         aria-busy="true"
       >
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2 border-b border-line pb-2">
+            <h2 className="text-sm font-semibold text-ink">
+              1. Identitas organisasi
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Kode, alamat halaman, dan nama resmi menjadi identitas utama.
+              Kontak dapat dilengkapi setelahnya.
+            </p>
+          </div>
           <LoadingField label="Kode organisasi" name="code" />
           <LoadingField label="Bagian alamat halaman organisasi" name="slug" />
           <LoadingField
@@ -25,6 +34,14 @@ export default function EditOrganizationLoading() {
             name="name"
             className="sm:col-span-2"
           />
+          <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
+            <h2 className="text-sm font-semibold text-ink">
+              2. Kontak dan informasi tambahan (opsional)
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Tambahkan kanal resmi agar publik dapat menemukan pengampu data.
+            </p>
+          </div>
           <LoadingField label="Nama singkat" name="short_name" />
           <LoadingField label="Email resmi" name="official_email" />
           <LoadingField

@@ -280,7 +280,7 @@ describe("loading shells preserve static UI copy and route structure", () => {
       [
         "src/app/portal/(workspace)/dataset/[id]/edit/page.jsx",
         "src/app/portal/(workspace)/dataset/[id]/edit/loading.jsx",
-        "Di halaman ini, Anda dapat mengubah dataset yang masih berstatus Draf. Jika dataset sudah diajukan, buka halaman detail untuk melihat status pemeriksaan dan langkah selanjutnya.",
+        "Simpan informasi sedikit demi sedikit selama dataset masih berstatus Draf. Informasi yang wajib untuk pemeriksaan ditandai; metadata SDI lanjutan dapat dilengkapi setelah rujukan resmi tersedia.",
       ],
       [
         "src/app/portal/(workspace)/organisasi/[id]/edit/page.jsx",
@@ -343,8 +343,9 @@ describe("loading shells preserve static UI copy and route structure", () => {
           "Sumber resmi untuk membantu memeriksa data",
           "Metadata standar dan pertukaran SDI (lanjutan)",
           "Bisa dilengkapi setelah draf",
-          "Sebelum menyimpan draf",
+          "Periksa kembali sebelum menyimpan",
           "Simpan sebagai draf",
+          "Mulai dari draf, lalu lanjutkan bertahap",
         ],
       ],
       [
@@ -354,14 +355,20 @@ describe("loading shells preserve static UI copy and route structure", () => {
           "Informasi dataset",
           "Riwayat versi dataset",
           "Berkas dan hasil pengolahan",
-          "Alur publikasi",
+          "Langkah berikutnya",
+          "Kelengkapan sebelum pemeriksaan",
+          "Validasi otomatis",
         ],
       ],
       [
         "src/app/portal/(workspace)/dataset/[id]/edit/loading.jsx",
         [
           "Kembali ke dataset",
+          "1. Informasi utama",
+          "2. Klasifikasi, sumber, dan periode",
+          "3. Metode dan kepatuhan SDI",
           "Metadata standar dan pertukaran SDI (lanjutan)",
+          "Simpan perubahan",
         ],
       ],
       [

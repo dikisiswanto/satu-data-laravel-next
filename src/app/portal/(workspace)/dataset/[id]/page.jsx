@@ -18,6 +18,10 @@ import { DatasetArchiveAction } from "@/components/admin/dataset-archive-action"
 import { DatasetVersionAbandonAction } from "@/components/admin/dataset-version-abandon-action";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
+import {
+  DatasetLifecycleGuide,
+  DATASET_REVIEW_METADATA,
+} from "@/components/admin/dataset-lifecycle-guide";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Detail dataset",
@@ -101,14 +105,69 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
       (!activeWorkSnapshot?.source_resource_id ||
         resource.id === activeWorkSnapshot.source_resource_id),
   );
+  const workSourceExists = resources.some(
+    (resource) =>
+      resource.dataset_version === workVersion &&
+      resource.is_source &&
+      (!activeWorkSnapshot?.source_resource_id ||
+        resource.id === activeWorkSnapshot.source_resource_id),
+  );
+  const workSourceProcessing = resources.some(
+    (resource) =>
+      resource.dataset_version === workVersion &&
+      resource.is_source &&
+      (!activeWorkSnapshot?.source_resource_id ||
+        resource.id === activeWorkSnapshot.source_resource_id) &&
+      ["queued", "processing"].includes(resource.conversion_status),
+  );
+  const workSourceFailed = resources.some(
+    (resource) =>
+      resource.dataset_version === workVersion &&
+      resource.is_source &&
+      (!activeWorkSnapshot?.source_resource_id ||
+        resource.id === activeWorkSnapshot.source_resource_id) &&
+      resource.conversion_status === "failed",
+  );
+  const reviewMetadata = DATASET_REVIEW_METADATA.map((field) => ({
+    ...field,
+    complete:
+      typeof data[field.key] === "string" && data[field.key].trim().length > 0,
+  }));
+  const missingReviewMetadata = reviewMetadata.filter(
+    (field) => !field.complete,
+  );
+  const isInReview =
+    data.status === "review" || activeWorkSnapshot?.version_status === "review";
+  const isFullyPublished = data.status === "published" && !data.draft_version;
+  const lifecycleCompletedThrough = isFullyPublished
+    ? 5
+    : isInReview
+      ? 4
+      : workSourceReady
+        ? 3
+        : workSourceExists && !workSourceFailed
+          ? 2
+          : 1;
+  const lifecycleActiveStep = isFullyPublished
+    ? 5
+    : isInReview
+      ? 5
+      : !workSourceExists || workSourceFailed
+        ? 2
+        : !workSourceReady
+          ? 3
+          : 4;
   const mayUploadSource =
     canSubmit &&
+    (!workSourceReady || workSourceFailed) &&
+    !workSourceProcessing &&
     (data.status === "draft" ||
       (isNewVersionInProgress &&
         activeWorkSnapshot?.version_status === "draft"));
   const maySubmitForReview =
     canSubmit &&
     workSourceReady &&
+    missingReviewMetadata.length === 0 &&
     ((data.status === "draft" &&
       activeWorkSnapshot?.version_status !== "review") ||
       (isNewVersionInProgress &&
@@ -196,6 +255,32 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
         </Badge>
       </PageHeading>
       <PortalContextGuide />
+      {data.status !== "archived" ? (
+        <div className="mb-6">
+          <DatasetLifecycleGuide
+            activeStep={lifecycleActiveStep}
+            completedThrough={lifecycleCompletedThrough}
+            links={{
+              source: mayUploadSource ? `#dataset-source-upload` : undefined,
+              metadata:
+                (data.status === "draft" || isNewVersionInProgress) &&
+                workSourceReady
+                  ? `/portal/dataset/${data.id}/edit`
+                  : undefined,
+            }}
+            heading={
+              isNewVersionInProgress
+                ? `Alur versi ${workVersion}`
+                : "Langkah berikutnya"
+            }
+            description={
+              isFullyPublished
+                ? "Dataset ini sudah diterbitkan. Langkah berikutnya hanya diperlukan ketika Anda menyiapkan versi baru."
+                : "Selesaikan langkah yang sedang aktif. Anda tidak perlu menebak kode atau metadata standar yang belum memiliki rujukan resmi."
+            }
+          />
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="rounded-card border bg-white p-5 sm:p-7">
@@ -462,32 +547,67 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                       : "Dataset berhasil dipublikasikan."}
             </p>
           ) : null}
-          <h2 className="font-semibold">Alur publikasi</h2>
-          <ol className="mt-4 space-y-3 text-sm leading-6 text-muted">
-            {isNewVersionInProgress ? (
-              <>
-                <li>1. Unggah sumber untuk versi {workVersion}.</li>
-                <li>
-                  2. Tunggu sampai berkas selesai divalidasi dan dikonversi.
-                </li>
-                <li>
-                  3. Ajukan versi baru agar metadata dan hasil konversi
-                  diperiksa.
-                </li>
-                <li>4. Terbitkan versi baru setelah pemeriksaan selesai.</li>
-              </>
-            ) : (
-              <>
-                <li>1. Lengkapi informasi dan periode data.</li>
-                <li>2. Unggah berkas sumber.</li>
-                <li>
-                  3. Tunggu sampai berkas dan informasi dataset selesai
-                  diperiksa.
-                </li>
-                <li>4. Terbitkan dataset setelah pemeriksaan disetujui.</li>
-              </>
-            )}
-          </ol>
+          {(data.status === "draft" || isNewVersionInProgress) &&
+          !isInReview ? (
+            <section
+              className="mt-4 rounded-xl border border-[#d8e4eb] bg-[#f7fafc] p-4"
+              aria-labelledby="dataset-review-checklist-title"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3
+                    id="dataset-review-checklist-title"
+                    className="text-sm font-semibold text-ink"
+                  >
+                    Kelengkapan sebelum pemeriksaan
+                  </h3>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    {reviewMetadata.length - missingReviewMetadata.length} dari{" "}
+                    {reviewMetadata.length} informasi wajib sudah terisi.
+                    Metadata SDI lanjutan hanya diisi berdasarkan rujukan resmi.
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${missingReviewMetadata.length ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}
+                >
+                  {missingReviewMetadata.length ? "Belum lengkap" : "Lengkap"}
+                </span>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm">
+                {reviewMetadata.map((field) => (
+                  <li key={field.key} className="flex items-start gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={`mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] ${field.complete ? "bg-emerald-700 text-white" : "bg-white text-[#748796] ring-1 ring-[#d4dfe6]"}`}
+                    >
+                      {field.complete ? "✓" : "•"}
+                    </span>
+                    <span
+                      className={
+                        field.complete ? "text-[#285943]" : "text-muted"
+                      }
+                    >
+                      {field.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {(data.status === "draft" || isNewVersionInProgress) &&
+              missingReviewMetadata.length ? (
+                <Link
+                  href={`/portal/dataset/${data.id}/edit`}
+                  prefetch={false}
+                  className="mt-3 inline-flex text-sm font-semibold text-primary underline underline-offset-2"
+                >
+                  Lengkapi informasi
+                </Link>
+              ) : null}
+              <p className="mt-3 text-xs leading-5 text-muted">
+                Semua informasi ini harus lengkap dan berkas sumber harus lolos
+                validasi sebelum pengajuan dapat diproses.
+              </p>
+            </section>
+          ) : null}
           {canSubmit && data.status === "published" && !data.draft_version ? (
             <form
               action={startDatasetVersionAction}

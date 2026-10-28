@@ -45,6 +45,53 @@ class ProgressiveDatasetDraftTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_save_partial_metadata_to_a_draft_and_review_requirements_remain_enforced(): void
+    {
+        [, $organization, $token] = $this->createScopedAdmin('draft.metadata-editor@example.gov.id');
+        $headers = [
+            'Origin' => config('satu_data.frontend_url', 'http://localhost:3000'),
+            'Accept' => 'application/json',
+        ];
+        $created = $this->withHeaders($headers)->withToken($token)->postJson('/api/v1/portal/datasets', [
+            'title' => 'Data layanan bertahap',
+            'organization_id' => $organization->id,
+        ])->assertCreated()->json('data');
+
+        $this->withHeaders($headers)->withToken($token)->patchJson('/api/v1/portal/datasets/'.$created['id'], [
+            'title' => 'Data layanan bertahap',
+            'description' => null,
+            'category' => null,
+            'keywords' => [],
+            'reference_period_start' => null,
+            'reference_period_end' => null,
+            'geographic_scope' => null,
+            'update_frequency' => null,
+            'source_name' => null,
+            'source_url' => null,
+            'methodology' => null,
+            'unit' => null,
+            'license_text' => null,
+            'sdi_metadata' => [],
+        ])->assertOk()
+            ->assertJsonPath('data.status', 'draft')
+            ->assertJsonPath('data.source_name', null)
+            ->assertJsonPath('data.description', null);
+
+        $this->assertDatabaseHas('datasets', [
+            'id' => $created['id'],
+            'status' => 'draft',
+            'source_name' => null,
+            'geographic_scope' => null,
+            'license_text' => null,
+            'update_frequency' => null,
+        ]);
+
+        $this->withHeaders($headers)->withToken($token)->postJson('/api/v1/portal/datasets/'.$created['id'].'/workflow', [
+            'action' => 'submit_for_review',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['metadata']);
+    }
+
     public function test_incomplete_draft_cannot_enter_review_until_publication_metadata_is_present(): void
     {
         [, $organization, $token] = $this->createScopedAdmin('draft.reviewer@example.gov.id');

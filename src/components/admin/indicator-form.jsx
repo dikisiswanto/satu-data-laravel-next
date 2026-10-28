@@ -146,7 +146,7 @@ export function IndicatorForm({ organizations, initial = null }) {
         }
         return;
       }
-      router.push("/portal/statistik?saved=1");
+      router.push("/portal/statistik");
     } catch (error) {
       markUncertain();
       setError(
@@ -172,6 +172,15 @@ export function IndicatorForm({ organizations, initial = null }) {
         </div>
       ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="sm:col-span-2 border-b border-line pb-2">
+          <h2 className="text-sm font-semibold text-ink">
+            1. Identitas indikator
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Kode, alamat halaman, dan nama membantu indikator dikenali secara
+            konsisten.
+          </p>
+        </div>
         <Field
           label="Kode indikator"
           name="code"
@@ -203,6 +212,15 @@ export function IndicatorForm({ organizations, initial = null }) {
             error={fieldErrors.title}
             onChange={() => clearFieldError("title")}
           />
+        </div>
+        <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
+          <h2 className="text-sm font-semibold text-ink">
+            2. Definisi dan pengampu
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Jelaskan arti indikator, satuan ukur, sumber nilai, dan organisasi
+            yang bertanggung jawab.
+          </p>
         </div>
         <div className="sm:col-span-2">
           <label
@@ -317,6 +335,15 @@ export function IndicatorForm({ organizations, initial = null }) {
               {fieldErrors.organization_id}
             </FieldError>
           ) : null}
+        </div>
+        <div className="sm:col-span-2 border-b border-line pb-2 pt-2">
+          <h2 className="text-sm font-semibold text-ink">
+            3. Periode dan nilai awal (opsional)
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Isi jika nilai awal sudah tersedia. Nilai yang masih draf tidak
+            ditampilkan pada API publik.
+          </p>
         </div>
         <Field
           label="Label periode"

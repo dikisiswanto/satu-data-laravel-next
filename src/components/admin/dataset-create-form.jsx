@@ -474,7 +474,7 @@ export function DatasetCreateForm({
           >
             Deskripsi{" "}
             <span className="text-xs font-normal text-muted">
-              (opsional untuk draf)
+              (wajib sebelum pemeriksaan; opsional saat draf)
             </span>
           </label>
           <textarea
@@ -572,14 +572,14 @@ export function DatasetCreateForm({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Nama sumber data"
+              label="Nama sumber data (wajib sebelum pemeriksaan)"
               name="source_name"
               maxLength={240}
               error={fieldErrors.source_name}
               onChange={() => clearFieldError("source_name")}
             />
             <Field
-              label="Cakupan wilayah"
+              label="Cakupan wilayah (wajib sebelum pemeriksaan)"
               name="geographic_scope"
               maxLength={240}
               placeholder={`Contoh: ${siteConfig.regionName}`}
@@ -587,7 +587,7 @@ export function DatasetCreateForm({
               onChange={() => clearFieldError("geographic_scope")}
             />
             <Field
-              label="Lisensi / ketentuan penggunaan"
+              label="Lisensi / ketentuan penggunaan (wajib sebelum pemeriksaan)"
               name="license_text"
               maxLength={240}
               placeholder="Contoh: lisensi atau ketentuan penggunaan yang telah disetujui"
@@ -599,7 +599,10 @@ export function DatasetCreateForm({
                 htmlFor="update_frequency"
                 className="mb-2 block text-sm font-medium"
               >
-                Frekuensi pembaruan
+                Frekuensi pembaruan{" "}
+                <span className="text-xs font-normal text-muted">
+                  (wajib sebelum pemeriksaan)
+                </span>
               </label>
               <select
                 className={fieldClass("update_frequency")}

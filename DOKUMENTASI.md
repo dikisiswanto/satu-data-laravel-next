@@ -11,12 +11,20 @@
 ## Alur data
 
 1. Admin membuat draf dengan judul dan organisasi pengampu.
-2. Detail, sumber, cakupan, lisensi, periode, dan metadata SDI dilengkapi ketika tersedia.
-3. File diunggah ke penyimpanan privat, lalu worker memeriksa checksum, format, batas ukuran/kompleksitas, dan menyiapkan resource.
-4. Saat diajukan untuk ditinjau, backend memeriksa metadata serta resource pada versi yang sedang diajukan.
-5. Hanya versi yang disetujui dan dipublikasikan yang tersedia untuk API/portal publik. Perubahan versi tidak boleh membuat resource lama atau berkas sumber ikut terbuka.
+2. Informasi lain disimpan bertahap; metadata yang wajib untuk pemeriksaan diberi penanda tersendiri. Admin tidak perlu mengarang nilai standar SDI yang belum memiliki rujukan.
+3. File CSV, XLSX, JSON, atau GeoJSON (maksimal 25 MiB per unggahan UI) diunggah ke penyimpanan privat. UI menjelaskan status menunggu, validasi, gagal, dan berhasil, lalu menyediakan unggah ulang bila diperlukan. Batas serta validasi server tetap menjadi otoritas akhir.
+4. Portal memandu lima langkah: draf, unggah sumber, validasi otomatis, kelengkapan metadata kepatuhan, lalu pengajuan. Kelengkapan ditampilkan sebagai checklist kesiapan, bukan dipaksa selesai ketika baru membuat draf.
+5. Saat diajukan untuk ditinjau, backend memeriksa metadata serta resource pada versi yang sedang diajukan.
+6. Hanya versi yang disetujui dan dipublikasikan yang tersedia untuk API/portal publik. Perubahan versi tidak boleh membuat resource lama atau berkas sumber ikut terbuka.
 
 Kelengkapan metadata untuk draf **tidak sama** dengan persyaratan pemeriksaan, publikasi, atau interoperabilitas. Sistem tidak boleh memaksa admin mengarang kode resmi. Status kesiapan lokal juga bukan pengesahan dari Pembina Data atau Walidata.
+
+## Prinsip workflow UX admin
+
+- **Selesaikan tugas utama dulu:** form draf menampilkan identitas inti terlebih dahulu; metadata kepatuhan lanjutan dikelompokkan dan dapat diselesaikan setelah draf tersimpan.
+- **Tampilkan prasyarat pada tahap yang tepat:** sistem menjelaskan apa yang diperlukan sekarang dan apa yang wajib sebelum pengajuan/publikasi. Backend tetap memvalidasi transisi workflow; penyederhanaan UI tidak menghilangkan aturan bisnis.
+- **Satu keputusan per panel:** indikator dikelompokkan menjadi identitas, definisi/pengampu, dan periode/nilai awal; organisasi memisahkan identitas wajib dari kontak opsional; pengelolaan pengguna menawarkan satu mode aktif untuk mengundang akun baru atau menambahkan akses akun yang sudah ada.
+- **Loading shell sejalan dengan halaman:** label, urutan, dan contoh tetap konsisten selama pemuatan agar elemen tidak berubah makna ketika data selesai dimuat. Test source menjaga konsistensi ini, tetapi alur kritis tetap membutuhkan test browser dan API.
 
 ## Kontrak API dan frontend
 

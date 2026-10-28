@@ -578,6 +578,38 @@ if (
   errors.push(
     "Skema pembuatan draf hanya boleh mewajibkan judul dan organisasi",
   );
+const datasetPatch = manifest.paths["/api/v1/portal/datasets/{id}"]?.patch;
+if (
+  datasetPatch?.requestBody?.content?.["application/json"]?.schema?.$ref !==
+  "#/components/schemas/DatasetMetadataPatchRequest"
+)
+  errors.push(
+    "PATCH metadata dataset harus mendukung penyimpanan draf bertahap",
+  );
+if (
+  JSON.stringify(
+    manifest.components?.schemas?.DatasetMetadataPatchRequest?.required || [],
+  ) !== JSON.stringify(["title"])
+)
+  errors.push(
+    "PATCH metadata dataset hanya mewajibkan judul pada tiap penyimpanan",
+  );
+for (const key of [
+  "description",
+  "source_name",
+  "geographic_scope",
+  "license_text",
+  "update_frequency",
+]) {
+  const type =
+    manifest.components?.schemas?.DatasetMetadataPatchRequest?.properties?.[key]
+      ?.type;
+  if (!Array.isArray(type) || !type.includes("null")) {
+    errors.push(
+      `Metadata draf ${key} harus mengizinkan null sebelum pemeriksaan`,
+    );
+  }
+}
 if (!manifest.paths["/api/v1/organizations/{slug}"]?.get)
   errors.push("Kontrak OpenAPI belum memuat detail organisasi publik");
 for (const path of ["/api/openapi", "/api/openapi.json", "/api/openapi.yaml"]) {

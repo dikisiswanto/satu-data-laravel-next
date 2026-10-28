@@ -5,6 +5,7 @@ import {
   LoadingRows,
   LoadingTableToolbar,
 } from "@/components/admin/admin-page-loading";
+import { DatasetLifecycleGuide } from "@/components/admin/dataset-lifecycle-guide";
 
 export default function DatasetWorkspaceDetailLoading() {
   return (
@@ -23,6 +24,12 @@ export default function DatasetWorkspaceDetailLoading() {
       >
         ← Kembali ke daftar
       </Link>
+      <DatasetLifecycleGuide
+        activeStep={2}
+        completedThrough={1}
+        heading="Langkah berikutnya"
+        description="Selesaikan langkah yang sedang aktif. Tahap Validasi otomatis berjalan setelah sumber diunggah; kelengkapan metadata ditampilkan sebelum pengajuan."
+      />
       <section className="portal-workspace-panel">
         <h2 className="text-base font-semibold">Informasi dataset</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -86,8 +93,12 @@ export default function DatasetWorkspaceDetailLoading() {
         </div>
       </section>
       <section className="portal-workspace-panel mt-6">
-        <h2 className="font-semibold">Alur publikasi</h2>
-        <LoadingBlock className="mt-4 h-11 w-full rounded-control" />
+        <h2 className="font-semibold">Kelengkapan sebelum pemeriksaan</h2>
+        <p className="mt-1 text-sm leading-5 text-muted">
+          Informasi wajib dan hasil validasi sumber harus lengkap sebelum
+          pengajuan.
+        </p>
+        <LoadingBlock className="mt-4 h-20 w-full rounded-control" />
         <LoadingBlock className="mt-3 h-24 w-full rounded-control" />
       </section>
     </AdminPageLoading>

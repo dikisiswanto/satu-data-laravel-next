@@ -2351,7 +2351,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DatasetWriteRequest"
+                "$ref": "#/components/schemas/DatasetMetadataPatchRequest"
               }
             }
           }
@@ -4801,74 +4801,11 @@
           }
         }
       },
-      "DatasetWriteRequest": {
-        "type": "object",
-        "required": [
-          "title",
-          "description",
-          "organization_id",
-          "source_name",
-          "geographic_scope",
-          "license_text",
-          "update_frequency"
-        ],
-        "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 5,
-            "maxLength": 180
-          },
-          "description": {
-            "type": "string",
-            "minLength": 20,
-            "maxLength": 5000
-          },
-          "organization_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "source_name": {
-            "type": "string",
-            "maxLength": 240
-          },
-          "geographic_scope": {
-            "type": "string",
-            "maxLength": 240
-          },
-          "license_text": {
-            "type": "string",
-            "maxLength": 240
-          },
-          "update_frequency": {
-            "type": "string",
-            "enum": [
-              "daily",
-              "weekly",
-              "monthly",
-              "quarterly",
-              "yearly",
-              "irregular",
-              "one_time"
-            ]
-          },
-          "category": {
-            "type": ["string", "null"],
-            "maxLength": 120
-          },
-          "keywords": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "maxLength": 80
-            },
-            "maxItems": 30
-          }
-        },
-        "additionalProperties": true
-      },
       "DatasetWorkflowRequest": {
         "type": "object",
-        "required": ["action"],
+        "required": [
+          "action"
+        ],
         "properties": {
           "action": {
             "type": "string",
@@ -4895,11 +4832,17 @@
       },
       "UploadControlRequest": {
         "type": "object",
-        "required": ["action"],
+        "required": [
+          "action"
+        ],
         "properties": {
           "action": {
             "type": "string",
-            "enum": ["prepare", "complete", "cleanup"]
+            "enum": [
+              "prepare",
+              "complete",
+              "cleanup"
+            ]
           },
           "filename": {
             "type": "string",
@@ -4927,11 +4870,17 @@
       },
       "PreflightRequest": {
         "type": "object",
-        "required": ["target"],
+        "required": [
+          "target"
+        ],
         "properties": {
           "target": {
             "type": "string",
-            "enum": ["sdi_flat", "dcat_jsonld", "geoportal"]
+            "enum": [
+              "sdi_flat",
+              "dcat_jsonld",
+              "geoportal"
+            ]
           }
         },
         "additionalProperties": false
@@ -4939,7 +4888,10 @@
       "PaginatedListResponse": {
         "type": "object",
         "description": "Respons list server-side dengan jumlah total sebelum limit dan offset diterapkan.",
-        "required": ["data", "meta"],
+        "required": [
+          "data",
+          "meta"
+        ],
         "properties": {
           "data": {
             "type": "array",
@@ -4950,7 +4902,11 @@
           },
           "meta": {
             "type": "object",
-            "required": ["total", "limit", "offset"],
+            "required": [
+              "total",
+              "limit",
+              "offset"
+            ],
             "properties": {
               "total": {
                 "type": "integer",
@@ -4969,6 +4925,123 @@
               }
             },
             "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "DatasetMetadataPatchRequest": {
+        "type": "object",
+        "description": "Save draft metadata incrementally. Title is required for each save; publication-critical fields are checked when submitting for review.",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 180
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 20,
+            "maxLength": 5000
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "maxItems": 30
+          },
+          "reference_period_start": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "reference_period_end": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "geographic_scope": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 240
+          },
+          "update_frequency": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+              "quarterly",
+              "yearly",
+              "irregular",
+              "one_time",
+              null
+            ]
+          },
+          "source_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 240
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "maxLength": 2048
+          },
+          "methodology": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10000
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "license_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 240
+          },
+          "sdi_metadata": {
+            "type": "object"
           }
         },
         "additionalProperties": false

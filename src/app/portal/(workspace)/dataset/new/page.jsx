@@ -9,6 +9,7 @@ import { DatasetCreateForm } from "@/components/admin/dataset-create-form";
 import { Button } from "@/components/ui/button";
 import { datasetStarterReferences } from "@/lib/data/dataset-starter-references";
 import { DatasetPreparationAssistant } from "@/components/admin/dataset-preparation-assistant";
+import { DatasetLifecycleGuide } from "@/components/admin/dataset-lifecycle-guide";
 import { getVerifiedSdiRegistryOptions } from "@/lib/sdi/registry-options";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -71,6 +72,13 @@ export default async function NewDatasetPage({ searchParams }) {
         description="Mulai dengan informasi dasar dataset. Jika perlu, unduh template untuk menata kolom. Metadata standar nasional dapat dilengkapi setelah rujukan resminya tersedia. Dataset baru tampil di portal publik setelah selesai diperiksa dan diterbitkan."
       />
       <PortalContextGuide />
+      <DatasetLifecycleGuide
+        activeStep={1}
+        completedThrough={0}
+        compact
+        heading="Mulai dari draf, lalu lanjutkan bertahap"
+        description="Untuk mulai cukup isi judul dan organisasi pengampu. Unggah sumber dan lengkapi persyaratan pemeriksaan setelah draf tersimpan."
+      />
 
       {datasetStarterReferences.length ? (
         <details className="mb-4 w-full max-w-none rounded-2xl border border-[#d7e7e1] bg-[#f1f8f4] p-4 sm:p-5">

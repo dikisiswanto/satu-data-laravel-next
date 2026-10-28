@@ -24,16 +24,18 @@ import { siteConfig } from "@/lib/site-config";
 
 const FIELDS = {
   title: "Isi judul dengan 5–180 karakter.",
-  description: "Deskripsi wajib diisi dengan 20–5.000 karakter.",
+  description: "Jika diisi, deskripsi harus memiliki 20–5.000 karakter.",
   category: "Nama kategori terlalu panjang. Gunakan nama yang lebih ringkas.",
   keywords:
     "Gunakan maksimal 30 kata kunci; pisahkan dengan koma dan batasi tiap kata kunci hingga 80 karakter.",
-  source_name: "Nama sumber data wajib diisi (2–240 karakter).",
+  source_name: "Jika diisi, nama sumber harus memiliki 2–240 karakter.",
   source_url:
     "Gunakan URL sumber lengkap dengan protokol https:// atau http://, atau kosongkan bila tidak tersedia.",
   geographic_scope: `Isi cakupan wilayah, misalnya ${siteConfig.regionName}.`,
-  license_text: "Isi lisensi atau ketentuan penggunaan data.",
-  update_frequency: "Pilih frekuensi pembaruan data.",
+  license_text:
+    "Jika diisi, lisensi atau ketentuan penggunaan harus memiliki 2–240 karakter.",
+  update_frequency:
+    "Pilih frekuensi yang tersedia atau biarkan kosong sampai ditetapkan.",
   reference_period_start: "Pilih tanggal mulai periode yang benar.",
   reference_period_end:
     "Tanggal akhir harus valid dan tidak boleh lebih awal dari tanggal mulai.",
@@ -80,6 +82,7 @@ function firstInvalidField(errors) {
 export function DatasetMetadataForm({
   id,
   initial,
+  isReplacementVersion = false,
   standards = [],
   referenceSystems = [],
   initialError = "",
@@ -236,6 +239,11 @@ export function DatasetMetadataForm({
       aria-busy={busy}
       className="w-full max-w-none space-y-5 portal-form-card p-5 sm:p-8"
     >
+      <div className="rounded-xl border border-[#d8e4eb] bg-[#f5f9fc] p-4 text-sm leading-6 text-[#355469]">
+        Simpan perubahan sedikit demi sedikit. Kolom sumber, cakupan, frekuensi,
+        lisensi, dan deskripsi dapat dilengkapi selama draf; semuanya wajib
+        lengkap sebelum dataset diajukan untuk pemeriksaan.
+      </div>
       {error ? (
         <div
           role="alert"
@@ -258,209 +266,280 @@ export function DatasetMetadataForm({
           ) : null}
         </div>
       ) : null}
-      <div>
-        <label htmlFor="title" className="mb-2 block text-sm font-medium">
-          Judul <span aria-hidden="true">*</span>
-        </label>
-        <input
-          className={fieldClass("title")}
-          id="title"
-          name="title"
-          required
-          minLength={5}
-          maxLength={180}
-          defaultValue={initial.title}
-          {...fieldProps("title")}
-          onChange={() => clearFieldError("title")}
-        />
-        <FieldGuidance name="title" id="title-help" />
-        {fieldErrors.title ? (
-          <FieldError id="title-error">{fieldErrors.title}</FieldError>
-        ) : null}
-      </div>
-      <div>
-        <label htmlFor="description" className="mb-2 block text-sm font-medium">
-          Deskripsi <span aria-hidden="true">*</span>
-        </label>
-        <textarea
-          className={cn(
-            "field min-h-32",
-            fieldErrors.description &&
-              "border-red-600 focus-visible:ring-red-600",
-          )}
-          id="description"
-          name="description"
-          required
-          minLength={20}
-          maxLength={5000}
-          defaultValue={initial.description}
-          {...fieldProps("description")}
-          onInvalid={(event) =>
-            event.currentTarget.setCustomValidity(
-              fieldErrors.description ||
-                getFieldValidationMessage("description"),
-            )
-          }
-          onChange={(event) => {
-            event.currentTarget.setCustomValidity("");
-            clearFieldError("description");
-          }}
-        />
-        <FieldGuidance name="description" id="description-help" />
-        {fieldErrors.description ? (
-          <FieldError id="description-error">
-            {fieldErrors.description}
-          </FieldError>
-        ) : null}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Kategori"
-          name="category"
-          value={initial.category || ""}
-          maxLength={120}
-          error={fieldErrors.category}
-          onChange={() => clearFieldError("category")}
-        />
-        <Field
-          label="Kata kunci (pisahkan dengan koma)"
-          name="keywords"
-          value={(initial.keywords || []).join(", ")}
-          maxLength={2500}
-          error={fieldErrors.keywords}
-          onChange={() => clearFieldError("keywords")}
-        />
-        <Field
-          label="Sumber data *"
-          name="source_name"
-          value={initial.source_name || ""}
-          required
-          maxLength={240}
-          error={fieldErrors.source_name}
-          onChange={() => clearFieldError("source_name")}
-        />
-        <Field
-          label="URL sumber"
-          name="source_url"
-          value={initial.source_url || ""}
-          maxLength={2048}
-          error={fieldErrors.source_url}
-          onChange={() => clearFieldError("source_url")}
-        />
-        <Field
-          label="Cakupan wilayah *"
-          name="geographic_scope"
-          value={initial.geographic_scope || ""}
-          required
-          maxLength={240}
-          error={fieldErrors.geographic_scope}
-          onChange={() => clearFieldError("geographic_scope")}
-        />
-        <Field
-          label="Lisensi *"
-          name="license_text"
-          value={initial.license_text || ""}
-          required
-          maxLength={240}
-          error={fieldErrors.license_text}
-          onChange={() => clearFieldError("license_text")}
-        />
-        <Field
-          label="Satuan"
-          name="unit"
-          value={initial.unit || ""}
-          maxLength={100}
-          error={fieldErrors.unit}
-          onChange={() => clearFieldError("unit")}
-        />
+      <section
+        className="space-y-4 rounded-xl border border-[#e1e8ed] p-4 sm:p-5"
+        aria-labelledby="metadata-primary-title"
+      >
+        <div>
+          <h2
+            id="metadata-primary-title"
+            className="text-sm font-semibold text-ink"
+          >
+            1. Informasi utama
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Identitas yang membantu orang memahami isi dataset.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="title" className="mb-2 block text-sm font-medium">
+            Judul <span aria-hidden="true">*</span>
+          </label>
+          <input
+            className={fieldClass("title")}
+            id="title"
+            name="title"
+            required
+            minLength={5}
+            maxLength={180}
+            defaultValue={initial.title}
+            {...fieldProps("title")}
+            onChange={() => clearFieldError("title")}
+          />
+          <FieldGuidance name="title" id="title-help" />
+          {fieldErrors.title ? (
+            <FieldError id="title-error">{fieldErrors.title}</FieldError>
+          ) : null}
+        </div>
         <div>
           <label
-            htmlFor="update_frequency"
+            htmlFor="description"
             className="mb-2 block text-sm font-medium"
           >
-            Frekuensi pembaruan <span aria-hidden="true">*</span>
+            Deskripsi{" "}
+            <span className="text-xs font-normal text-muted">
+              (wajib sebelum pemeriksaan)
+            </span>
           </label>
-          <select
-            className={fieldClass("update_frequency")}
-            id="update_frequency"
-            name="update_frequency"
-            defaultValue={initial.update_frequency}
-            required
-            {...fieldProps("update_frequency")}
+          <textarea
+            className={cn(
+              "field min-h-32",
+              fieldErrors.description &&
+                "border-red-600 focus-visible:ring-red-600",
+            )}
+            id="description"
+            name="description"
+            minLength={20}
+            maxLength={5000}
+            defaultValue={initial.description || ""}
+            {...fieldProps("description")}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
-                fieldErrors.update_frequency ||
-                  getFieldValidationMessage("update_frequency"),
+                fieldErrors.description ||
+                  getFieldValidationMessage("description"),
               )
             }
             onChange={(event) => {
               event.currentTarget.setCustomValidity("");
-              clearFieldError("update_frequency");
+              clearFieldError("description");
             }}
-          >
-            {UPDATE_FREQUENCY_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <FieldGuidance name="update_frequency" id="update_frequency-help" />
-          {fieldErrors.update_frequency ? (
-            <FieldError id="update_frequency-error">
-              {fieldErrors.update_frequency}
+          />
+          <FieldGuidance name="description" id="description-help" />
+          {fieldErrors.description ? (
+            <FieldError id="description-error">
+              {fieldErrors.description}
             </FieldError>
           ) : null}
         </div>
-        <DateField
-          label="Awal periode"
-          name="reference_period_start"
-          value={initial.reference_period_start || ""}
-          error={fieldErrors.reference_period_start}
-          clearError={() => {
-            clearFieldError("reference_period_start");
-            clearFieldError("reference_period_end");
-          }}
+      </section>
+      <section
+        className="space-y-4 rounded-xl border border-[#e1e8ed] p-4 sm:p-5"
+        aria-labelledby="metadata-source-title"
+      >
+        <div>
+          <h2
+            id="metadata-source-title"
+            className="text-sm font-semibold text-ink"
+          >
+            2. Klasifikasi, sumber, dan periode
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Lengkapi yang sudah diketahui sekarang. Nilai yang belum
+            terverifikasi boleh dibiarkan kosong pada draf dan akan diperiksa
+            sebelum pengajuan.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Kategori"
+            name="category"
+            value={initial.category || ""}
+            maxLength={120}
+            error={fieldErrors.category}
+            onChange={() => clearFieldError("category")}
+          />
+          <Field
+            label="Kata kunci (pisahkan dengan koma)"
+            name="keywords"
+            value={(initial.keywords || []).join(", ")}
+            maxLength={2500}
+            error={fieldErrors.keywords}
+            onChange={() => clearFieldError("keywords")}
+          />
+          <Field
+            label="Nama sumber data (wajib sebelum pemeriksaan)"
+            name="source_name"
+            value={initial.source_name || ""}
+            maxLength={240}
+            error={fieldErrors.source_name}
+            onChange={() => clearFieldError("source_name")}
+          />
+          <Field
+            label="URL sumber"
+            name="source_url"
+            value={initial.source_url || ""}
+            maxLength={2048}
+            error={fieldErrors.source_url}
+            onChange={() => clearFieldError("source_url")}
+          />
+          <Field
+            label="Cakupan wilayah (wajib sebelum pemeriksaan)"
+            name="geographic_scope"
+            value={initial.geographic_scope || ""}
+            maxLength={240}
+            error={fieldErrors.geographic_scope}
+            onChange={() => clearFieldError("geographic_scope")}
+          />
+          <Field
+            label="Lisensi atau ketentuan penggunaan (wajib sebelum pemeriksaan)"
+            name="license_text"
+            value={initial.license_text || ""}
+            maxLength={240}
+            error={fieldErrors.license_text}
+            onChange={() => clearFieldError("license_text")}
+          />
+          <Field
+            label="Satuan"
+            name="unit"
+            value={initial.unit || ""}
+            maxLength={100}
+            error={fieldErrors.unit}
+            onChange={() => clearFieldError("unit")}
+          />
+          <div>
+            <label
+              htmlFor="update_frequency"
+              className="mb-2 block text-sm font-medium"
+            >
+              Frekuensi pembaruan{" "}
+              <span className="text-xs font-normal text-muted">
+                (wajib sebelum pemeriksaan)
+              </span>
+            </label>
+            <select
+              className={fieldClass("update_frequency")}
+              id="update_frequency"
+              name="update_frequency"
+              defaultValue={initial.update_frequency || ""}
+              {...fieldProps("update_frequency")}
+              onInvalid={(event) =>
+                event.currentTarget.setCustomValidity(
+                  fieldErrors.update_frequency ||
+                    getFieldValidationMessage("update_frequency"),
+                )
+              }
+              onChange={(event) => {
+                event.currentTarget.setCustomValidity("");
+                clearFieldError("update_frequency");
+              }}
+            >
+              <option value="">Belum ditentukan</option>
+              {UPDATE_FREQUENCY_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <FieldGuidance name="update_frequency" id="update_frequency-help" />
+            {fieldErrors.update_frequency ? (
+              <FieldError id="update_frequency-error">
+                {fieldErrors.update_frequency}
+              </FieldError>
+            ) : null}
+          </div>
+          <DateField
+            label="Awal periode"
+            name="reference_period_start"
+            value={initial.reference_period_start || ""}
+            error={fieldErrors.reference_period_start}
+            clearError={() => {
+              clearFieldError("reference_period_start");
+              clearFieldError("reference_period_end");
+            }}
+          />
+          <DateField
+            label="Akhir periode"
+            name="reference_period_end"
+            value={initial.reference_period_end || ""}
+            error={fieldErrors.reference_period_end}
+            clearError={() => {
+              clearFieldError("reference_period_start");
+              clearFieldError("reference_period_end");
+            }}
+          />
+        </div>
+      </section>
+      <section
+        className="space-y-4 rounded-xl border border-[#e1e8ed] p-4 sm:p-5"
+        aria-labelledby="metadata-method-title"
+      >
+        <div>
+          <h2
+            id="metadata-method-title"
+            className="text-sm font-semibold text-ink"
+          >
+            3. Metode dan kepatuhan SDI
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Dokumentasikan metode jika sudah tersedia. Metadata standar lanjutan
+            tetap opsional sampai rujukan resmi ditemukan.
+          </p>
+        </div>
+        <div>
+          <label
+            htmlFor="methodology"
+            className="mb-2 block text-sm font-medium"
+          >
+            Metodologi
+          </label>
+          <textarea
+            className={cn(
+              "field min-h-24",
+              fieldErrors.methodology &&
+                "border-red-600 focus-visible:ring-red-600",
+            )}
+            id="methodology"
+            name="methodology"
+            maxLength={10000}
+            defaultValue={initial.methodology || ""}
+            {...fieldProps("methodology")}
+            onChange={() => clearFieldError("methodology")}
+          />
+          <FieldGuidance name="methodology" id="methodology-help" />
+          {fieldErrors.methodology ? (
+            <FieldError id="methodology-error">
+              {fieldErrors.methodology}
+            </FieldError>
+          ) : null}
+        </div>
+        <p className="text-xs leading-5 text-muted">
+          Perlu melihat bentuk pertukaran metadata?{" "}
+          <a
+            href="/templates/metadata-dataset.json"
+            download
+            className="font-semibold text-primary underline underline-offset-2"
+          >
+            Unduh contoh metadata JSON
+          </a>
+          . File ini adalah referensi metadata, bukan berkas sumber untuk
+          diunggah pada langkah sebelumnya.
+        </p>
+        <SdiMetadataFields
+          initial={initial.sdi_metadata || {}}
+          standards={standards}
+          referenceSystems={referenceSystems}
         />
-        <DateField
-          label="Akhir periode"
-          name="reference_period_end"
-          value={initial.reference_period_end || ""}
-          error={fieldErrors.reference_period_end}
-          clearError={() => {
-            clearFieldError("reference_period_start");
-            clearFieldError("reference_period_end");
-          }}
-        />
-      </div>
-      <div>
-        <label htmlFor="methodology" className="mb-2 block text-sm font-medium">
-          Metodologi
-        </label>
-        <textarea
-          className={cn(
-            "field min-h-24",
-            fieldErrors.methodology &&
-              "border-red-600 focus-visible:ring-red-600",
-          )}
-          id="methodology"
-          name="methodology"
-          maxLength={10000}
-          defaultValue={initial.methodology || ""}
-          {...fieldProps("methodology")}
-          onChange={() => clearFieldError("methodology")}
-        />
-        <FieldGuidance name="methodology" id="methodology-help" />
-        {fieldErrors.methodology ? (
-          <FieldError id="methodology-error">
-            {fieldErrors.methodology}
-          </FieldError>
-        ) : null}
-      </div>
-      <SdiMetadataFields
-        initial={initial.sdi_metadata || {}}
-        standards={standards}
-        referenceSystems={referenceSystems}
-      />
+      </section>
       <div className="flex flex-wrap items-center gap-3 border-t pt-5">
         <PendingActionButton
           type="submit"
@@ -471,11 +550,13 @@ export function DatasetMetadataForm({
         >
           <span className="inline-flex items-center gap-2">
             <Save size={16} aria-hidden="true" />
-            Simpan metadata
+            Simpan perubahan
           </span>
         </PendingActionButton>
         <p className="text-xs leading-5 text-muted">
-          Perubahan hanya dapat disimpan selama dataset masih berstatus draf.
+          {isReplacementVersion
+            ? "Perubahan disimpan pada draf versi baru. Versi publik saat ini tetap aktif sampai versi baru disetujui dan diterbitkan."
+            : "Perubahan disimpan sebagai draf. Kelengkapan metadata akan diperiksa saat Anda mengajukan dataset untuk pemeriksaan."}
         </p>
       </div>
     </form>

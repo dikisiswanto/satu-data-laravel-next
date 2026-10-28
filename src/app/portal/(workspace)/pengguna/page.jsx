@@ -5,10 +5,9 @@ import { getPortalShell, portalData } from "@/lib/backend/portal-api";
 import { PortalContextGuide } from "@/components/portal-context-guide";
 import { PortalPageHeading as PageHeading } from "@/components/portal-page-heading";
 import { Badge } from "@/components/ui/badge";
-import { InviteUserForm } from "@/components/admin/invite-user-form";
 import { MembershipStatusAction } from "@/components/admin/membership-status-action";
-import { MembershipForm } from "@/components/admin/membership-form";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
+import { UserAccessWorkspace } from "@/components/admin/user-access-workspace";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Pengguna dan akses",
@@ -78,19 +77,18 @@ export default async function UserAccessPage() {
         </div>
       ) : null}
       {!error ? (
-        <div id="portal-users-access" className="grid gap-5 xl:grid-cols-2">
+        <div id="portal-users-access" className="w-full">
           {superAdmin ? (
-            <InviteUserForm organizations={orgs || []} />
+            <UserAccessWorkspace organizations={orgs || []} />
           ) : (
             <section className="rounded-card border bg-white p-5">
-              <h2 className="font-semibold">Undang pengguna</h2>
+              <h2 className="font-semibold">Pengaturan akses terbatas</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Hanya administrator utama yang dapat mengundang pengguna dan
-                mengubah hak aksesnya.
+                Hanya super administrator yang dapat mengundang pengguna dan
+                menambah atau mengubah hak akses.
               </p>
             </section>
           )}
-          {superAdmin ? <MembershipForm organizations={orgs || []} /> : null}
         </div>
       ) : null}
       <section className="portal-workspace-panel mt-8">

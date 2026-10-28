@@ -237,12 +237,21 @@ test("form tambah organisasi menyimpan lewat API portal dan kembali ke daftar", 
     `API organisasi mengembalikan ${createResponse.status()}: ${JSON.stringify(createPayload)}`,
   ).toBe(201);
 
-  await expect(page).toHaveURL(/\/portal\/organisasi\?saved=1/);
+  await expect(page).toHaveURL(/\/portal\/organisasi$/);
+  const notificationRegion = page.getByLabel("Pemberitahuan portal");
   await expect(
-    page
+    notificationRegion
       .getByRole("status")
       .filter({ hasText: "Organisasi berhasil disimpan." }),
   ).toBeVisible();
+  await expect(
+    notificationRegion
+      .getByRole("status")
+      .filter({ hasText: "Organisasi berhasil disimpan." }),
+  ).toHaveCount(1);
+  await expect(
+    page.locator("#konten-utama").getByText("Organisasi berhasil disimpan."),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "Daftar organisasi" }),
   ).toBeVisible();

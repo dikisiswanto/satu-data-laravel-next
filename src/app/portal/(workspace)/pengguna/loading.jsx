@@ -14,23 +14,33 @@ export default function AdminUsersLoading() {
       description="Atur akses sesuai pekerjaan dan organisasi pengguna. Pilih akses yang paling terbatas tetapi tetap cukup untuk tugasnya."
       contextGuide
     >
-      <div className="grid gap-5 xl:grid-cols-2" aria-hidden="true">
-        <section className="rounded-card border bg-white p-5">
-          <h2 className="font-semibold">Undang pengguna</h2>
-          <LoadingBlock className="mt-4 h-4 w-full" />
-          <LoadingBlock className="mt-2 h-11 w-full rounded-control" />
-          <LoadingBlock className="mt-4 h-4 w-5/6" />
-          <LoadingBlock className="mt-2 h-11 w-full rounded-control" />
-          <LoadingBlock className="mt-4 h-11 w-36 rounded-control" />
+      <section
+        className="w-full rounded-card border bg-white p-4 sm:p-5"
+        aria-busy="true"
+      >
+        <h2 className="text-base font-semibold text-ink">
+          Tambahkan pengguna atau akses
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-muted">
+          Pilih berdasarkan kondisi akun. Pengguna baru cukup diundang sekali;
+          akun yang sudah ada dapat diberi akses tambahan.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-2" aria-hidden="true">
+          <div className="h-11 rounded-lg border border-[#cbdce7] bg-[#f6f9fb]" />
+          <div className="h-11 rounded-lg border border-line bg-white" />
+        </div>
+        <section
+          className="mt-4 space-y-4 rounded-card border border-line p-4"
+          aria-hidden="true"
+        >
+          <LoadingBlock className="h-4 w-2/3 max-w-full" />
+          <LoadingBlock className="h-4 w-full" />
+          <LoadingBlock className="h-11 w-full rounded-control" />
+          <LoadingBlock className="h-4 w-5/6" />
+          <LoadingBlock className="h-11 w-full rounded-control" />
+          <LoadingBlock className="h-11 w-36 rounded-control" />
         </section>
-        <section className="rounded-card border bg-white p-5">
-          <LoadingBlock className="h-5 w-2/3 max-w-full" />
-          <LoadingBlock className="mt-3 h-4 w-full" />
-          <LoadingBlock className="mt-2 h-4 w-5/6" />
-          <LoadingBlock className="mt-4 h-11 w-full rounded-control" />
-          <LoadingBlock className="mt-4 h-11 w-36 rounded-control" />
-        </section>
-      </div>
+      </section>
       <section className="portal-workspace-panel mt-8" aria-busy="true">
         <div className="portal-panel-heading">
           <div>

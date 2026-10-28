@@ -45,8 +45,9 @@ describe("admin form consistency and user-facing guidance", () => {
       "Temukan dataset dengan pencarian dan filter",
     );
     expect(editDataset).toContain(
-      "Di halaman ini, Anda dapat mengubah dataset yang masih berstatus Draf.",
+      "Simpan informasi sedikit demi sedikit selama dataset masih berstatus Draf.",
     );
+    expect(editDataset).toContain("wajib untuk pemeriksaan ditandai");
     expect(auditPage).toContain("Riwayat aktivitas");
     expect(editDataset).not.toContain('title="Edit dataset"');
   });

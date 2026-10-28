@@ -14,8 +14,7 @@ export const metadata = {
   title: "Indikator statistik",
   robots: { index: false, follow: false },
 };
-export default async function IndicatorsAdminPage({ searchParams }) {
-  const params = await searchParams;
+export default async function IndicatorsAdminPage() {
   const {
     data: { user },
   } = await getRequestVerifiedUser();
@@ -46,14 +45,6 @@ export default async function IndicatorsAdminPage({ searchParams }) {
         ) : null}
       </PageHeading>
       <PortalContextGuide />
-      {params?.saved ? (
-        <p
-          role="status"
-          className="mb-4 rounded-control border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
-        >
-          Indikator berhasil disimpan sebagai draf.
-        </p>
-      ) : null}
       <section className="portal-workspace-panel">
         <div className="portal-panel-heading">
           <div>

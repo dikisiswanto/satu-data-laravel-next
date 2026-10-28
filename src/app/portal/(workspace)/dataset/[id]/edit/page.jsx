@@ -51,7 +51,10 @@ export default async function EditDatasetPage({ params, searchParams }) {
       ["admin_opd", "editor"].includes(m.role),
   );
   if (!mayManageGlobally && !mayManageOrganization) notFound();
-  if (data.status !== "draft") redirect(`/portal/dataset/${id}`);
+  const isEditingReplacementVersion =
+    data.status === "published" && Boolean(data.draft_version);
+  if (data.status !== "draft" && !isEditingReplacementVersion)
+    redirect(`/portal/dataset/${id}`);
   const { standards, referenceSystems } = await getVerifiedSdiRegistryOptions();
   return (
     <>
@@ -65,13 +68,18 @@ export default async function EditDatasetPage({ params, searchParams }) {
       <PageHeading
         eyebrow="Informasi dataset"
         title="Ubah informasi dataset"
-        description="Di halaman ini, Anda dapat mengubah dataset yang masih berstatus Draf. Jika dataset sudah diajukan, buka halaman detail untuk melihat status pemeriksaan dan langkah selanjutnya."
+        description={
+          isEditingReplacementVersion
+            ? `Anda sedang mengubah metadata draf versi ${data.draft_version}. Versi publik ${data.current_version} tetap tidak berubah sampai versi baru lolos pemeriksaan dan diterbitkan.`
+            : "Simpan informasi sedikit demi sedikit selama dataset masih berstatus Draf. Informasi yang wajib untuk pemeriksaan ditandai; metadata SDI lanjutan dapat dilengkapi setelah rujukan resmi tersedia."
+        }
       />
       <PortalContextGuide />
 
       <DatasetMetadataForm
         id={data.id}
         initial={initial}
+        isReplacementVersion={isEditingReplacementVersion}
         standards={standards}
         referenceSystems={referenceSystems}
         initialError={

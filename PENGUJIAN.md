@@ -23,12 +23,20 @@ CI backend memakai MariaDB. Pertahankan engine yang sama untuk pengujian migrati
 
 ## Cakupan saat ini
 
-- **Vitest:** 25 berkas / 133 kasus terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, dan UI publik.
-- **Playwright:** 1 berkas / 9 skenario navigasi, pencarian, login portal, filter, statistik, pratinjau, dan viewport mobile.
-- **PHPUnit:** 8 berkas suite / 30 kasus untuk izin, katalog role, workflow indikator, draf progresif, API publik, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya (di luar kelas dasar `TestCase`).
+- **Vitest:** 32 berkas test terkait validasi, kontrak API, cache, form, dashboard, aksesibilitas, UI publik, alur dataset bertahap, upload sumber, dan panduan workflow admin. Perbarui angka jumlah kasus dengan output `vitest run` ketika runner tersedia.
+- **Playwright:** 1 berkas / 16 skenario navigasi, pencarian, login portal, filter, statistik, pratinjau, CRUD organisasi, dan viewport mobile. Satu skenario bisa ditandai skipped berdasarkan kondisi fixture.
+- **PHPUnit:** 11 berkas test backend mencakup izin, katalog role, workflow indikator, draf progresif, API publik, autentikasi cookie, batas kata sandi, anggaran pratinjau konversi, dan konfigurasi proxy tepercaya.
 - **Pemeriksaan statis:** kontrak Next.js/Laravel dan OpenAPI, import relatif/alias, namespace serta method rute PHP.
 
 Sebagian test frontend memeriksa struktur source untuk mencegah regresi tampilan. Test seperti ini berguna untuk aturan UI yang eksplisit, tetapi tidak membuktikan perilaku runtime. Aturan bisnis kritis harus diuji pada service/API atau melalui test integrasi; jangan hanya mengandalkan pola teks di source.
+
+## Regresi workflow admin terbaru
+
+- `dataset-workflow-ux.test.js`: memastikan alur lima langkah konsisten, metadata draf dapat disimpan bertahap, upload memvalidasi ekstensi/ukuran sebelum request, dan kontrak API tidak mewajibkan metadata kepatuhan saat setiap penyimpanan draf.
+- `admin-workflow-guidance.test.js`: memastikan form indikator dikelompokkan menurut identitas/definisi/nilai, identitas organisasi dibedakan dari kontak opsional, dan form pengguna hanya menampilkan satu alur (undang pengguna baru atau tambahkan akses untuk akun yang sudah ada).
+- `loading-static-shell-parity.test.js`: memastikan label dan contoh tetap sama antara loading shell dan halaman resolved agar transisi loading tidak menyesatkan.
+- `admin-form-consistency.test.js`: memeriksa pola visual kontrol/form.
+- `ProgressiveDatasetDraftTest.php`: mencakup penyimpanan metadata bertahap dan menolak pengajuan review sampai metadata penting lengkap.
 
 ## Perbaikan build Docker PHP
 
@@ -60,7 +68,9 @@ Build backend membutuhkan paket sistem `libxml2-dev` untuk menyediakan `libxml-2
 
 ## Status audit terakhir
 
-Di lingkungan audit, `npm run check`, `node --check` untuk skrip/test JS, `php -l` untuk seluruh file PHP, smoke test langsung service anggaran pratinjau, sinkronisasi `package.json`/lockfile, kesetaraan OpenAPI JSON/YAML, dan parsing YAML CI/Compose lulus. **Vitest, ESLint, dan build Next.js belum berjalan** karena executable `vitest`/`eslint`/`next` tidak tersedia; pemasangan dependensi `npm ci` mengalami timeout. Composer/vendor tidak tersedia, sehingga PHPUnit dan migration MariaDB belum dijalankan lokal; job `backend-tests` sekarang menjalankannya di CI dengan MariaDB 11.4. Perintah Playwright lokal memanggil CLI global yang tidak memiliki perintah `test`, sehingga tidak ada skenario E2E yang berjalan. Playwright lokal juga belum tersedia dari instalasi proyek; jalankan kembali setelah `npm ci` bersih atau melalui CI. Jangan menyebut rilis bebas bug sampai semua langkah tersebut lulus.
+Pada audit UX workflow admin terbaru, `npm run check`, pemeriksaan sintaks 86 berkas JavaScript/MJS/CJS yang dapat diparse langsung Node, `php -l` untuk 80 berkas PHP, kesetaraan OpenAPI YAML/JSON (68 path dan 261 referensi tanpa unresolved refs), dan pemeriksaan referensi lokal lulus. Empat kelompok assertion source-level yang dijalankan lewat harness lokal sederhana juga lulus (29 assertion), tetapi ini **bukan pengganti Vitest resmi**.
+
+`npm ci --ignore-scripts --no-audit --no-fund` mengalami timeout; `node_modules` hasil percobaan tidak lengkap dan tidak dibundel. Karena itu `npm run test`, ESLint, build Next.js, PHPUnit, migration runtime, dan Playwright E2E belum dijalankan ulang setelah perubahan UX ini. Jalankan seluruh perintah CI di atas dengan dependensi lengkap untuk verifikasi runtime. Jangan menyimpulkan rilis bebas regresi hanya dari pemeriksaan statis.
 
 ## CI GitHub Actions
 
