@@ -8,13 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IndicatorActions } from "@/components/admin/indicator-actions";
 import { PortalDataTable } from "@/components/admin/portal-data-table";
-import {
-  Plus,
-  ChartNoAxesCombined,
-  ClipboardCheck,
-  Database,
-  TrendingUp,
-} from "lucide-react";
+import { Plus, ClipboardCheck, Database, TrendingUp } from "lucide-react";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Indikator statistik",
@@ -26,8 +20,8 @@ export default async function IndicatorsAdminPage() {
   } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
   const { memberships = [] } = await getPortalShell();
-  const globalManager = (memberships || []).some((m) =>
-    ["super_admin", "data_admin"].includes(m.role),
+  const globalManager = (memberships || []).some(
+    (m) => !m.organization_id && ["super_admin", "data_admin"].includes(m.role),
   );
   const canCreate = (memberships || []).some((m) =>
     ["super_admin", "data_admin", "admin_opd", "editor"].includes(m.role),
@@ -68,7 +62,6 @@ export default async function IndicatorsAdminPage() {
         {canCreate ? (
           <Button href="/portal/statistik/baru">
             <Plus size={16} aria-hidden="true" />
-            <ChartNoAxesCombined size={16} aria-hidden="true" />
             Indikator baru
           </Button>
         ) : null}
@@ -273,7 +266,7 @@ export default async function IndicatorsAdminPage() {
                   <div className="flex flex-wrap gap-2">
                     <Link
                       href={`/portal/statistik/${item.id}/observasi`}
-                      className="inline-flex items-center rounded-lg border border-line px-3 py-2 text-xs font-semibold text-primary hover:bg-surface-secondary"
+                      className="inline-flex min-h-10 max-w-full items-center justify-center rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
                       prefetch={false}
                     >
                       {item.status === "published"
@@ -286,7 +279,7 @@ export default async function IndicatorsAdminPage() {
                         target="_blank"
                         rel="noreferrer"
                         prefetch={false}
-                        className="inline-flex items-center rounded-lg border border-line px-3 py-2 text-xs font-semibold text-ink hover:bg-surface-secondary"
+                        className="inline-flex min-h-10 max-w-full items-center justify-center rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
                       >
                         Lihat publik
                       </Link>
@@ -323,6 +316,14 @@ export default async function IndicatorsAdminPage() {
                         (m) =>
                           m.organization_id === item.organization_id &&
                           ["admin_opd", "reviewer"].includes(m.role),
+                      )
+                    }
+                    canPublish={
+                      globalManager ||
+                      (memberships || []).some(
+                        (m) =>
+                          m.organization_id === item.organization_id &&
+                          m.role === "admin_opd",
                       )
                     }
                     canArchive={

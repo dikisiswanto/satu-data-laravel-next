@@ -179,12 +179,12 @@ export default async function DatasetCatalogPage({ searchParams }) {
                     name="q"
                     type="search"
                     defaultValue={query}
-                    placeholder="Misalnya: sekolah, pendidikan, jumlah penduduk…"
+                    placeholder="Misalnya: puskesmas, anggaran, jalan, jumlah penduduk…"
                     className="h-12 pl-10"
                   />
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted">
-                  Contoh: “pendidikan dan sekolah” atau “jumlah sekolah menurut
+                  Contoh: “sekolah atau puskesmas” atau “realisasi anggaran
                   kecamatan”. Hasil juga dicocokkan dengan kata kunci,
                   deskripsi, sumber, metadata, dan organisasi.
                 </p>

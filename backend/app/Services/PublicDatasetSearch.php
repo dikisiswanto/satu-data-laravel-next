@@ -38,6 +38,18 @@ class PublicDatasetSearch
         'pariwisata' => ['wisata', 'destinasi', 'pengunjung', 'objek wisata', 'akomodasi'],
         'ketenagakerjaan' => ['tenaga kerja', 'pekerja', 'pengangguran', 'lapangan kerja', 'lowongan'],
         'bencana' => ['banjir', 'longsor', 'kebakaran', 'risiko bencana', 'kebencanaan'],
+        'pemerintahan' => ['opd', 'dinas', 'instansi', 'perangkat daerah', 'administrasi pemerintahan', 'pelayanan publik', 'desa', 'kelurahan', 'kecamatan'],
+        'keuangan' => ['anggaran', 'apbd', 'realisasi anggaran', 'belanja daerah', 'pendapatan daerah', 'pajak', 'retribusi', 'aset daerah', 'keuangan daerah'],
+        'anggaran' => ['keuangan', 'apbd', 'realisasi anggaran', 'belanja daerah', 'pendapatan daerah', 'pajak', 'retribusi'],
+        'sosial' => ['bansos', 'penyandang disabilitas', 'panti sosial', 'kemiskinan', 'perlindungan sosial', 'anak terlantar'],
+        'perumahan' => ['permukiman', 'rumah layak huni', 'perumahan rakyat', 'sanitasi', 'air minum'],
+        'kebudayaan' => ['budaya', 'cagar budaya', 'kesenian', 'adat', 'warisan budaya'],
+        'olahraga' => ['atlet', 'sarana olahraga', 'prestasi olahraga', 'klub olahraga'],
+        'perdagangan' => ['pasar', 'pedagang', 'harga pangan', 'distribusi barang', 'ekspor', 'impor'],
+        'perikanan' => ['nelayan', 'ikan', 'budidaya ikan', 'hasil tangkapan', 'kelautan'],
+        'pertanahan' => ['lahan', 'sertifikat tanah', 'agraria', 'tata ruang', 'penggunaan lahan'],
+        'energi' => ['listrik', 'energi terbarukan', 'bahan bakar', 'penerangan jalan'],
+        'teknologi' => ['informatika', 'internet', 'telekomunikasi', 'digitalisasi', 'sistem informasi'],
         'jumlah' => ['total', 'banyak', 'rekapitulasi', 'jumlah keseluruhan', 'statistik'],
         'statistik' => ['jumlah', 'total', 'indikator', 'rekapitulasi', 'data kuantitatif'],
     ];
@@ -45,44 +57,127 @@ class PublicDatasetSearch
     /** @return list<string> */
     public function terms(string $query): array
     {
-        $normalized = Str::lower(Str::ascii($query));
-        preg_match_all('/[a-z0-9]+/u', $normalized, $matches);
-        $tokens = array_values(array_unique(array_filter(
-            $matches[0] ?? [],
-            fn (string $token): bool => mb_strlen($token) > 1 && ! in_array($token, self::STOP_WORDS, true)
-        )));
-
+        $tokens = $this->tokenize($query);
+        // Keep every original word first. Synonyms must not crowd out a later
+        // subject or place term in queries such as "jumlah sekolah Wajo".
         $terms = $tokens;
+        $expansionGroups = [];
+
         foreach ($tokens as $token) {
-            // Prefer a direct intent group when the query already names one.
-            // Otherwise map aliases like "siswa", "puskesmas", and "populasi"
-            // back to their parent topic. This prevents broad terms like
-            // "jumlah" from consuming the budget before the subject synonyms.
             if (isset(self::INTENT_GROUPS[$token])) {
-                $terms[] = $token;
-                array_push($terms, ...array_map(
-                    fn (string $related): string => Str::lower(Str::ascii($related)),
-                    self::INTENT_GROUPS[$token]
-                ));
+                $expansionGroups[] = $this->normalizeTerms(self::INTENT_GROUPS[$token]);
 
                 continue;
             }
 
             foreach (self::INTENT_GROUPS as $intent => $relatedTerms) {
-                $normalizedRelatedTerms = array_map(
-                    fn (string $related): string => Str::lower(Str::ascii($related)),
-                    $relatedTerms
-                );
+                $normalizedRelatedTerms = $this->normalizeTerms($relatedTerms);
                 if (in_array($token, $normalizedRelatedTerms, true)) {
-                    $terms[] = $intent;
-                    array_push($terms, ...$normalizedRelatedTerms);
+                    $expansionGroups[] = array_values(array_unique(array_merge([$intent], $normalizedRelatedTerms)));
                     break;
                 }
             }
         }
 
-        // Keep query work bounded if a user submits a long, multi-clause phrase.
-        return array_slice(array_values(array_unique(array_filter($terms))), 0, 12);
+        // Round-robin expansion lets multiple topics contribute aliases instead
+        // of allowing the first topic to consume the whole query budget. Track
+        // seen terms while adding so duplicate aliases do not waste that budget.
+        $termBudget = max(24, count($tokens));
+        $seen = array_fill_keys($terms, true);
+        for ($position = 0; count($terms) < $termBudget; $position++) {
+            $addedAtPosition = false;
+            foreach ($expansionGroups as $group) {
+                if (isset($group[$position]) && ! isset($seen[$group[$position]])) {
+                    $term = $group[$position];
+                    $terms[] = $term;
+                    $seen[$term] = true;
+                    $addedAtPosition = true;
+                    if (count($terms) >= $termBudget) {
+                        break;
+                    }
+                }
+            }
+            if (! $addedAtPosition) {
+                break;
+            }
+        }
+
+        return array_slice($terms, 0, $termBudget);
+    }
+
+    /** @return list<string> */
+    private function tokenize(string $query): array
+    {
+        $normalized = Str::lower(Str::ascii($query));
+        preg_match_all('/[a-z0-9]+/u', $normalized, $matches);
+
+        return array_values(array_unique(array_filter(
+            $matches[0] ?? [],
+            fn (string $token): bool => mb_strlen($token) > 1 && ! in_array($token, self::STOP_WORDS, true)
+        )));
+    }
+
+    /** @param list<string> $terms
+     * @return list<string>
+     */
+    private function normalizeTerms(array $terms): array
+    {
+        return array_values(array_unique(array_filter(array_map(
+            fn (string $term): string => Str::lower(Str::ascii(trim($term))),
+            $terms
+        ))));
+    }
+
+    /**
+     * Produce a small, bounded set of one-edit SQL LIKE patterns. This is a
+     * conservative fallback for common typos; short terms/numbers are excluded
+     * to avoid excessive false positives. It is not a replacement for a search
+     * engine with a real edit-distance ranking pipeline.
+     *
+     * @return list<string>
+     */
+    private function typoPatterns(string $token): array
+    {
+        $length = mb_strlen($token);
+        if ($length < 5 || preg_match('/\d/', $token)) {
+            return [];
+        }
+
+        $patterns = [];
+        // Substitution: one unknown character at an interior position.
+        $substitutionPositions = array_values(array_unique([
+            1,
+            (int) floor(($length - 1) / 2),
+            $length - 2,
+        ]));
+        foreach ($substitutionPositions as $i) {
+            if ($i > 0 && $i < $length - 1) {
+                $patterns[] = substr($token, 0, $i).'_'.substr($token, $i + 1);
+            }
+        }
+
+        // Missing character in the user's query: allow exactly one character
+        // between adjacent query characters. Include the last boundary too.
+        $insertionPositions = array_values(array_unique([
+            1,
+            (int) floor($length / 3),
+            (int) floor((2 * $length) / 3),
+            $length - 1,
+        ]));
+        foreach ($insertionPositions as $i) {
+            if ($i > 0 && $i < $length) {
+                $patterns[] = substr($token, 0, $i).'_'.substr($token, $i);
+            }
+        }
+
+        // One extra character typed by the user.
+        foreach ([1, (int) floor($length / 2), $length - 2] as $i) {
+            if ($i > 0 && $i < $length - 1) {
+                $patterns[] = substr($token, 0, $i).substr($token, $i + 1);
+            }
+        }
+
+        return array_slice(array_values(array_unique($patterns)), 0, 10);
     }
 
     public function apply(Builder $builder, string $query, bool $rank = true): Builder
@@ -155,6 +250,25 @@ class PublicDatasetSearch
                 }
             }
 
+            // Conservative one-typo fallback for longer query words. Restrict it
+            // to high-signal fields so a typo does not turn into a catalogue-wide hit.
+            foreach (array_slice($this->tokenize($query), 0, 3) as $token) {
+                foreach ($this->typoPatterns($token) as $fuzzyToken) {
+                    $pattern = '%'.$fuzzyToken.'%';
+                    $outer->orWhere(function (Builder $fuzzy) use ($pattern): void {
+                        foreach (['datasets.title', 'datasets.category', 'datasets.description'] as $field) {
+                            $fuzzy->orWhereRaw("LOWER({$field}) LIKE LOWER(?)", [$pattern]);
+                        }
+                        $fuzzy->orWhereRaw('LOWER('.$this->castText('datasets.keywords').') LIKE LOWER(?)', [$pattern]);
+                        $fuzzy->orWhereExists(function ($organization) use ($pattern): void {
+                            $organization->selectRaw('1')->from('organizations as fuzzy_org')
+                                ->whereColumn('fuzzy_org.id', 'datasets.organization_id')
+                                ->whereRaw('LOWER(fuzzy_org.name) LIKE LOWER(?)', [$pattern]);
+                        });
+                    });
+                }
+            }
+
             // Preserve phrase matching (especially titles) even when tokenization
             // removes connecting words from a natural-language question.
             $phrase = $this->likePattern(Str::lower(Str::ascii($query)));
@@ -193,8 +307,10 @@ class PublicDatasetSearch
         // avoid multiplying dataset rows through joins and preserve pagination.
         $scoreSql = [];
         $bindings = [];
-        foreach ($terms as $term) {
+        $originalTerms = $this->tokenize($query);
+        foreach (array_slice($terms, 0, 20) as $term) {
             $pattern = $this->likePattern($term);
+            $multiplier = in_array($term, $originalTerms, true) ? 3 : 1;
             foreach ([
                 ['datasets.title', 12],
                 ['datasets.category', 9],
@@ -210,16 +326,28 @@ class PublicDatasetSearch
                 ['datasets.description', 4],
             ] as [$field, $weight]) {
                 $expression = $field === 'datasets.keywords' ? $this->castText($field) : $field;
-                $scoreSql[] = "CASE WHEN LOWER({$expression}) LIKE LOWER(?) THEN {$weight} ELSE 0 END";
+                $scoreSql[] = "CASE WHEN LOWER({$expression}) LIKE LOWER(?) THEN ".($weight * $multiplier).' ELSE 0 END';
                 $bindings[] = $pattern;
             }
-            $scoreSql[] = 'CASE WHEN EXISTS (SELECT 1 FROM organizations search_org WHERE search_org.id = datasets.organization_id AND (LOWER(search_org.name) LIKE LOWER(?) OR LOWER(search_org.short_name) LIKE LOWER(?) OR LOWER(search_org.description) LIKE LOWER(?))) THEN 8 ELSE 0 END';
+            $scoreSql[] = 'CASE WHEN EXISTS (SELECT 1 FROM organizations search_org WHERE search_org.id = datasets.organization_id AND (LOWER(search_org.name) LIKE LOWER(?) OR LOWER(search_org.short_name) LIKE LOWER(?) OR LOWER(search_org.description) LIKE LOWER(?))) THEN '.(8 * $multiplier).' ELSE 0 END';
             array_push($bindings, $pattern, $pattern, $pattern);
-            $scoreSql[] = 'CASE WHEN EXISTS (SELECT 1 FROM dataset_sdi_metadata search_meta WHERE search_meta.dataset_id = datasets.id AND search_meta.dataset_version = datasets.current_version AND (LOWER(search_meta.ddp_name) LIKE LOWER(?) OR LOWER(search_meta.source_reference) LIKE LOWER(?) OR LOWER(search_meta.standard_concept) LIKE LOWER(?) OR LOWER(search_meta.standard_definition) LIKE LOWER(?) OR LOWER(search_meta.measurement) LIKE LOWER(?) OR LOWER(search_meta.method_description) LIKE LOWER(?) OR EXISTS (SELECT 1 FROM sdi_standard_registry search_registry WHERE search_registry.id = search_meta.sds_registry_id AND (LOWER(search_registry.standard_code) LIKE LOWER(?) OR LOWER(search_registry.title) LIKE LOWER(?) OR LOWER(search_registry.definition) LIKE LOWER(?) OR LOWER(search_registry.authority_name) LIKE LOWER(?))) OR EXISTS (SELECT 1 FROM reference_code_systems search_reference WHERE search_reference.id = search_meta.reference_system_id AND (LOWER(search_reference.system_code) LIKE LOWER(?) OR LOWER(search_reference.title) LIKE LOWER(?) OR LOWER(search_reference.description) LIKE LOWER(?) OR LOWER(search_reference.authority_name) LIKE LOWER(?)))) THEN 7 ELSE 0 END';
+            $scoreSql[] = 'CASE WHEN EXISTS (SELECT 1 FROM dataset_sdi_metadata search_meta WHERE search_meta.dataset_id = datasets.id AND search_meta.dataset_version = datasets.current_version AND (LOWER(search_meta.ddp_name) LIKE LOWER(?) OR LOWER(search_meta.source_reference) LIKE LOWER(?) OR LOWER(search_meta.standard_concept) LIKE LOWER(?) OR LOWER(search_meta.standard_definition) LIKE LOWER(?) OR LOWER(search_meta.measurement) LIKE LOWER(?) OR LOWER(search_meta.method_description) LIKE LOWER(?) OR EXISTS (SELECT 1 FROM sdi_standard_registry search_registry WHERE search_registry.id = search_meta.sds_registry_id AND (LOWER(search_registry.standard_code) LIKE LOWER(?) OR LOWER(search_registry.title) LIKE LOWER(?) OR LOWER(search_registry.definition) LIKE LOWER(?) OR LOWER(search_registry.authority_name) LIKE LOWER(?))) OR EXISTS (SELECT 1 FROM reference_code_systems search_reference WHERE search_reference.id = search_meta.reference_system_id AND (LOWER(search_reference.system_code) LIKE LOWER(?) OR LOWER(search_reference.title) LIKE LOWER(?) OR LOWER(search_reference.description) LIKE LOWER(?) OR LOWER(search_reference.authority_name) LIKE LOWER(?)))) THEN '.(7 * $multiplier).' ELSE 0 END';
             array_push($bindings, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern);
         }
         if ($scoreSql !== []) {
             $builder->orderByRaw('('.implode(' + ', $scoreSql).') DESC', $bindings);
+        }
+        $fuzzyScore = [];
+        $fuzzyBindings = [];
+        foreach (array_slice($originalTerms, 0, 3) as $token) {
+            foreach ($this->typoPatterns($token) as $fuzzyToken) {
+                $pattern = '%'.$fuzzyToken.'%';
+                $fuzzyScore[] = 'CASE WHEN LOWER(datasets.title) LIKE LOWER(?) OR LOWER(datasets.category) LIKE LOWER(?) OR LOWER('.$this->castText('datasets.keywords').') LIKE LOWER(?) THEN 2 ELSE 0 END';
+                array_push($fuzzyBindings, $pattern, $pattern, $pattern);
+            }
+        }
+        if ($fuzzyScore !== []) {
+            $builder->orderByRaw('('.implode(' + ', $fuzzyScore).') DESC', $fuzzyBindings);
         }
         $builder->orderByDesc('datasets.published_at')->orderBy('datasets.title');
     }

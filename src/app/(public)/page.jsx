@@ -213,7 +213,7 @@ function HomeHeroContent({
             daerah, menyusun perencanaan, dan mendukung keputusan berbasis data.
           </p>
           <div className="home-hero-search">
-            <SearchForm placeholder="Cari topik, mis. pendidikan atau sekolah…" />
+            <SearchForm placeholder="Cari topik, mis. sekolah, kesehatan, anggaran…" />
           </div>
           <nav
             className="home-search-suggestions"

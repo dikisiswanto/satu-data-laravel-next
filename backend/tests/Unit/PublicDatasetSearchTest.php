@@ -7,35 +7,34 @@ use PHPUnit\Framework\TestCase;
 
 class PublicDatasetSearchTest extends TestCase
 {
-    public function test_education_queries_expand_into_related_dataset_topics(): void
+    public function test_original_terms_and_location_are_preserved_before_synonyms(): void
     {
-        $terms = (new PublicDatasetSearch)->terms('pendidikan dan sekolah');
+        $terms = (new PublicDatasetSearch)->terms('jumlah sekolah di Kabupaten Wajo');
 
+        $this->assertSame(['jumlah', 'sekolah', 'wajo'], array_slice($terms, 0, 3));
         $this->assertContains('pendidikan', $terms);
-        $this->assertContains('sekolah', $terms);
         $this->assertContains('siswa', $terms);
-        $this->assertContains('guru', $terms);
-        $this->assertContains('madrasah', $terms);
-        $this->assertNotContains('dan', $terms);
+        $this->assertContains('total', $terms);
+        $this->assertLessThanOrEqual(24, count($terms));
     }
 
-    public function test_natural_language_questions_keep_the_subject_and_location_terms(): void
+    public function test_typo_fallback_generates_a_bounded_pattern_for_a_missing_letter(): void
     {
-        $terms = (new PublicDatasetSearch)->terms('jumlah sekolah yang ada di Kabupaten Wajo');
+        $search = new PublicDatasetSearch;
+        $method = new \ReflectionMethod($search, 'typoPatterns');
+        $patterns = $method->invoke($search, 'sekolh');
 
-        $this->assertContains('jumlah', $terms);
+        $this->assertContains('sekol_h', $patterns);
+        $this->assertLessThanOrEqual(10, count($patterns));
+    }
+
+    public function test_independent_topics_expand_without_requiring_all_query_words(): void
+    {
+        $terms = (new PublicDatasetSearch)->terms('pendidikan dan kesehatan');
+
+        $this->assertSame(['pendidikan', 'kesehatan'], array_slice($terms, 0, 2));
         $this->assertContains('sekolah', $terms);
-        $this->assertContains('wajo', $terms);
-        $this->assertNotContains('yang', $terms);
-        $this->assertLessThanOrEqual(12, count($terms));
-    }
-
-    public function test_search_expansion_supports_other_public_service_topics(): void
-    {
-        $service = new PublicDatasetSearch;
-
-        $this->assertContains('puskesmas', $service->terms('kesehatan'));
-        $this->assertContains('populasi', $service->terms('penduduk'));
-        $this->assertContains('umkm', $service->terms('ekonomi'));
+        $this->assertContains('puskesmas', $terms);
+        $this->assertContains('rumah sakit', $terms);
     }
 }

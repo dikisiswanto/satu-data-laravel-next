@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Portal Satu Data API
+  title: Portal Satu Data Kabupaten Wajo API
   version: 1.2.0
   description:
     REST API untuk katalog data publik, indikator, interoperabilitas Satu

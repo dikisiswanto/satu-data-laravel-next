@@ -11,7 +11,7 @@ class PublicApiContractTest extends TestCase
         $this->getJson('/api/openapi')
             ->assertOk()
             ->assertJsonPath('openapi', '3.1.0')
-            ->assertJsonPath('info.title', 'Portal Satu Data API')
+            ->assertJsonPath('info.title', 'Portal Satu Data Kabupaten Wajo API')
             ->assertJsonStructure(['paths' => [
                 '/api/v1/datasets',
                 '/api/v1/datasets/{slug}',

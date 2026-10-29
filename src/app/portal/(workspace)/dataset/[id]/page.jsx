@@ -438,7 +438,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 <Link
                   href={`/portal/dataset/${data.id}/edit`}
                   prefetch={false}
-                  className="inline-flex min-h-10 items-center rounded-control border border-line px-3 py-2 text-sm font-semibold hover:bg-surface-secondary"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
                 >
                   Ubah metadata
                 </Link>
@@ -961,7 +961,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 placeholder="Contoh: Perjelas sumber data dan sesuaikan periode dengan publikasi resmi."
               />
               <FormSubmitButton
-                className="mt-3 w-full rounded-control border px-4 py-3 text-sm font-semibold hover:bg-slate-50"
+                className="mt-3 w-full rounded-control border border-line bg-white px-4 py-3 text-sm font-semibold text-ink hover:bg-surface-secondary"
                 pendingText="Mengembalikan untuk perbaikan…"
               >
                 Kembalikan untuk perbaikan
@@ -999,7 +999,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                 sampai versi baru disetujui dan diterbitkan.
               </p>
               <FormSubmitButton
-                className="mt-3 w-full rounded-control bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
+                className="mt-3 w-full rounded-control border border-transparent bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
                 pendingText="Membuat versi…"
               >
                 Buat versi baru
@@ -1016,7 +1016,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
                     ? "Lengkapi metadata wajib, pastikan sumber selesai diproses, dan validasi otomatis lulus terlebih dahulu."
                     : undefined
                 }
-                className="w-full rounded-control border px-4 py-3 text-sm font-semibold hover:bg-slate-50"
+                className={`w-full rounded-control border px-4 py-3 text-sm font-semibold transition-colors ${maySubmitForReview ? "border-transparent bg-primary text-white hover:bg-primary/90" : "border-line bg-surface-secondary text-ink"}`}
                 pendingText="Mengirim untuk pemeriksaan…"
               >
                 {isNewVersionInProgress
@@ -1036,7 +1036,7 @@ export default async function DatasetAdminDetailPage({ params, searchParams }) {
             <form action={publishAfterValidationAction} className="mt-3">
               <input type="hidden" name="dataset_id" value={data.id} />
               <FormSubmitButton
-                className="w-full rounded-control bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
+                className="w-full rounded-control border border-transparent bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
                 pendingText="Memublikasikan…"
               >
                 {isNewVersionInProgress
