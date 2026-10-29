@@ -126,7 +126,7 @@ Jalankan `npm run test`, `npm run test:e2e`, dan `cd backend && php artisan test
 
 - `tests/unit/public-dataset-intent-search.test.js`: kontrak pencarian public catalog, cakupan metadata, ranking, dan contoh intent yang terlihat pada UI.
 - `backend/tests/Unit/PublicDatasetSearchTest.php`: ekspansi sinonim topik (pendidikan, kesehatan, penduduk, ekonomi), pembuangan kata hubung, dan batas jumlah istilah untuk query bahasa alami.
-- Query tetap melewati `publishedDatasetQuery()` sehingga pencarian tidak memperlihatkan draf, organisasi nonaktif, resource nonpublik, konversi gagal, atau versi lama. Runner Vitest dan PHPUnit perlu dijalankan pada lingkungan yang sudah memasang dependency proyek; tidak ada hasil runtime test yang boleh disimpulkan hanya dari lint/static checks.
+- Query tetap melewati `publishedDatasetQuery()` sehingga pencarian tidak memperlihatkan draf, organisasi nonaktif, resource nonpublik, konversi gagal, atau versi lama. Kasus penting: `jumlah sekolah di Kabupaten Wajo` harus mempertahankan kata `jumlah`, `sekolah`, dan `wajo` sebagai istilah asli sebelum ekspansi; `pendidikan kesehatan` harus menyertakan alias dari kedua topik; typo seperti `sekolh` harus membentuk pola terbatas yang bisa mencocokkan `sekolah`. Runner Vitest dan PHPUnit perlu dijalankan pada lingkungan yang sudah memasang dependency proyek; tidak ada hasil runtime test yang boleh disimpulkan hanya dari lint/static checks.
 
 ## Regresi UX statistik dan tindakan dataset — 28 Oktober 2026
 
@@ -147,3 +147,21 @@ Hasil validasi yang benar-benar dijalankan setelah perubahan ini:
 - 11 pemeriksaan manual source-level atas prasyarat tombol, status indikator, dan guard backend — lulus; ini bukan pengganti test runner resmi.
 
 Batasan penting: `npm run test -- --run` belum dapat dijalankan karena executable `vitest` tidak terpasang (`vitest: not found`). `php artisan test` belum dapat dijalankan karena `backend/vendor/autoload.php` tidak tersedia. Percobaan `npm ci --ignore-scripts --prefer-offline --no-audit --no-fund` timeout dan tidak menghasilkan instalasi dependency yang dapat dipakai. Karena itu, hasil di atas adalah validasi statis/sintaks, **bukan** klaim bahwa suite Vitest, PHPUnit, Next build, atau Playwright lulus. Jalankan suite penuh pada lingkungan dengan dependency lengkap sebelum deploy.
+
+### Audit kontrak kelola observasi dan konsistensi visual aksi — 28 Oktober 2026
+
+- `tests/unit/indicator-observation-api-contract.test.js`: memeriksa impor tenant config yang digunakan form observasi; path halaman dan rute GET/POST/PATCH; envelope respons; pemisahan izin `indicators.review` dan `indicators.publish`; serta ukuran/focus/wrapping tombol aksi.
+- `tests/unit/dataset-management-architecture.test.js`: ekspektasi teks deskripsi state review diselaraskan dengan copy UI terbaru (“Definisi sedang diperiksa. Anda dapat menyiapkan nilai sebagai draf”). Ini memperbaiki ekspektasi regresi lama, bukan mengubah aturan workflow.
+- Validasi saat ini: `npm run check` lulus (236 modul JS/JSX dan 69 namespace/reference PHP); parser TypeScript memeriksa 231 file JS/JSX/MJS/CJS tanpa syntax diagnostics; `php -l` lulus untuk 60 file; harness assertion source-level menjalankan 16 kasus regresi terkait dataset/statistik/kontrak dan semuanya lulus.
+- Batasan runtime tetap berlaku: `npm run test` berhenti karena `vitest: not found`; `cd backend && php artisan test` berhenti karena `backend/vendor/autoload.php` tidak ada. Hasil harness source-level bukan pengganti Vitest/PHPUnit, dan build Next.js/Playwright belum dijalankan di lingkungan ini.
+
+## Pencarian dataset publik
+
+Pencarian publik menggunakan OR matching atas token query bermakna, ekspansi sinonim/topik Bahasa Indonesia, dan pemeringkatan berbobot yang mengutamakan istilah asli pengguna serta judul/kategori/kata kunci dibanding metadata penjelas. Kata yang salah ketik dapat memperoleh fallback satu-edit terbatas pada maksimal tiga token panjang dan field dengan sinyal tinggi. Ini adalah fallback SQL, bukan jaminan fuzzy matching penuh seperti mesin pencari khusus. Uji query multi-topik, lokasi Wajo, kata umum, prefiks, typo, dan hasil kosong sebelum rilis.
+
+## Regresi laman observasi indikator (2026-10-29)
+
+- Halaman memuat definisi indikator terlebih dahulu dan daftar observasi secara terpisah. Kegagalan endpoint observasi tidak lagi menjatuhkan seluruh halaman melalui `Promise.all`.
+- Kegagalan pemuatan daftar observasi menampilkan status HTTP, kode error aman, dan request ID jika tersedia; form simpan/publikasi dinonaktifkan sementara agar tidak mendorong pembuatan nilai ganda ketika riwayat belum bisa dibaca.
+- Ditambahkan test kontrak frontend untuk keadaan pemuatan gagal dan test fitur Laravel agar anggota organisasi yang berwenang bisa membaca daftar observasi dalam envelope `data`, serta anggota organisasi lain ditolak.
+- Validasi sintaks/kontrak source lulus. Vitest/PHPUnit masih harus dijalankan di lingkungan dependency lengkap; executable `vitest` dan `backend/vendor/autoload.php` tidak tersedia pada lingkungan pembuatan paket.

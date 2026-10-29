@@ -62,6 +62,15 @@ describe("indicator observation page and API contracts", () => {
     expect(observationManager).toContain(
       "/api/v1/portal/indicators/${encodeURIComponent(indicator.id)}/observations/${encodeURIComponent(id)}",
     );
+    expect(observationPage).toContain(
+      "portal_indicator_observations_load_failed",
+    );
+    expect(observationPage).toContain("loadError={observationLoadError}");
+    expect(observationPage).not.toContain("Promise.all([");
+    expect(observationManager).toContain("Daftar observasi gagal dimuat");
+    expect(observationManager).toContain(
+      "Ini bukan berarti indikator belum memiliki observasi.",
+    );
   });
 
   it("keeps reviewer access separate from publication access", () => {

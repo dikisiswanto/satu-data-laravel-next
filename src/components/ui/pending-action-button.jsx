@@ -24,10 +24,10 @@ export function PendingActionButton({
         data-pending={pending ? "true" : "false"}
         className={cn(
           className,
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "inline-flex min-h-11 max-w-full items-center justify-center gap-2 text-center leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         )}
       >
-        <span className="button-state-stack grid min-w-0 grid-cols-[max-content] [&>*]:col-start-1 [&>*]:row-start-1">
+        <span className="button-state-stack grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)] [&>*]:col-start-1 [&>*]:row-start-1">
           <span
             className={
               pending
@@ -51,7 +51,7 @@ export function PendingActionButton({
               aria-hidden="true"
               className="shrink-0 motion-safe:animate-spin motion-reduce:animate-none"
             />
-            <span>{pendingText}</span>
+            <span className="min-w-0">{pendingText}</span>
           </span>
         </span>
       </button>

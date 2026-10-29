@@ -1,6 +1,7 @@
-const rawRegionName = (process.env.NEXT_PUBLIC_REGION_NAME || "").trim();
-const hasConfiguredRegion = rawRegionName.length > 0;
-const configuredRegionName = rawRegionName || "Instansi";
+const configuredRegionName =
+  (process.env.NEXT_PUBLIC_REGION_NAME || "Kabupaten Wajo").trim() ||
+  "Kabupaten Wajo";
+const hasConfiguredRegion = configuredRegionName.length > 0;
 const configuredRegionShortName = (
   process.env.NEXT_PUBLIC_REGION_SHORT_NAME ||
   (hasConfiguredRegion
@@ -35,7 +36,8 @@ const configuredDescription = (
     : "Katalog data resmi untuk menemukan, memahami, dan menggunakan data publik dari instansi pengampu.")
 ).trim();
 const configuredBrandProfile = (
-  process.env.NEXT_PUBLIC_BRAND_PROFILE || "generic"
+  process.env.NEXT_PUBLIC_BRAND_PROFILE ||
+  (/^kabupaten wajo$/i.test(configuredRegionName) ? "wajo" : "generic")
 )
   .trim()
   .toLowerCase();
@@ -64,7 +66,7 @@ const configuredPpidUrl = (
 export const siteConfig = Object.freeze({
   name: configuredAppName,
   title: configuredAppName,
-  brandProfile: configuredBrandProfile,
+  brandProfile: isWajoBrandProfile ? "wajo" : "generic",
   description: configuredDescription,
   shortName: configuredShortName,
   regionName: configuredRegionName,

@@ -36,9 +36,9 @@ describe("multi-agency site branding", () => {
     expect(siteConfig.ppidEmail).toBe("");
   });
 
-  it("uses neutral product branding when no region is configured", async () => {
+  it("defaults to the Wajo brand and assets when no tenant is configured", async () => {
     vi.stubEnv("NEXT_PUBLIC_REGION_NAME", "");
-    vi.stubEnv("NEXT_PUBLIC_BRAND_PROFILE", "generic");
+    vi.stubEnv("NEXT_PUBLIC_BRAND_PROFILE", "");
     vi.stubEnv("NEXT_PUBLIC_REGION_SHORT_NAME", "");
     vi.stubEnv("NEXT_PUBLIC_APP_NAME", "");
     vi.stubEnv("NEXT_PUBLIC_SHORT_NAME", "");
@@ -57,14 +57,33 @@ describe("multi-agency site branding", () => {
     vi.resetModules();
     const { siteConfig } = await import("../../src/lib/site-config.js");
 
-    expect(siteConfig.name).toBe("Portal Satu Data");
-    expect(siteConfig.shortName).toBe("Portal Satu Data");
-    expect(siteConfig.regionName).toBe("Instansi");
-    expect(siteConfig.organizationName).toBe("Instansi pengampu");
+    expect(siteConfig.name).toBe("Portal Satu Data Kabupaten Wajo");
+    expect(siteConfig.shortName).toBe("Satu Data Wajo");
+    expect(siteConfig.regionName).toBe("Kabupaten Wajo");
+    expect(siteConfig.organizationName).toBe("Pemerintah Kabupaten Wajo");
+    expect(siteConfig.brandProfile).toBe("wajo");
+    expect(siteConfig.logoPath).toBe("/logo-kabupaten-wajo.webp");
+    expect(siteConfig.heroImage).toBe("/wajo-hero-panorama.webp");
+    expect(siteConfig.iconPath).toBe("/icons/icon.svg");
+    expect(siteConfig.pwaIcon192).toBe("/icons/icon-192.png");
+    expect(siteConfig.pwaIcon512).toBe("/icons/icon-512.png");
+    expect(siteConfig.ppidUrl).toBe("https://e-ppid-utama.wajokab.go.id/");
+  });
+
+  it("falls back to the generic asset profile when a custom region has a stale Wajo profile", async () => {
+    vi.stubEnv("NEXT_PUBLIC_REGION_NAME", "Kabupaten Luwu");
+    vi.stubEnv("NEXT_PUBLIC_BRAND_PROFILE", "wajo");
+    vi.stubEnv("NEXT_PUBLIC_LOGO_PATH", "");
+    vi.stubEnv("NEXT_PUBLIC_HERO_IMAGE", "");
+    vi.stubEnv("NEXT_PUBLIC_PPID_URL", "");
+
+    vi.resetModules();
+    const { siteConfig } = await import("../../src/lib/site-config.js");
+
+    expect(siteConfig.brandProfile).toBe("generic");
     expect(siteConfig.logoPath).toBe("/icons/portal.svg");
     expect(siteConfig.heroImage).toBe("/portal-social.svg");
     expect(siteConfig.ppidUrl).toBe("");
-    expect(siteConfig.name).not.toContain("Wajo");
   });
 
   it("does not infer the Wajo logo or PPID details from a region name alone", async () => {
@@ -111,6 +130,9 @@ describe("multi-agency site branding", () => {
 
     expect(siteConfig.logoPath).toBe("/logo-kabupaten-wajo.webp");
     expect(siteConfig.heroImage).toBe("/wajo-hero-panorama.webp");
+    expect(siteConfig.iconPath).toBe("/icons/icon.svg");
+    expect(siteConfig.pwaIcon192).toBe("/icons/icon-192.png");
+    expect(siteConfig.pwaIcon512).toBe("/icons/icon-512.png");
     expect(siteConfig.ppidUrl).toBe("https://e-ppid-utama.wajokab.go.id/");
     const { datasetStarterReferences } =
       await import("../../src/lib/data/dataset-starter-references.js");

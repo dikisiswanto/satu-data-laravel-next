@@ -11,6 +11,7 @@ import {
   apiErrorMessage,
   apiTransportFailureMessage,
 } from "@/lib/api/error-message";
+import { siteConfig } from "@/lib/site-config";
 
 const statusLabels = {
   draft: "Draf",
@@ -23,6 +24,7 @@ export function IndicatorObservationManager({
   observations = [],
   canEdit = false,
   canPublish = false,
+  loadError = null,
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -168,6 +170,45 @@ export function IndicatorObservationManager({
 
   return (
     <div className="space-y-6">
+      {loadError ? (
+        <section
+          role="alert"
+          className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+          aria-labelledby="observations-load-error-title"
+        >
+          <h2 id="observations-load-error-title" className="font-semibold">
+            Daftar observasi gagal dimuat
+          </h2>
+          <p className="mt-1 leading-6">
+            {loadError.reason === "forbidden"
+              ? "Server menolak akses ke daftar observasi (403). Periksa izin indicators.read untuk organisasi indikator ini."
+              : loadError.reason === "not_found"
+                ? "Endpoint atau indikator tidak ditemukan (404). Periksa versi backend yang sedang berjalan dan route API observasi."
+                : loadError.reason === "rate_limited"
+                  ? "Permintaan terlalu sering (429). Tunggu sebentar, lalu muat ulang halaman."
+                  : loadError.reason === "service_unavailable"
+                    ? "Layanan API gagal memuat observasi. Periksa log backend dengan ID permintaan berikut."
+                    : "Respons API observasi tidak sesuai kontrak yang diharapkan (data harus berupa array)."}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <span>Status HTTP: {loadError.status || "tidak tersedia"}</span>
+            {loadError.code ? (
+              <span>
+                Kode: <code>{loadError.code}</code>
+              </span>
+            ) : null}
+            {loadError.requestId ? (
+              <span>
+                ID permintaan: <code>{loadError.requestId}</code>
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-xs">
+            Form penambahan dan publikasi dinonaktifkan sementara agar admin
+            tidak membuat nilai ganda saat riwayat belum dapat diperiksa.
+          </p>
+        </section>
+      ) : null}
       {error ? (
         <p
           role="alert"
@@ -444,6 +485,11 @@ export function IndicatorObservationManager({
               </tbody>
             </table>
           </div>
+        ) : loadError ? (
+          <p className="p-4 text-sm text-muted">
+            Riwayat observasi belum dapat ditampilkan. Ini bukan berarti
+            indikator belum memiliki observasi.
+          </p>
         ) : (
           <p className="p-4 text-sm text-muted">
             Belum ada observasi tersimpan. Tambahkan nilai dengan periode,

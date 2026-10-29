@@ -17,6 +17,9 @@ describe("public dataset intent-oriented search", () => {
     expect(searchService).toContain("'sekolah' => ['pendidikan'");
     expect(searchService).toContain("'kesehatan' => ['rumah sakit'");
     expect(searchService).toContain("'jumlah' => ['total'");
+    expect(searchService).toContain("'pemerintahan' => ['opd'");
+    expect(searchService).toContain("'keuangan' => ['anggaran'");
+    expect(searchService).toContain("'perdagangan' => ['pasar'");
   });
 
   it("searches descriptive metadata, keywords, SDI metadata, and organizations", () => {
@@ -39,9 +42,28 @@ describe("public dataset intent-oriented search", () => {
     expect(publicController).toContain("$datasetSearch->apply(");
   });
 
+  it("preserves original multiword tokens before synonym expansion and supports bounded typo tolerance", () => {
+    expect(searchService).toContain(
+      "Round-robin expansion lets multiple topics contribute aliases",
+    );
+    expect(searchService).toContain("$seen = array_fill_keys($terms, true);");
+    expect(searchService).toContain("count($terms) < $termBudget");
+    expect(searchService).toContain("$termBudget = max(24, count($tokens));");
+    expect(searchService).toContain("array_slice($terms, 0, 20)");
+    expect(searchService).toContain(
+      "$multiplier = in_array($term, $originalTerms, true) ? 3 : 1;",
+    );
+    expect(searchService).toContain(
+      "private function typoPatterns(string $token): array",
+    );
+    expect(searchService).toContain(
+      "array_slice($this->tokenize($query), 0, 3)",
+    );
+  });
+
   it("keeps natural-language examples visible on the public search UI", () => {
-    expect(catalogPage).toContain("pendidikan dan sekolah");
-    expect(catalogPage).toContain("jumlah sekolah menurut kecamatan");
-    expect(homePage).toContain("pendidikan atau sekolah");
+    expect(catalogPage).toContain("sekolah atau puskesmas");
+    expect(catalogPage).toContain("realisasi anggaran kecamatan");
+    expect(homePage).toContain("sekolah, kesehatan, anggaran");
   });
 });

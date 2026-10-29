@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Ban } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSubmissionLock } from "@/hooks/use-submission-lock";
 import {
@@ -88,8 +89,9 @@ export function DatasetVersionAbandonAction({ datasetId, version }) {
         pending={pending}
         pendingText="Membatalkan versi…"
         disabled={uncertain}
-        className="w-full rounded-control border border-line px-4 py-3 text-sm font-semibold text-muted hover:bg-slate-50"
+        className="w-full rounded-control border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
       >
+        <Ban size={16} aria-hidden="true" />
         Batalkan versi yang sedang disiapkan
       </PendingActionButton>
       {error ? (

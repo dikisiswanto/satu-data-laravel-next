@@ -19,6 +19,7 @@ export function IndicatorActions({
   canEdit = false,
   canSubmit = false,
   canReview = false,
+  canPublish = false,
   canArchive = false,
 }) {
   const {
@@ -102,7 +103,7 @@ export function IndicatorActions({
           {canEdit ? (
             <Link
               href={`/portal/statistik/${id}/edit`}
-              className="rounded-control border px-3 py-2 text-sm font-medium hover:bg-slate-50"
+              className="inline-flex min-h-11 max-w-full items-center justify-center rounded-control border border-line bg-white px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
               prefetch={false}
             >
               Ubah
@@ -114,7 +115,7 @@ export function IndicatorActions({
               pending={pendingAction === "submit_for_review"}
               pendingText="Mengajukan pemeriksaan…"
               disabled={busy || uncertain}
-              className="rounded-control bg-primary px-3 py-2 text-sm font-semibold text-white"
+              className="rounded-control border border-transparent bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90"
             >
               Ajukan pemeriksaan
             </PendingActionButton>
@@ -139,13 +140,13 @@ export function IndicatorActions({
       ) : null}
       {status === "review" ? (
         <>
-          {canReview ? (
+          {canPublish ? (
             <PendingActionButton
               onClick={() => act("publish")}
               pending={pendingAction === "publish"}
               pendingText="Memublikasikan…"
               disabled={busy || uncertain}
-              className="rounded-control bg-primary px-3 py-2 text-sm font-semibold text-white"
+              className="rounded-control border border-transparent bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90"
             >
               Terbitkan
             </PendingActionButton>
@@ -157,7 +158,7 @@ export function IndicatorActions({
                 setError("");
               }}
               disabled={busy || uncertain}
-              className="rounded-control border px-3 py-2 text-sm font-medium"
+              className="rounded-control border border-line bg-white px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-secondary"
             >
               {showReturnForm ? "Tutup catatan" : "Kembalikan"}
             </PendingActionButton>
@@ -182,7 +183,7 @@ export function IndicatorActions({
           pending={pendingAction === "archive"}
           pendingText="Mengarsipkan…"
           disabled={busy || uncertain}
-          className="rounded-control border px-3 py-2 text-sm font-medium text-muted hover:bg-slate-50"
+          className="rounded-control border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
         >
           Arsipkan
         </PendingActionButton>

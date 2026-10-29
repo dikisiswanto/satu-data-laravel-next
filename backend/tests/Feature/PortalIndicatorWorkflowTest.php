@@ -95,6 +95,46 @@ class PortalIndicatorWorkflowTest extends TestCase
         $this->assertSame($revisionBefore, $this->catalogRevision(), 'Mengarsipkan indikator yang belum publik tidak boleh menaikkan revisi katalog.');
     }
 
+    public function test_authorized_organization_member_can_read_observations_using_the_canonical_api_contract(): void
+    {
+        [$user, $organization, $indicator, $token] = $this->createScenario('published', 'admin_opd');
+        $observation = IndicatorObservation::query()->create([
+            'id' => (string) Str::uuid(),
+            'indicator_id' => $indicator->id,
+            'period_label' => '2025',
+            'value_numeric' => 125,
+            'unit' => 'sekolah',
+            'source_name' => 'Dinas Pendidikan',
+            'revision_no' => 1,
+            'is_current' => true,
+            'status' => 'published',
+            'quality_status' => 'verified',
+            'created_by' => $user->id,
+            'published_by' => $user->id,
+            'published_at' => now(),
+        ]);
+
+        $this->withHeaders(['Accept' => 'application/json'])
+            ->withToken($token)
+            ->getJson('/api/v1/portal/indicators/'.$indicator->id.'/observations')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $observation->id)
+            ->assertJsonPath('data.0.indicator_id', $indicator->id)
+            ->assertJsonPath('data.0.period_label', '2025')
+            ->assertJsonPath('data.0.status', 'published');
+    }
+
+    public function test_observation_list_does_not_allow_a_member_of_another_organization_to_read_it(): void
+    {
+        [, , $indicator] = $this->createScenario('published', 'admin_opd');
+        [, , , $unrelatedToken] = $this->createScenario('published', 'admin_opd');
+
+        $this->withHeaders(['Accept' => 'application/json'])
+            ->withToken($unrelatedToken)
+            ->getJson('/api/v1/portal/indicators/'.$indicator->id.'/observations')
+            ->assertForbidden();
+    }
+
     public function test_archived_indicator_is_read_only_for_new_observations(): void
     {
         [$user, $organization, $indicator, $token] = $this->createScenario('archived', 'admin_opd');

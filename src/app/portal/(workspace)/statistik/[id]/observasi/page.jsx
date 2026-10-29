@@ -25,32 +25,93 @@ export default async function IndicatorObservationsPage({ params }) {
   } = await getRequestVerifiedUser();
   if (!user) redirect("/portal/login");
   let indicator;
-  let observations;
   try {
-    [indicator, observations] = await Promise.all([
-      portalData(`indicators/${encodeURIComponent(id)}`),
-      portalData(`indicators/${encodeURIComponent(id)}/observations`),
-    ]);
+    indicator = await portalData(`indicators/${encodeURIComponent(id)}`);
   } catch (error) {
     if (Number(error?.status) === 404) notFound();
-    throw error;
+    if (Number(error?.status) === 403) {
+      return (
+        <ObservationPageUnavailable
+          reason="forbidden"
+          requestId={error?.requestId}
+        />
+      );
+    }
+    console.error("portal_indicator_detail_load_failed", {
+      status: Number(error?.status || 0) || null,
+      code: typeof error?.code === "string" ? error.code : "unknown_error",
+      request_id: typeof error?.requestId === "string" ? error.requestId : null,
+    });
+    return (
+      <ObservationPageUnavailable
+        reason="service_unavailable"
+        requestId={error?.requestId}
+      />
+    );
   }
   if (!indicator) notFound();
+
+  // Keep the page usable when the observation endpoint has a problem. Previously
+  // Promise.all() made one failed observations request replace the entire page
+  // with a generic route error, hiding the status that would explain the cause.
+  let observations = [];
+  let observationLoadError = null;
+  try {
+    const result = await portalData(
+      `indicators/${encodeURIComponent(id)}/observations`,
+    );
+    if (!Array.isArray(result)) {
+      throw Object.assign(new Error("invalid_observation_list_response"), {
+        code: "invalid_observation_list_response",
+        status: 502,
+      });
+    }
+    observations = result;
+  } catch (error) {
+    const status = Number(error?.status || 0) || 0;
+    observationLoadError = {
+      status,
+      code: typeof error?.code === "string" ? error.code : "unknown_error",
+      requestId: typeof error?.requestId === "string" ? error.requestId : null,
+      reason:
+        status === 403
+          ? "forbidden"
+          : status === 404
+            ? "not_found"
+            : status === 429
+              ? "rate_limited"
+              : status >= 500 || status === 0
+                ? "service_unavailable"
+                : "invalid_response",
+    };
+    console.error("portal_indicator_observations_load_failed", {
+      indicator_id: id,
+      status: status || null,
+      code: observationLoadError.code,
+      request_id: observationLoadError.requestId,
+    });
+  }
   const { memberships = [] } = await getPortalShell();
-  const global = (memberships || []).some((item) =>
-    ["super_admin", "data_admin", "auditor"].includes(item.role),
+  const global = (memberships || []).some(
+    (item) =>
+      !item.organization_id &&
+      ["super_admin", "data_admin", "auditor"].includes(item.role),
   );
   const canEdit = (memberships || []).some(
     (item) =>
-      ["super_admin", "data_admin"].includes(item.role) ||
+      (!item.organization_id &&
+        ["super_admin", "data_admin"].includes(item.role)) ||
       (item.organization_id === indicator.organization_id &&
         ["admin_opd", "editor"].includes(item.role)),
   );
+  // Keep UI capabilities aligned with the backend permission catalog:
+  // reviewer can return an indicator for changes but cannot publish it.
   const canPublish = (memberships || []).some(
     (item) =>
-      ["super_admin", "data_admin"].includes(item.role) ||
+      (["super_admin", "data_admin"].includes(item.role) &&
+        !item.organization_id) ||
       (item.organization_id === indicator.organization_id &&
-        ["admin_opd", "reviewer"].includes(item.role)),
+        item.role === "admin_opd"),
   );
   const canRead =
     global ||
@@ -199,9 +260,45 @@ export default async function IndicatorObservationsPage({ params }) {
       <IndicatorObservationManager
         indicator={indicator}
         observations={observations || []}
-        canEdit={canEdit && !indicatorArchived}
+        canEdit={canEdit && !indicatorArchived && !observationLoadError}
         canPublish={canPublish}
+        loadError={observationLoadError}
       />
     </>
+  );
+}
+
+function ObservationPageUnavailable({ reason, requestId }) {
+  const message =
+    reason === "forbidden"
+      ? "Akun Anda belum memiliki izin untuk membuka definisi indikator ini. Minta administrator memeriksa keanggotaan dan izin indikator."
+      : "Layanan indikator sedang tidak dapat dihubungi. Muat ulang halaman setelah layanan pulih.";
+  return (
+    <section
+      className="portal-workspace-panel max-w-3xl p-5 sm:p-7"
+      aria-labelledby="observation-page-unavailable-title"
+    >
+      <h1
+        id="observation-page-unavailable-title"
+        className="text-lg font-semibold"
+      >
+        Observasi indikator belum dapat dibuka
+      </h1>
+      <p role="alert" className="mt-2 text-sm leading-6 text-muted">
+        {message}
+      </p>
+      {requestId ? (
+        <p className="mt-3 text-xs text-muted">
+          ID permintaan: <code>{requestId}</code>
+        </p>
+      ) : null}
+      <Link
+        href="/portal/statistik"
+        prefetch={false}
+        className="mt-5 inline-flex min-h-10 items-center rounded-control border border-line px-3 py-2 text-sm font-semibold hover:bg-surface-secondary"
+      >
+        Kembali ke indikator
+      </Link>
+    </section>
   );
 }

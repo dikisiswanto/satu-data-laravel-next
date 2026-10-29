@@ -143,7 +143,7 @@ describe("indicator workbench keeps definitions and observations distinct", () =
     );
     expect(indicatorObservations).toContain("Menunggu pemeriksaan definisi");
     expect(indicatorObservations).toContain(
-      "Definisi sedang dalam pemeriksaan. Nilai yang disiapkan tetap sebagai draf",
+      "Definisi sedang diperiksa. Anda dapat menyiapkan nilai sebagai draf",
     );
   });
 });
@@ -207,25 +207,31 @@ describe("dataset and indicator actions align with workflow preconditions", () =
   });
 });
 
-describe("tenant identity and frontend cookie configuration stay generic by default", () => {
+describe("tenant identity and frontend cookie configuration default to Wajo and remain configurable", () => {
   it("requires an explicit brand profile for Wajo-specific assets and PPID values", () => {
     const siteConfig = read("src/lib/site-config.js");
     const compose = read("docker-compose.yml");
     const dockerfile = read("Dockerfile");
     const exampleEnv = read(".env.example");
     expect(siteConfig).toContain(
-      'process.env.NEXT_PUBLIC_BRAND_PROFILE || "generic"',
+      'process.env.NEXT_PUBLIC_REGION_NAME || "Kabupaten Wajo"',
+    );
+    expect(siteConfig).toContain(
+      'process.env.NEXT_PUBLIC_BRAND_PROFILE || (/^kabupaten wajo$/i.test(configuredRegionName) ? "wajo" : "generic")',
     );
     expect(siteConfig).toContain('configuredBrandProfile === "wajo"');
-    expect(siteConfig).toContain("brandProfile: configuredBrandProfile");
-    expect(compose).toContain(
-      "NEXT_PUBLIC_BRAND_PROFILE: ${NEXT_PUBLIC_BRAND_PROFILE:-generic}",
+    expect(siteConfig).toContain(
+      'brandProfile: isWajoBrandProfile ? "wajo" : "generic"',
     );
-    expect(dockerfile).toContain("ARG NEXT_PUBLIC_BRAND_PROFILE=generic");
-    expect(exampleEnv).toContain("NEXT_PUBLIC_BRAND_PROFILE=generic");
+    expect(compose).toContain(
+      "NEXT_PUBLIC_BRAND_PROFILE: ${NEXT_PUBLIC_BRAND_PROFILE:-wajo}",
+    );
+    expect(dockerfile).toContain("ARG NEXT_PUBLIC_BRAND_PROFILE=wajo");
+    expect(exampleEnv).toContain("NEXT_PUBLIC_BRAND_PROFILE=wajo");
+    expect(exampleEnv).toContain("NEXT_PUBLIC_REGION_NAME=Kabupaten Wajo");
   });
 
-  it("keeps visual and backend branding defaults generic when tenant values are absent", () => {
+  it("keeps explicit CSS fallback assets available while Wajo is the configured default", () => {
     const overrides = read("src/app/styles/overrides.css");
     const qualityPass = read("src/app/styles/quality-pass.css");
     const compose = read("docker-compose.yml");
@@ -234,7 +240,7 @@ describe("tenant identity and frontend cookie configuration stay generic by defa
     expect(overrides).not.toContain('url("/wajo-hero-panorama.webp")');
     expect(qualityPass).not.toContain('url("/wajo-hero-panorama.webp")');
     expect(compose).toContain(
-      "APP_NAME: ${PORTAL_APP_NAME:-${NEXT_PUBLIC_APP_NAME:-Portal Satu Data API}}",
+      "APP_NAME: ${PORTAL_APP_NAME:-${NEXT_PUBLIC_APP_NAME:-Portal Satu Data Kabupaten Wajo API}}",
     );
   });
 

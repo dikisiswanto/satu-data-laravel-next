@@ -598,7 +598,7 @@ export function DatasetMetadataForm({
           pending={busy}
           pendingText="Menyimpan metadata…"
           disabled={statusUnknown}
-          className="rounded-control bg-primary px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-control border border-transparent bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
         >
           <span className="inline-flex items-center gap-2">
             <Save size={16} aria-hidden="true" />

@@ -6,6 +6,7 @@ import {
 import { useSubmissionLock } from "@/hooks/use-submission-lock";
 import { readApiMutationResponse } from "@/lib/api/client-response";
 import { useState } from "react";
+import { Archive } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PendingActionButton } from "@/components/ui/pending-action-button";
 import { MutationStatusCheck } from "@/components/admin/mutation-status-check";
@@ -82,8 +83,9 @@ export function DatasetArchiveAction({ id, status }) {
         pending={busy}
         pendingText="Mengarsipkan dataset…"
         disabled={uncertain}
-        className="w-full rounded-control border border-line px-4 py-3 text-sm font-semibold text-muted hover:bg-slate-50"
+        className="w-full rounded-control border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
       >
+        <Archive size={16} aria-hidden="true" />
         Arsipkan dataset
       </PendingActionButton>
       {error ? (

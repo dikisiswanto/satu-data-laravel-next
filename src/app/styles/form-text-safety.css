@@ -298,7 +298,9 @@ button[data-stateful-button="true"] {
 
 .button-state-stack {
   display: grid;
-  grid-template-columns: max-content;
+  grid-template-columns: minmax(0, 1fr);
+  min-inline-size: 0;
+  max-inline-size: 100%;
   align-items: center;
   justify-items: center;
 }
@@ -309,7 +311,15 @@ button[data-stateful-button="true"] {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-inline-size: 0;
   max-inline-size: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.button-state-layer > span {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
 .button-state-layer > svg {
